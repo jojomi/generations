@@ -1,0 +1,6 @@
+- id: gauss
+  mom: mama
+  dad: papa
+- id: mama
+- id: other
+- id: papa

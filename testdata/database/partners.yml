@@ -1,0 +1,4 @@
+- id: gauss
+- id: frau-gauss
+  partners:
+    - partner_id: gauss

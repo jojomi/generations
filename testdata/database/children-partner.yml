@@ -1,0 +1,7 @@
+- id: gauss
+- id: tochter
+  dad: gauss
+- id: schwiegersohn
+- id: enkelin
+  mom: tochter
+  dad: schwiegersohn

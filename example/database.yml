@@ -1,0 +1,115 @@
+- id: PachGerd1954
+  gender: male
+  name:
+    first:
+    - Gerd
+    last: Pachowski
+  birth:
+    date: "1954-07-04"
+    place: Bottrop
+  mom: PachGise1921
+  dad: PachDiet1919
+  partners:
+  - partner_id: "GöhlMela1954"
+    marriage:
+      date: "1975-07-01"
+    divorce:
+      date: "1990-03-09"
+
+- id: GöhlMela1954
+  gender: female
+  name:
+    first:
+    - Emilia
+    - Melanie
+    used: Melanie
+    last: Göhler
+  birth:
+    date: "1957-12-28"
+    place: Hamburg-Harburg
+  partners:
+  - partner_id: PachGerd1954
+    marriage:
+      date: "1975-07-01"
+    divorce:
+      date: "1990-03-09"
+
+- id: PachGise1921
+  gender: female
+  name:
+    first:
+    - Gisela
+    - Andrea
+    last: Pachowski
+    birth: Lehnert
+  birth:
+    date: "1921-01-02"
+    place: Dortmund
+  jobs: "Lehrerin, Dozentin"
+
+- id: PachDiet1919
+  gender: male
+  name:
+    first:
+    - Dieter
+    - B.
+    last: Pachowski
+  birth:
+    date: "1919-09-30"
+  baptism:
+    date: "1919-10-01"
+  death:
+    date: "2001-07-03"
+    place: Bottrop
+  jobs: Chemielaborant
+  floruit: "Gelsenkirchen und Bottrop"
+  comment: "Im Alter Halbglatze"
+  attributes:
+  - dead
+  partners:
+  - partner_id: PachGise1921
+    engagement:
+      date: "1943-05-05"
+    marriage:
+      date: "1945-08-08"
+
+- id: PachLena1977
+  gender: female
+  name:
+    first:
+    - Lena
+    birth: Pachowski
+  birth:
+    date: "1977-02-19"
+    place: "verm. Bottrop"
+  mom: GöhlMela1954
+  dad: PachGerd1954
+  partners:
+  - marriage:
+      date: "1999"
+
+- id: PachAndr1979
+  gender: male
+  name:
+    first:
+    - Andreas
+    last: Pachowski
+    nick: Andy
+  birth:
+    date: "1979-04-10"
+    place: "Kreiskrankenhaus Bottrop"
+  mom: GöhlMela1954
+  dad: PachGerd1954
+  #image: andreas.jpg
+
+- id: Pach1991
+  gender: female
+  name:
+    first:
+    - "?"
+    last: Pachowski
+    alias: "Bruder Adalbert"
+  birth:
+    date: "1991"
+  comment: "Profess: August 2014"
+  dad: PachGerd1954

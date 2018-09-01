@@ -1,0 +1,8 @@
+- id: gauss
+  name:
+    first:
+    - Carl
+    - Philip
+    - Emanuel
+    last: Gauss
+  

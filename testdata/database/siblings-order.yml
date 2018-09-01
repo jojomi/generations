@@ -1,0 +1,11 @@
+- id: mama
+- id: papa
+- id: schwester1
+  mom: mama
+  dad: papa
+- id: gauss
+  mom: mama
+  dad: papa
+- id: schwester2
+  mom: mama
+  dad: papa

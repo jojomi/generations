@@ -1,0 +1,4 @@
+union {
+    {{ .Parent }}
+    {{ .Children }}
+}

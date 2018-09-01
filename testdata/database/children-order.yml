@@ -1,0 +1,13 @@
+- id: gauss
+- id: frau-gauss
+  partners:
+    - partner_id: gauss
+- id: tochter1
+  mom: frau-gauss
+  dad: gauss
+- id: sohn
+  mom: frau-gauss
+  dad: gauss
+- id: tochter2
+  mom: frau-gauss
+  dad: gauss

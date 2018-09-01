@@ -1,3 +1,6 @@
+cmd/config/*.yml
+cmd/pictures
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
@@ -7,6 +10,18 @@
 
 # Test binary, build with `go test -c`
 *.test
+testbinary
+_*.sh
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+
+
+# LaTeX files
+*.log
+*.aux
+*.fls
+*.fdb_latexmk
+*.toc
+test.tex
+test*.pdf

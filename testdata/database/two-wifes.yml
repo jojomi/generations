@@ -1,0 +1,16 @@
+- id: gauss
+  partners:
+    - partner_id: frau1
+      marriage:
+        date: 1728
+    - partner_id: frau2
+      marriage:
+        date: 1744
+- id: sohn1
+  mom: frau1
+  dad: gauss
+- id: sohn2
+  mom: frau2
+  dad: gauss
+- id: frau1
+- id: frau2

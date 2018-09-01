@@ -1,0 +1,9 @@
+- id: gauss
+  mom: mama
+- id: mama
+  mom: oma
+- id: oma
+  mom: uroma
+- id: uroma
+  mom: ururoma
+- id: ururoma

@@ -1,0 +1,17 @@
+- id: gauss
+- id: sohn1
+  mom: frau1
+  dad: gauss
+- id: sohn2
+  mom: frau2
+  dad: gauss
+- id: sohn3
+  mom: frau1
+  dad: gauss
+- id: sohn4
+  mom: frau1
+  dad: gauss
+- id: sohn5
+  dad: gauss
+- id: frau1
+- id: frau2

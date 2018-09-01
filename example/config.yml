@@ -1,0 +1,50 @@
+title: "Stammbaum-Beispiel"
+ 
+databases:
+- ../example/database.yml
+template: templates/document-basic.tex
+
+pre-content: "\\tableofcontents \\newpage"
+attribution: "Stand: {{ .Now.Format \"02.01.2006\"}}. Erstellt für Testzwecke."
+
+trees:
+    - title: "Verwandtschaft"
+      proband: "Gerd Pachowski"
+      proband-level: 0
+      scale: 0.70
+      render-tree-options:
+        max-parent-siblings-generations: 0
+        render-person-options:
+          lastname-policy: 3 # LastnamePolicyCurrentAndBirth
+
+    - title: "Variante 2"
+      proband: "Gerd Pachowski"
+      custom-styles: "template=signpost,processing=database,timeflow=down,empty name text={N.N.},pref code={#1},surn code={\\textbf{#1}},edges=rounded,edges={foreground={blue!50,line width=2mm}}"
+
+
+    - title: "Variante 3"
+      proband: "Gerd Pachowski"
+      custom-styles: "template=signpost,processing=database,timeflow=up,level distance=2.0cm,edges={foreground={line width=2pt,red,Circle-LaTeX,shorten <=-4pt}}"
+      render-tree-options:
+        max-parent-generations: -1
+        render-person-options:
+          hide-birth: true
+          hide-baptism: true
+          hide-death: true
+          hide-engagement: true
+          hide-marriage: true
+          hide-divorce: true
+          hide-floruit: true
+          hide-jobs: true
+
+    - title: "Ahnentafel Lena Pachowski"
+      proband: "PachLena1977"
+      custom-styles: "template=ahnentafel 3,empty name text={},pref code={\\textbf{#1}},surn code={\\textbf{#1}},dead/.style={}" # ,show type
+      scale: 0.80
+      render-tree-options:
+        max-parent-generations: 3
+        max-parent-siblings-generations: -1
+        max-child-generations: -1
+        render-person-options:
+          lastname-policy: 1
+          hide-middle-names: true
