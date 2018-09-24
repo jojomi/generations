@@ -98,6 +98,8 @@ Stand: \textbf{ {{- .Date -}} }
     database format=full marriage below,
     timeflow=right,
     list separators hang,
+    place text={}{},
+    event code={\gtrPrintEventPrefix{#1}\xspace\gtrPrintDate{#1}\xspace\gtrifplacedefined{#1}{ -- \gtrPrintPlace{#1}}{}},
     level distance=25mm, level size=45mm, further distance=2cm,
     child distance in parent graph=5mm, parent distance in parent graph=15mm,
     child distance in child graph=15mm, parent distance in child graph=5mm,

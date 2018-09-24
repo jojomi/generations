@@ -61,6 +61,9 @@
   death:
     date: "2001-07-03"
     place: Bottrop
+  burial:
+    date: "2001-07-08"
+    place: "Westfriedhof Bottrop"
   jobs: Chemielaborant
   floruit: "Gelsenkirchen und Bottrop"
   comment: "Im Alter Halbglatze"
