@@ -12,6 +12,7 @@ type Person interface {
 	GetBirth() DatePlace
 	GetBaptism() DatePlace
 	GetDeath() DatePlace
+	GetBurial() DatePlace
 	GetParents() (mom Person, dad Person)
 	// GetChildren returns all children of this person
 	GetChildren() []Person

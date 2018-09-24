@@ -92,7 +92,7 @@
   {{ $birth := .Person.GetBirth }}
   {{ if and (not $birth.Empty) (not .Options.HideBirth) }}
     {{ with $birth }}
-      {{ if and (not $.Options.HidePlaces) (ne $birth.Place "") }}
+      {{ if and (not $.Options.HidePlaces) (ne .Place "") }}
       birth = { {{- .Date -}} }{ {{- .Place -}} },
       {{ else }}
       birth- = { {{- .Date -}} },
@@ -103,7 +103,7 @@
   {{ $baptism := .Person.GetBaptism }}
   {{ if and (not $baptism.Empty) (not .Options.HideBaptism) }}
     {{ with $baptism }}
-      {{ if and (not $.Options.HidePlaces) (ne $baptism.Place "") }}
+      {{ if and (not $.Options.HidePlaces) (ne .Place "") }}
       baptism = { {{- .Date -}} }{ {{- .Place -}} },
       {{ else }}
       baptism- = { {{- .Date -}} },
@@ -114,10 +114,21 @@
   {{ $death := .Person.GetDeath }}
   {{ if and (not $death.Empty) (not .Options.HideDeath) }}
     {{ with $death }}
-      {{ if and (not $.Options.HidePlaces) (ne $death.Place "") }}
+      {{ if and (not $.Options.HidePlaces) (ne .Place "") }}
       death = { {{- .Date -}} }{ {{- .Place -}} },
       {{ else }}
       death- = { {{- .Date -}} },
+      {{ end }}
+    {{ end }}
+  {{ end }}
+
+  {{ $burial := .Person.GetBurial }}
+  {{ if and (not $burial.Empty) (not .Options.HideDeath) }}
+    {{ with $burial }}
+      {{ if and (not $.Options.HidePlaces) (ne .Place "") }}
+      burial = { {{- .Date -}} }{ {{- .Place -}} },
+      {{ else }}
+      burial- = { {{- .Date -}} },
       {{ end }}
     {{ end }}
   {{ end }}

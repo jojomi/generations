@@ -13,6 +13,7 @@ type FlatPerson struct {
 	Birth         DatePlace          `yaml:"birth,omitempty"`
 	Baptism       DatePlace          `yaml:"baptism,omitempty"`
 	Death         DatePlace          `yaml:"death,omitempty"`
+	Burial        DatePlace          `yaml:"burial,omitempty"`
 	Mom           string             `yaml:"mom,omitempty"`
 	Dad           string             `yaml:"dad,omitempty"`
 	Partners      []FlatRelationship `yaml:"partners,omitempty"`
@@ -86,6 +87,10 @@ func (d *FlatPerson) GetBaptism() DatePlace {
 
 func (d *FlatPerson) GetDeath() DatePlace {
 	return d.Death
+}
+
+func (d *FlatPerson) GetBurial() DatePlace {
+	return d.Burial
 }
 
 func (d *FlatPerson) GetParents() (Person, Person) {
