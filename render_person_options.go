@@ -25,6 +25,7 @@ type RenderPersonOptions struct {
 	HideBirth      bool `yaml:"hide-birth,omitempty"`
 	HideBaptism    bool `yaml:"hide-baptism,omitempty"`
 	HideDeath      bool `yaml:"hide-death,omitempty"`
+	HideBurial     bool `yaml:"hide-burial,omitempty"`
 	HideImage      bool `yaml:"hide-image,omitempty"`
 	HideJobs       bool `yaml:"hide-jobs,omitempty"`
 	HideFloruit    bool `yaml:"hide-floruit,omitempty"`
@@ -53,6 +54,7 @@ func (o *RenderPersonOptions) HideAllData() {
 	o.HideBaptism = true
 	o.HideImage = true
 	o.HideDeath = true
+	o.HideBurial = true
 	o.HideJobs = true
 	o.HideFloruit = true
 	o.HideComment = true
