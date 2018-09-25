@@ -15,6 +15,9 @@ type Config struct {
 	PostContent string `yaml:"post-content,omitempty"`
 	CustomHead  string `yaml:"custom-head,omitempty"`
 
+	CustomStyles string `yaml:"custom-styles,omitempty"`
+	CustomDraw   string `yaml:"custom-draw,omitempty"`
+
 	Trees []TreeConfig `yaml:"trees"`
 }
 
@@ -40,4 +43,16 @@ type TreeConfig struct {
 	PageBreakAfter bool `yaml:"page-break-after,omitempty"`
 
 	RenderTreeOptions generations.RenderTreeOptions `yaml:"render-tree-options"`
+}
+
+func (t *TreeConfig) AddGlobals(config Config) {
+	if len(t.Databases) == 0 {
+		t.Databases = config.Databases
+	}
+	if t.CustomDraw == "" {
+		t.CustomDraw = config.CustomDraw
+	}
+	if t.CustomStyles == "" {
+		t.CustomStyles = config.CustomStyles
+	}
 }

@@ -71,7 +71,7 @@ func commandRoot(c *cobra.Command, args []string) {
 
 	// load config, use it
 	for i, treeConfig := range config.Trees {
-		addGlobals(&treeConfig, config)
+		treeConfig.AddGlobals(config)
 		database := generations.NewMemoryDatabase()
 
 		for _, db := range treeConfig.Databases {
@@ -126,12 +126,6 @@ func commandRoot(c *cobra.Command, args []string) {
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(4)
-	}
-}
-
-func addGlobals(treeConfig *TreeConfig, config Config) {
-	if len(treeConfig.Databases) == 0 {
-		treeConfig.Databases = config.Databases
 	}
 }
 
