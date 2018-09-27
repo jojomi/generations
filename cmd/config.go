@@ -19,6 +19,8 @@ type Config struct {
 	CustomDraw   string `yaml:"custom-draw,omitempty"`
 
 	Trees []TreeConfig `yaml:"trees"`
+
+	OutputFilename string `yaml:"output-filename,omitempty"`
 }
 
 type TreeConfig struct {
@@ -43,6 +45,9 @@ type TreeConfig struct {
 	PageBreakAfter bool `yaml:"page-break-after,omitempty"`
 
 	RenderTreeOptions generations.RenderTreeOptions `yaml:"render-tree-options"`
+}
+
+func (c *Config) SetDefaults() {
 }
 
 func (t *TreeConfig) AddGlobals(config Config) {

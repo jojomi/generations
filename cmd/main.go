@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"gopkg.in/yaml.v2"
@@ -17,7 +18,6 @@ import (
 	"github.com/jojomi/generations"
 	"github.com/spf13/cobra"
 )
-
 
 var (
 	flagRootConfigFile string
@@ -57,6 +57,9 @@ func commandRoot(c *cobra.Command, args []string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	config.SetDefaults()
+	setDefaultOutputPath(&config, flagRootConfigFile)
+
 	if flagRootShowConfig {
 		spew.Dump(config)
 		os.Exit(1)
@@ -122,11 +125,108 @@ func commandRoot(c *cobra.Command, args []string) {
 		config.Trees[i] = treeConfig
 	}
 
-	err = renderDocument(config.Template, config, "test.tex")
+	err = os.MkdirAll(filepath.Dir(config.OutputFilename), 0750)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(4)
 	}
+	err = renderDocument(config.Template, config, strings.Replace(config.OutputFilename, ".pdf", ".tex", -1))
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(5)
+	}
+
+	err = compileDocument(
+		strings.Replace(config.OutputFilename, ".pdf", ".tex", -1),
+		2,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = minifyDocument(
+		config.OutputFilename,
+		strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1),
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	openDocument(strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1))
+}
+
+func compileDocument(inputFile string, numRuns int) error {
+	sc := script.NewContext()
+	if !sc.CommandExists("lualatex") {
+		return fmt.Errorf("lualatex not found in PATH")
+	}
+	dir := filepath.Dir(inputFile)
+
+	for i := 0; i < numRuns; i++ {
+		pr, err := sc.ExecuteDebug(
+			"lualatex",
+			"-interaction=nonstopmode",
+			"-aux-directory="+dir,
+			"-output-directory="+dir,
+			inputFile,
+		)
+		if err != nil {
+			return err
+		}
+		if !pr.Successful() {
+			return fmt.Errorf("lualatex compilation not successful")
+		}
+	}
+
+	return nil
+}
+
+func minifyDocument(inputFile, outputFile string) error {
+	sc := script.NewContext()
+	if !sc.CommandExists("gs") {
+		return fmt.Errorf("gs not found in PATH")
+	}
+
+	pr, err := sc.ExecuteDebug(
+		"gs",
+		"-sDEVICE=pdfwrite",
+		"-dCompatibilityLevel=1.4",
+		"-dPDFSETTINGS=/printer",
+		"-dNOPAUSE",
+		"-dQUIET",
+		"-dBATCH",
+		"-sOutputFile="+outputFile,
+		inputFile,
+	)
+	if err != nil {
+		return err
+	}
+	if !pr.Successful() {
+		return fmt.Errorf("lualatex compilation not successful")
+	}
+
+	return nil
+}
+
+func openDocument(filename string) {
+	sc := script.NewContext()
+	if !sc.CommandExists("xdg-open") {
+		return
+	}
+	_, _ = sc.ExecuteDebug(
+		"xdg-open",
+		filename,
+	)
+}
+
+func setDefaultOutputPath(config *Config, filename string) {
+	if config.OutputFilename != "" {
+		return
+	}
+
+	f := filepath.Base(filename)
+	f = strings.TrimSuffix(f, ".yml")
+	config.OutputFilename = filepath.Join("output", f+".pdf")
 }
 
 func getTestCommand() *cobra.Command {
