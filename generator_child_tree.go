@@ -102,7 +102,7 @@ func renderUnion(person, partner Person, o RenderTreeOptions, level int) ([]byte
 		Children string
 	}{}
 
-	if !partner.IsDummy() {
+	if !partner.IsDummy() && level < o.MaxChildPartnersGenerations {
 		opts := *o.RenderPersonOptions
 		opts.NodeType = NodeTypeP
 		parentData, err := renderPerson(partner, opts)

@@ -45,6 +45,7 @@ trees:
         max-parent-generations: 3
         max-parent-siblings-generations: -1
         max-child-generations: -1
+        max-child-partners-generations: -1
         render-person-options:
           lastname-policy: 1
           hide-middle-names: true
