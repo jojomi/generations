@@ -32,55 +32,55 @@
           {{ range .First }}
             {{ if ne . $name.Used }}
               {{ if and . (not $.Options.HideMiddleNames) }}
-                \middlename{ {{- . -}} }\xspace%
+                \middlename{ {{- . -}} }\ %
               {{ end }}
             {{ else }}
-              \pref{ {{- . -}} }\xspace%
+              \pref{ {{- . -}} }\ %
             {{ end }}
           {{ end }}
         {{ else }}
           {{ range $i, $name := .First }}
             {{ if ne $i 0 }}
               {{ if and . (not $.Options.HideMiddleNames) }}
-                \middlename{ {{- $name -}} }\xspace%
+                \middlename{ {{- $name -}} }\ %
               {{ end }}
             {{ else }}
-              \pref{ {{- $name -}} }\xspace%
+              \pref{ {{- $name -}} }\ %
             {{ end }}
           {{ end }}
         {{ end }}
 
       {{ with .Nick }}
       {{ if . }}
-      \nick{ {{- . -}} }\xspace%
+      \nick{ {{- . -}} }\ %
       {{ end }}
       {{ end }}
 
 
       {{ if or (eq $.Options.LastnamePolicy.String "CurrentAndBirth") (eq $.Options.LastnamePolicy.String "Current") }}
       {{ if .Last }}
-        \surn{ {{- .Last -}} }\xspace%
+        \surn{ {{- .Last -}} }\ %
       {{- end }}
       {{ end }}
 
       {{ if eq $.Options.LastnamePolicy.String "CurrentAndBirth" }}
       {{- if .Birth -}}
-        \surnbirth{ {{- .Birth -}} }\xspace%
+        \surnbirth{ {{- .Birth -}} }\ %
       {{ end }}
       {{ end }}
 
       {{ if eq $.Options.LastnamePolicy.String "Birth" }}
       {{- if .Birth -}}
-        \surn{ {{- .Birth -}} }\xspace%
+        \surn{ {{- .Birth -}} }\ %
       {{ else }}
-        \surn{ {{- .Last -}} }\xspace%
+        \surn{ {{- .Last -}} }\ %
       {{ end }}
       {{ end }}
 
 
       {{ with .Alias }}
       {{ if . }}
-      ~-- \alias{ {{- . -}} }\xspace%
+      ~-- \alias{ {{- . -}} }\ %
       {{ end }}
       {{ end }}
 
