@@ -41,7 +41,9 @@
 {{ end }}
 
 
-\newcommand{\middlename}[1]{#1}
+\newcommand{\middlename}[1]{%
+{\normalfont #1}%
+}
 \newcommand{\surnbirth}[1]{\\geb. \surn{#1}}
 \newcommand{\alias}[1]{\surn{#1}}
 
@@ -180,6 +182,7 @@ Stand: \textbf{ {{- .Date -}} }
     label options={above,yshift=1mm,fill=white,draw=gray,node font=\footnotesize},
     label database options={place text={(}{)}},
     %
+    pref code={\textbf{#1}},
     nick code={\enquote{#1}},
     place text={}{},
     event code={\gtrPrintEventPrefix{#1}\xspace\gtrPrintDate{#1}\xspace\gtrifplacedefined{#1}{ \gtrPrintPlace{#1}}{}},
