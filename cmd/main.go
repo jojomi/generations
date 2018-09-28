@@ -22,6 +22,7 @@ import (
 var (
 	flagRootConfigFile string
 	flagRootShowConfig bool
+	flagRootOpen       bool
 )
 
 func main() {
@@ -33,6 +34,7 @@ func main() {
 	flags := rootCmd.PersistentFlags()
 	flags.StringVarP(&flagRootConfigFile, "config-file", "c", "config/document.yml", "config filename")
 	flags.BoolVarP(&flagRootShowConfig, "debug-config", "d", false, "show parsed config")
+	flags.BoolVarP(&flagRootOpen, "open", "o", true, "open generated pdf file")
 	rootCmd.AddCommand(getTestCommand())
 
 	if err := rootCmd.Execute(); err != nil {
@@ -152,7 +154,9 @@ func commandRoot(c *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	openDocument(strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1))
+	if flagRootOpen {
+		openDocument(strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1))
+	}
 }
 
 func compileDocument(inputFile string, numRuns int) error {
