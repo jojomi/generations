@@ -22,8 +22,6 @@ archive:
     386: 32-Bit
     amd64: 64-Bit
   files:
-    - ../LICENSE
-    - ../README.md
     - templates/*
 checksum:
   name_template: 'checksums.txt'
