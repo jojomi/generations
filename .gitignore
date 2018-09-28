@@ -1,6 +1,7 @@
 cmd/config/*.yml
 cmd/pictures
 cmd/output
+cmd/dist
 
 # Binaries for programs and plugins
 *.exe

@@ -1,0 +1,39 @@
+project_name: generations
+builds:
+  - env:
+      - CGO_ENABLED=0
+    main: .
+    binary: generations
+    goos:
+      - linux
+      - darwin
+      #- windows
+    ignore:
+      - goos: darwin
+        goarch: 386
+    hooks:
+      post: ./upx.sh
+archive:
+  format: zip
+  replacements:
+    darwin: macOS
+    linux: Linux
+    windows: Windows
+    386: 32-Bit
+    amd64: 64-Bit
+  files:
+    - ../LICENSE
+    - ../README.md
+    - templates/*
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
+release:
+  draft: true
