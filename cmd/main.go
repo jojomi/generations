@@ -166,14 +166,14 @@ func compileDocument(inputFile string, numRuns int) error {
 	}
 	dir := filepath.Dir(inputFile)
 
+	localCommand := script.LocalCommandFrom("lualatex --interaction=nonstopmode")
+	localCommand.AddAll(
+		"--aux-directory="+dir,
+		"--output-directory="+dir,
+		inputFile,
+	)
 	for i := 0; i < numRuns; i++ {
-		pr, err := sc.ExecuteDebug(
-			"lualatex",
-			"-interaction=nonstopmode",
-			"-aux-directory="+dir,
-			"-output-directory="+dir,
-			inputFile,
-		)
+		pr, err := sc.ExecuteDebug(localCommand)
 		if err != nil {
 			return err
 		}
@@ -191,17 +191,19 @@ func minifyDocument(inputFile, outputFile string) error {
 		return fmt.Errorf("gs not found in PATH")
 	}
 
-	pr, err := sc.ExecuteDebug(
-		"gs",
-		"-sDEVICE=pdfwrite",
-		"-dCompatibilityLevel=1.4",
-		"-dPDFSETTINGS=/printer",
-		"-dNOPAUSE",
-		"-dQUIET",
-		"-dBATCH",
-		"-sOutputFile="+outputFile,
-		inputFile,
+	command := strtpl.MustEval(
+		`gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/printer -dNOPAUSE -dQUIET -dBATCH -sOutputFile="{{ .OutputFile }}" "{{ .InputFile }}"`,
+		struct {
+			InputFile  string
+			OutputFile string
+		}{
+			InputFile:  inputFile,
+			OutputFile: outputFile,
+		},
 	)
+	localCommand := script.LocalCommandFrom(command)
+
+	pr, err := sc.ExecuteDebug(localCommand)
 	if err != nil {
 		return err
 	}
@@ -217,10 +219,17 @@ func openDocument(filename string) {
 	if !sc.CommandExists("xdg-open") {
 		return
 	}
-	_, _ = sc.ExecuteDebug(
-		"xdg-open",
-		filename,
+
+	command := strtpl.MustEval(
+		`xdg-open "{{ .Filename }}"`,
+		struct {
+			Filename string
+		}{
+			Filename: filename,
+		},
 	)
+	localCommand := script.LocalCommandFrom(command)
+	_, _ = sc.ExecuteDebug(localCommand)
 }
 
 func setDefaultOutputPath(config *Config, filename string) {
