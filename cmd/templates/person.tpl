@@ -59,7 +59,7 @@
 
       {{ if or (eq $.Options.LastnamePolicy.String "CurrentAndBirth") (eq $.Options.LastnamePolicy.String "Current") }}
       {{ if .Last }}
-        \surn{ {{- .Last -}} }\ %
+        \surn{ {{- .Last -}} }%
       {{- end }}
       {{ end }}
 
