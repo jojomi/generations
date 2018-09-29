@@ -1,0 +1,46 @@
+{{ with .TreeConfig }}
+
+    {{- if .Title -}}
+    \subsection{ {{- .Title -}} }
+    {{- end }}
+
+    {{ if .Date -}}
+    Stand: \textbf{ {{- .Date -}} }
+    {{- end }}
+
+    \vspace{7mm}
+
+    {{ if .PreContent -}}
+    {{ .PreContent }}
+    {{- end }}
+
+    {{ if .Scale }}
+    \scalebox{ {{- .Scale -}} }{
+    {{ end }}
+    \begin{tikzpicture}
+        \genealogytree[
+        {{ if .CustomStyles -}}
+        {{ .CustomStyles }}%
+        {{- end }}%
+        ]{%
+        {{ .Content }}%
+        } % END genealogytree
+
+        {{ if .CustomDraw }}
+        {{ .CustomDraw }}
+        {{ end }}
+
+        \end{tikzpicture}
+    {{ if .Scale -}}
+    }
+    {{ end }}
+
+    {{ if .PostContent -}}
+        {{ .PostContent }}
+    {{- end }}
+
+    {{ if .PageBreakAfter }}
+        \newpage
+    {{ end }}
+
+{{ end }}

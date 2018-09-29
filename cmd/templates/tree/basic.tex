@@ -1,0 +1,145 @@
+
+{{ with .TreeConfig }}
+
+    {{- if .Title -}}
+    \subsection{ {{- .Title -}} }
+    {{- end }}
+
+    {{ if .Date -}}
+    Stand: \textbf{ {{- .Date -}} }
+    {{- end }}
+
+    \tikzset{pate/.style={-Latex, blue, dashed, very thick}}
+    \tcbset{male/.style={colframe=red,sharp corners}}
+
+    \vspace{7mm}
+
+    {{ if .PreContent -}}
+    {{ .PreContent }}
+    {{- end }}
+
+    {{ if .Scale }}
+    \scalebox{ {{- .Scale -}} }{
+    {{ end }}
+    \begin{tikzpicture}
+        \genealogytree[
+        processing=database,
+        % default style
+        {{ if not .CustomStyles }}%
+        template=database poleportrait,
+        database format=full marriage below,
+        timeflow=right,
+        list separators hang,
+        level distance=15mm, level size=45mm, further distance=2cm,
+        child distance in parent graph=5mm, parent distance in parent graph=10mm,
+        child distance in child graph=10mm, parent distance in child graph=5mm,
+        % box style
+        %tcbset={
+        %  male/.style={colframe=blue!60,colback=blue!2},
+        %  female/.style={colframe=red!60,colback=red!2}
+        %},
+        %content interpreter content={#1^{(\gtrnodenumber)}},
+        % level colors
+        level 13/.style={node box={code={%
+            {{ if lt .ProbandLevel 13 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=burgundy!10}}{\tcbset{colback=burgundy!50}}}}},
+        level 12/.style={node box={code={%
+            {{ if lt .ProbandLevel 12 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=darktangerine!10}}{\tcbset{colback=darktangerine!50}}}}},
+        level 11/.style={node box={code={%
+            {{ if lt .ProbandLevel 11 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=darkslategray!10}}{\tcbset{colback=darkslategray!30}}}}},
+        level 10/.style={node box={code={%
+            {{ if lt .ProbandLevel 10 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=darkseagreen!10}}{\tcbset{colback=darkseagreen!30}}}}},
+        level 9/.style={node box={code={%
+            {{ if lt .ProbandLevel 9 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=green!5}}{\tcbset{colback=green!30}}}}},
+        level 8/.style={node box={code={%
+            {{ if lt .ProbandLevel 8 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=orange!5}}{\tcbset{colback=orange!30}}}}},
+        level 7/.style={node box={code={%
+            {{ if lt .ProbandLevel 7 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=blue!5}}{\tcbset{colback=blue!30}}}}},
+        level 6/.style={node box={code={%
+            {{ if lt .ProbandLevel 6 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=brown!10}}{\tcbset{colback=brown!50}}}}},
+        level 5/.style={node box={code={%
+            {{ if lt .ProbandLevel 5 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=yellow!10}}{\tcbset{colback=yellow!50}}}}},
+        level 4/.style={node box={code={%
+            {{ if lt .ProbandLevel 4 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=red!10}}{\tcbset{colback=red!50}}}}},
+        level 3/.style={node box={code={%
+            {{ if lt .ProbandLevel 3 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=green!10}}{\tcbset{colback=green!50}}}}},
+        level 2/.style={node box={code={%
+            {{ if lt .ProbandLevel 2 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=blue!10}}{\tcbset{colback=blue!30}}}}},
+        level 1/.style={node box={code={%
+            {{ if lt .ProbandLevel 1 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=orange!10}}{\tcbset{colback=orange!50}}}}},
+        level 0/.style={node box={code={\tcbset{colback=gray!10}}}},
+        level -1/.style={node box={code={%
+            {{ if lt .ProbandLevel -1 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=yellow!10}}{\tcbset{colback=yellow!50}}}}},
+        level -2/.style={node box={code={%
+            {{ if lt .ProbandLevel -2 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=red!10}}{\tcbset{colback=red!50}}}}},
+        level -3/.style={node box={code={%
+            {{ if lt .ProbandLevel -3 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=green!10}}{\tcbset{colback=green!50}}}}},
+        level -4/.style={node box={code={%
+            {{ if lt .ProbandLevel -4 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=blue!10}}{\tcbset{colback=blue!30}}}}},
+        level -5/.style={node box={code={%
+            {{ if lt .ProbandLevel -5 }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end }}
+            {\tcbset{colback=orange!10}}{\tcbset{colback=orange!50}}}}},
+        {{ end }}%
+        %
+        date format=dd.mm.yyyy,
+        rootnode/.style={box={no shadow,fuzzy halo}}, % optional: pivot
+        dead/.style={box={no shadow,fuzzy halo=1mm with black}},
+        {{ if .ProbandLevel }}proband level={{ .ProbandLevel }},{{ end }}%
+        % legend
+        symbols record reset,
+        after tree={%
+            \node[font=\scriptsize\itshape,text width=4cm,above right,draw,black,xshift=5mm,yshift=0mm] at (current bounding box.south east) {
+            \gtrSymbolsLegend
+            };
+        },
+        % marriage handling
+        label options={above,yshift=1mm,fill=white,draw=gray,node font=\footnotesize},
+        label database options={place text={(}{)}},
+        %
+        pref code={\textbf{#1}},
+        nick code={\enquote{#1}},
+        place text={}{},
+        event code={\gtrPrintEventPrefix{#1}\xspace\gtrPrintDate{#1}\xspace\gtrifplacedefined{#1}{ \gtrPrintPlace{#1}}{}},
+        %
+        {{ if .CustomStyles -}}
+        {{ .CustomStyles }}%
+        {{- end }}%
+        %show id,
+        ]{%
+        {{ .Content }}%
+        } % END genealogytree
+
+        {{ if .CustomDraw }}
+        {{ .CustomDraw }}
+        {{ end }}
+
+        \end{tikzpicture}
+    {{ if .Scale -}}
+    }
+    {{ end }}
+
+    {{ if .PostContent -}}
+        {{ .PostContent }}
+    {{- end }}
+
+    {{ if .PageBreakAfter }}
+        \newpage
+    {{ end }}
+
+{{ end }}

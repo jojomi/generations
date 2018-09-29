@@ -127,12 +127,29 @@ func commandRoot(c *cobra.Command, args []string) {
 		config.Trees[i] = treeConfig
 	}
 
+	var renderedTrees string
+	for _, treeConfig := range config.Trees {
+		renderedTree, err := generations.RenderTemplateFile(treeConfig.Templates.Tree, struct{
+			Config Config
+			TreeConfig TreeConfig
+		}{
+			Config: config,
+			TreeConfig: treeConfig,
+		})
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(6)
+		}
+		renderedTrees = renderedTrees + string(renderedTree)
+	}
+	config.RenderedTrees = string(renderedTrees)
+
 	err = os.MkdirAll(filepath.Dir(config.OutputFilename), 0750)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(4)
 	}
-	err = renderDocument(config.Template, config, strings.Replace(config.OutputFilename, ".pdf", ".tex", -1))
+	err = renderDocument(config.Templates.Document, config, strings.Replace(config.OutputFilename, ".pdf", ".tex", -1))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(5)
