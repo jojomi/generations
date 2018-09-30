@@ -104,6 +104,11 @@ func withoutEmptyLines(input []byte) []byte {
 	return re.ReplaceAll(input, []byte("\n"))
 }
 
+func withoutEmptyLinesString(input string) string {
+	var re = regexp.MustCompile(`\n(\s*\n)+`)
+	return re.ReplaceAllString(input, "\n")
+}
+
 func withoutPercentageLines(input []byte) []byte {
 	var re = regexp.MustCompile(`\n(\s*%\s*)+\n`)
 	return re.ReplaceAll(input, []byte("\n"))
@@ -115,8 +120,9 @@ func RenderTemplateFile(filename string, data interface{}) ([]byte, error) {
 		return []byte{}, err
 	}
 	result, err := strtpl.EvalWithFuncMap(string(templateContent), template.FuncMap{
-		"noEmptyLines": withoutEmptyLines,
-		"join":         strings.Join,
+		"noEmptyLines":       withoutEmptyLines,
+		"noEmptyLinesString": withoutEmptyLinesString,
+		"join":               strings.Join,
 	}, data)
 	if err != nil {
 		return []byte{}, err

@@ -20,7 +20,7 @@
     \begin{tikzpicture}
         \genealogytree[
         {{ if .CustomStyles -}}
-        {{ .CustomStyles }}%
+        {{ noEmptyLinesString .CustomStyles }}%
         {{- end }}%
         ]{%
         {{ .Content }}%

@@ -118,7 +118,7 @@
         event code={\gtrPrintEventPrefix{#1}\xspace\gtrPrintDate{#1}\xspace\gtrifplacedefined{#1}{ \gtrPrintPlace{#1}}{}},
         %
         {{ if .CustomStyles -}}
-        {{ .CustomStyles }}%
+        {{ noEmptyLinesString .CustomStyles }}%
         {{- end }}%
         %show id,
         ]{%
