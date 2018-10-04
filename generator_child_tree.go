@@ -54,11 +54,23 @@ func renderChildTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level
 	// unions (other partners)
 	if len(partners) > 0 {
 		var unionBuffer bytes.Buffer
-		for _, partner := range partners {
+		for i, partner := range partners {
+			// special case: first partner -> no union allowed!
+			if i == 0 {
+				uData, err := renderUnionData(p, partner, o, level)
+				if err != nil {
+					return nil, err
+				}
+				data.Parent = uData.Parent
+				data.Children = uData.Children
+				continue
+			}
+
 			data, err := renderUnion(p, partner, o, level)
 			if err != nil {
 				return nil, err
 			}
+
 			unionBuffer.Write(data)
 			unionBuffer.WriteString("\n")
 		}
@@ -98,21 +110,24 @@ func renderChildTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level
 	return withoutEmptyLines(result), nil
 }
 
-func renderUnion(person, partner Person, o RenderTreeOptions, level int) ([]byte, error) {
+type unionData struct {
+	FamilyID string
+	Parent   string
+	Children string
+}
+
+func renderUnionData(person, partner Person, o RenderTreeOptions, level int) (unionData, error) {
 	var buffer bytes.Buffer
 	children := person.GetChildrenWith(partner)
 
-	data := struct {
-		Parent   string
-		Children string
-	}{}
+	var data unionData
 
 	if !partner.IsDummy() && level < o.MaxChildPartnersGenerations {
 		opts := *o.RenderPersonOptions
 		opts.NodeType = NodeTypeP
 		parentData, err := renderPerson(partner, opts)
 		if err != nil {
-			return nil, err
+			return data, err
 		}
 		data.Parent = string(parentData)
 		if !o.HideFamilyIDs {
@@ -128,12 +143,21 @@ func renderUnion(person, partner Person, o RenderTreeOptions, level int) ([]byte
 			// recursive call
 			childData, err := renderChildTree(child, o, NodeTypeC, level+1)
 			if err != nil {
-				return []byte{}, nil
+				return data, err
 			}
 			buffer.Write(childData)
 			buffer.WriteString("\n")
 		}
 		data.Children = buffer.String()
+	}
+
+	return data, nil
+}
+
+func renderUnion(person, partner Person, o RenderTreeOptions, level int) ([]byte, error) {
+	data, err := renderUnionData(person, partner, o, level)
+	if err != nil {
+		return []byte{}, nil
 	}
 
 	templateFile := o.TemplateFilenameUnionTree
