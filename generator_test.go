@@ -9,8 +9,9 @@ import (
 
 func TestRenderGenealogytree(t *testing.T) {
 	renderOptions := RenderTreeOptions{
-		GraphType:   GraphTypeSandclock,
-		GenderOrder: GenderOrderMaleFirst,
+		GraphType:     GraphTypeSandclock,
+		GenderOrder:   GenderOrderMaleFirst,
+		HideFamilyIDs: true,
 	}
 	addTestTemplates(&renderOptions)
 	renderOptions.SetDefaults()

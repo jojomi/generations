@@ -105,15 +105,15 @@ func TestRenderPerson(t *testing.T) {
 			Person:        &fullPerson,
 			Expected: `g[dead,mathematician]{
 				sex = male,
-				name = { \pref{Johann} \middlename{Carl} \middlename{Friedrich} \surn{Gauss} \surnbirth{Hauser}},
+				name = { \pref{Johann}\ \middlename{Carl}\ \middlename{Friedrich}\ \surn{Gauss} \surnbirth{Hauser}\ },
 				birth = {1827}{Hannover},
 				baptism = {10.10.1827}{Hannover},
 				death- = {um 1900},
-				burial = {}{Hannover Hauptfriedhof},
+				burial = {-}{Hannover Hauptfriedhof},
 				engagement = {10/1854}{Prag},
 				marriage = {1855}{München},
 				divorce = {um 1866}{ebd.},
-				floruit- = {Hannover, Berlin},
+				floruit = {-}{Hannover, Berlin},
 				profession = {Mathematician, Priest},
 				image = {images/gauss.jpg},
 				comment = {Famous.},
@@ -158,7 +158,7 @@ func TestRenderPerson(t *testing.T) {
 			},
 			Expected: `g[]{
 				name = {
-					\pref{Johann} \surn{Gauss} \surnbirth{Hauser}
+					\pref{Johann}\ \surn{Gauss} \surnbirth{Hauser}\ 
 				},
 			}`,
 		},

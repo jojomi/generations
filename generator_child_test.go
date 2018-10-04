@@ -10,8 +10,9 @@ import (
 
 func TestRenderFullChildTree(t *testing.T) {
 	renderOptions := RenderTreeOptions{
-		GraphType:   GraphTypeChild,
-		GenderOrder: GenderOrderMaleFirst,
+		GraphType:     GraphTypeChild,
+		GenderOrder:   GenderOrderMaleFirst,
+		HideFamilyIDs: true,
 	}
 	addTestTemplates(&renderOptions)
 	renderOptions.SetDefaults()
@@ -37,11 +38,9 @@ func TestRenderFullChildTree(t *testing.T) {
 			ID:               "gauss",
 			Expected: `child{
 				g[id=gauss,]{}
-				union {
-					p[id=frau-gauss,]{}
-					c[id=sohn,]{}
-					c[id=tochter,]{}
-				}
+				p[id=frau-gauss,]{}
+				c[id=sohn,]{}
+				c[id=tochter,]{}
 			}`,
 		},
 		{
@@ -49,12 +48,10 @@ func TestRenderFullChildTree(t *testing.T) {
 			ID:               "gauss",
 			Expected: `child{
 				g[id=gauss,]{}
-				union {
-					p[id=frau-gauss,]{}
-					c[id=tochter1,]{}
-					c[id=sohn,]{}
-					c[id=tochter2,]{}
-				}
+				p[id=frau-gauss,]{}
+				c[id=tochter1,]{}
+				c[id=sohn,]{}
+				c[id=tochter2,]{}
 			}`,
 		},
 
@@ -64,14 +61,10 @@ func TestRenderFullChildTree(t *testing.T) {
 			ID:               "gauss",
 			Expected: `child{
 				g[id=gauss,]{}
-				union {
-					child {
-						g[id=tochter,]{}
-						union {
-							p[id=schwiegersohn,]{}
-							c[id=enkelin,]{}
-						}
-					}
+				child {
+					g[id=tochter,]{}
+					p[id=schwiegersohn,]{}
+					c[id=enkelin,]{}
 				}
 			}`,
 		},
@@ -82,9 +75,7 @@ func TestRenderFullChildTree(t *testing.T) {
 			ID:               "mama",
 			Expected: `child{
 				g[id=mama,]{}
-				union {
-					c[id=gauss,]{}
-				}
+				c[id=gauss,]{}
 			}`,
 		},
 
@@ -94,11 +85,9 @@ func TestRenderFullChildTree(t *testing.T) {
 			ID:               "gauss",
 			Expected: `child{
 				g[id=gauss,]{}
-				union {
-					p[id=frau-gauss,]{}
-					c[id=sohn,]{}
-					c[id=tochter,]{}
-				}
+				p[id=frau-gauss,]{}
+				c[id=sohn,]{}
+				c[id=tochter,]{}
 				union {
 					p[id=frau-gauss-zwei,]{}
 					c[id=sohn-zwei,]{}
@@ -114,9 +103,7 @@ func TestRenderFullChildTree(t *testing.T) {
 			MaxChildGenerations: GenerationsNone,
 			Expected: `child{
 				g[id=gauss,]{}
-				union {
-					p[id=frau-gauss,]{}
-				}
+				p[id=frau-gauss,]{}
 			}`,
 		},
 	}

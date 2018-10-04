@@ -10,8 +10,9 @@ import (
 
 func TestRenderFullParentTree(t *testing.T) {
 	renderOptions := RenderTreeOptions{
-		GraphType:   GraphTypeParent,
-		GenderOrder: GenderOrderMaleFirst,
+		GraphType:     GraphTypeParent,
+		GenderOrder:   GenderOrderMaleFirst,
+		HideFamilyIDs: true,
 	}
 	addTestTemplates(&renderOptions)
 	renderOptions.SetDefaults()
