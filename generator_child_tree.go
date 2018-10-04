@@ -37,6 +37,8 @@ func renderChildTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level
 	}
 
 	data := struct {
+		FamilyID string
+
 		G        string
 		Parent   string
 		Children string
@@ -80,6 +82,9 @@ func renderChildTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level
 		return nil, err
 	}
 	data.G = string(g)
+	if !o.HideFamilyIDs {
+		data.FamilyID = "family-" + p.GetID()
+	}
 
 	if data.Children == "" && data.Unions == "" && data.Parent == "" && level > 0 {
 		return []byte(data.G), nil
@@ -110,6 +115,9 @@ func renderUnion(person, partner Person, o RenderTreeOptions, level int) ([]byte
 			return nil, err
 		}
 		data.Parent = string(parentData)
+		if !o.HideFamilyIDs {
+			data.FamilyID = "family-" + partner.GetID()
+		}
 	}
 
 	if level < o.MaxChildGenerations {

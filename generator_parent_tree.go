@@ -20,6 +20,7 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 	}
 
 	data := struct {
+		FamilyID        string
 		G               string
 		Parents         string
 		SiblingsYounger string
@@ -92,6 +93,9 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 		return nil, errors.Annotatef(err, "could not render g node for %s", p)
 	}
 	data.G = string(g)
+	if !o.HideFamilyIDs {
+		data.FamilyID = "family-" + p.GetID()
+	}
 
 	if data.Parents == "" && level > 0 {
 		return []byte(data.G), nil

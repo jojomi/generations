@@ -37,6 +37,8 @@ type RenderTreeOptions struct {
 	MaxParentSiblingsGenerations int      `yaml:"max-parent-siblings-generations,omitempty"`
 	MaxChildGenerations          int      `yaml:"max-child-generations,omitempty"`
 	MaxChildPartnersGenerations  int      `yaml:"max-child-partners-generations,omitempty"`
+
+	HideFamilyIDs bool `yaml:"-"`
 }
 
 func (o *RenderTreeOptions) SetDefaults() *RenderTreeOptions {
