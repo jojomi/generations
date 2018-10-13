@@ -183,7 +183,7 @@ func compileDocument(inputFile string, numRuns int) error {
 	}
 	dir := filepath.Dir(inputFile)
 
-	localCommand := script.LocalCommandFrom("lualatex --interaction=nonstopmode")
+	localCommand := script.LocalCommandFrom("lualatex --interaction=nonstopmode --shell-escape")
 	localCommand.AddAll(
 		"--aux-directory="+dir,
 		"--output-directory="+dir,
