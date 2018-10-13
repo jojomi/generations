@@ -234,7 +234,23 @@ func (d *FlatPerson) GetChildrenWith(partner Person) []Person {
 }
 
 func (d *FlatPerson) GetAttributes() []string {
-	return d.Attributes
+	result := d.Attributes
+
+	// feature: auto-detect dead person and add "dead" attribute automagically
+	isDead := !d.GetDeath().Empty() || !d.GetBurial().Empty()
+	if isDead {
+		hasDeadAttribute := false
+		for _, a := range d.Attributes {
+			if a == "dead" {
+				hasDeadAttribute = true
+				break
+			}
+		}
+		if !hasDeadAttribute {
+			result = append(result, "dead")
+		}
+	}
+	return result
 }
 
 func (d *FlatPerson) AddAttribute(attr string) {
