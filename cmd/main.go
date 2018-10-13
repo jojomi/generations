@@ -129,11 +129,11 @@ func commandRoot(c *cobra.Command, args []string) {
 
 	var renderedTrees string
 	for _, treeConfig := range config.Trees {
-		renderedTree, err := generations.RenderTemplateFile(treeConfig.Templates.Tree, struct{
-			Config Config
+		renderedTree, err := generations.RenderTemplateFile(treeConfig.Templates.Tree, struct {
+			Config     Config
 			TreeConfig TreeConfig
 		}{
-			Config: config,
+			Config:     config,
 			TreeConfig: treeConfig,
 		})
 		if err != nil {
