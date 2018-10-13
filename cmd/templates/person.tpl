@@ -174,7 +174,7 @@
 
   {{ if not .Options.HideFloruit }}
   {{ with .Person.Floruit }}
-    {{ if . }}
+    {{ if and . (not $.Options.HidePlaces) }}
       floruit = {-}{ {{- . -}} },
     {{ end }}
   {{ end }}
