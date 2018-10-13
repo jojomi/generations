@@ -34,7 +34,8 @@ func (y *MemoryDatabase) ParseYamlFile(filename string) error {
 	if err != nil {
 		return errors.Annotatef(err, "error reading yaml database %s", filename)
 	}
-	err = yaml.UnmarshalStrict(data, &persons)
+	var yamlPersons []*FlatPerson
+	err = yaml.UnmarshalStrict(data, &yamlPersons)
 	if err != nil {
 		return errors.Annotatef(err, "syntax error reading yaml database %s", filename)
 	}
@@ -42,9 +43,9 @@ func (y *MemoryDatabase) ParseYamlFile(filename string) error {
 	// TODO augment
 	// auto ID
 	// set DB handle
-	for i, p := range persons {
+	for _, p := range yamlPersons {
 		p.Database = y
-		persons[i] = p
+		persons = append(persons, p)
 	}
 	y.Persons = persons
 
