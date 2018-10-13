@@ -8,6 +8,7 @@ type Person interface {
 	GetUUID() string
 	GetGender() Gender
 	MatchesSearch(search string) bool
+	GetChildNumber() int
 	GetName() Name
 	GetBirth() DatePlace
 	GetBaptism() DatePlace

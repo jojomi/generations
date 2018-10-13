@@ -1,6 +1,8 @@
 package generations
 
 import (
+	"sort"
+
 	"github.com/jojomi/strtpl"
 )
 
@@ -8,6 +10,7 @@ type FlatPerson struct {
 	Dummy         bool               `yaml:"-"`
 	ID            string             `yaml:"id,omitempty"`
 	UUID          string             `yaml:"uuid,omitempty"`
+	ChildNumber   int                `yaml:"child-number,omitempty"`
 	Name          Name               `yaml:"name,omitempty"`
 	Gender        string             `yaml:"gender,omitempty"`
 	Birth         DatePlace          `yaml:"birth,omitempty"`
@@ -75,6 +78,10 @@ func (d *FlatPerson) GetGender() Gender {
 
 func (d *FlatPerson) GetName() Name {
 	return d.Name
+}
+
+func (d *FlatPerson) GetChildNumber() int {
+	return d.ChildNumber
 }
 
 func (d *FlatPerson) GetBirth() DatePlace {
@@ -214,6 +221,15 @@ func (d *FlatPerson) GetChildrenWith(partner Person) []Person {
 			result = append(result, child)
 		}
 	}
+
+	// sort children: first by child-number, then by date of birth
+	sort.SliceStable(result, func(i, j int) bool {
+		if result[i].GetChildNumber() != result[j].GetChildNumber() {
+			return result[i].GetChildNumber() < result[j].GetChildNumber()
+		}
+		return result[i].GetBirth().Date < result[j].GetBirth().Date
+	})
+
 	return result
 }
 
