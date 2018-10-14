@@ -141,7 +141,7 @@ func TestRenderPerson(t *testing.T) {
 					},
 				},
 			},
-			Expected: `g[]{
+			Expected: `g[dead]{
 				birth- = {1821},
 				baptism- = {},
 				death- = {um 1842},
