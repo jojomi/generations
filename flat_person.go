@@ -100,27 +100,29 @@ func (d *FlatPerson) GetBurial() DatePlace {
 	return d.Burial
 }
 
-func (d *FlatPerson) GetParents() (Person, Person) {
-	return d.GetMom(), d.GetDad()
-}
-
-func (d *FlatPerson) GetMom() Person {
+func (d *FlatPerson) GetMom() (Person, error) {
+	if d.Mom == "" {
+		return NewDummyFlatPerson(), nil
+	}
 	mom, err := d.Database.GetByID(d.Mom)
 	if err != nil {
-		return NewDummyFlatPerson()
+		return NewDummyFlatPerson(), err
 	}
-	return mom
+	return mom, nil
 }
 
-func (d *FlatPerson) GetDad() Person {
+func (d *FlatPerson) GetDad() (Person, error) {
+	if d.Dad == "" {
+		return NewDummyFlatPerson(), nil
+	}
 	dad, err := d.Database.GetByID(d.Dad)
 	if err != nil {
-		return NewDummyFlatPerson()
+		return NewDummyFlatPerson(), err
 	}
-	return dad
+	return dad, nil
 }
 
-func (d *FlatPerson) GetPartners() []Person {
+func (d *FlatPerson) GetPartners() ([]Person, error) {
 	result := []Person{}
 
 	// find explicit partners
@@ -133,7 +135,10 @@ func (d *FlatPerson) GetPartners() []Person {
 	}
 
 	// find partners through common children
-	childrenPartners := d.GetChildrenParents()
+	childrenPartners, err := d.GetChildrenParents()
+	if err != nil {
+		return []Person{}, err
+	}
 
 	// merge results
 	intermediateResult := deduplicatePersonSlices(mergePersonSlices(childrenPartners, result))
@@ -142,10 +147,10 @@ func (d *FlatPerson) GetPartners() []Person {
 	for i, p := range intermediateResult {
 		finalResult[i] = p
 	}
-	return finalResult
+	return finalResult, nil
 }
 
-func (d *FlatPerson) GetChildrenParents() []Person {
+func (d *FlatPerson) GetChildrenParents() ([]Person, error) {
 	result := []Person{}
 	parentsSeen := make(map[string]struct{}, 0)
 	var (
@@ -153,9 +158,21 @@ func (d *FlatPerson) GetChildrenParents() []Person {
 		dad       Person
 		candidate Person
 		ok        bool
+		err       error
 	)
-	for _, child := range d.GetChildren() {
-		mom, dad = child.GetParents()
+	children, err := d.GetChildren()
+	if err != nil {
+		return result, err
+	}
+	for _, child := range children {
+		mom, err = child.GetMom()
+		if err != nil {
+			return result, err
+		}
+		dad, err = child.GetDad()
+		if err != nil {
+			return result, err
+		}
 
 		// if this FlatPerson is mom or dad the other one is a candidate parent to be returned
 		if mom != nil && mom.GetID() == d.GetID() {
@@ -177,36 +194,55 @@ func (d *FlatPerson) GetChildrenParents() []Person {
 
 		result = append(result, candidate)
 	}
-	return result
+	return result, nil
 }
 
-func (d *FlatPerson) GetChildren() []Person {
+func (d *FlatPerson) GetChildren() ([]Person, error) {
 	result := []Person{}
 
 	var (
 		mom Person
 		dad Person
+		err error
 	)
 	for _, child := range d.Database.Persons {
-		mom = child.GetMom()
+		mom, err = child.GetMom()
+		if err != nil {
+			return []Person{}, err
+		}
 		if mom != nil && mom.GetID() == d.GetID() {
 			result = append(result, child)
 			continue
 		}
-		dad = child.GetDad()
+		dad, err = child.GetDad()
+		if err != nil {
+			return []Person{}, err
+		}
 		if dad != nil && dad.GetID() == d.GetID() {
 			result = append(result, child)
 			continue
 		}
 	}
 
-	return result
+	return result, nil
 }
 
-func (d *FlatPerson) GetChildrenWith(partner Person) []Person {
+func (d *FlatPerson) GetChildrenWith(partner Person) ([]Person, error) {
 	result := []Person{}
-	for _, child := range d.GetChildren() {
-		otherParent := getOtherPerson(child.GetMom(), child.GetDad(), d)
+	children, err := d.GetChildren()
+	if err != nil {
+		return result, err
+	}
+	for _, child := range children {
+		mom, err := child.GetMom()
+		if err != nil {
+			return []Person{}, err
+		}
+		dad, err := child.GetDad()
+		if err != nil {
+			return []Person{}, err
+		}
+		otherParent := getOtherPerson(mom, dad, d)
 		if partner.IsDummy() {
 			if otherParent.IsDummy() {
 				result = append(result, child)
@@ -230,7 +266,7 @@ func (d *FlatPerson) GetChildrenWith(partner Person) []Person {
 		return result[i].GetBirth().Date < result[j].GetBirth().Date
 	})
 
-	return result
+	return result, nil
 }
 
 func (d *FlatPerson) GetAttributes() []string {

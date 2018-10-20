@@ -10,7 +10,10 @@ func renderFullChildTree(p Person, o RenderTreeOptions) ([]byte, error) {
 
 func renderChildrenWithPartner(person, partner Person, o RenderTreeOptions, level int) (string, error) {
 	var buffer bytes.Buffer
-	children := person.GetChildrenWith(partner)
+	children, err := person.GetChildrenWith(partner)
+	if err != nil {
+		return "", err
+	}
 	for _, child := range children {
 		if child == nil {
 			continue
@@ -49,7 +52,11 @@ func renderChildTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level
 	}{}
 
 	// render children by partner
-	partners := nonIgnored(p.GetPartners(), o)
+	partnerList, err := p.GetPartners()
+	if err != nil {
+		return []byte{}, err
+	}
+	partners := nonIgnored(partnerList, o)
 
 	// unions (other partners)
 	if len(partners) > 0 {
@@ -118,7 +125,10 @@ type unionData struct {
 
 func renderUnionData(person, partner Person, o RenderTreeOptions, level int) (unionData, error) {
 	var buffer bytes.Buffer
-	children := person.GetChildrenWith(partner)
+	children, err := person.GetChildrenWith(partner)
+	if err != nil {
+		return unionData{}, err
+	}
 
 	var data unionData
 

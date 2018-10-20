@@ -15,6 +15,7 @@ import (
 func RenderGenealogytree(p Person, o RenderTreeOptions) ([]byte, error) {
 	o.SetDefaults()
 
+	var err error
 	parentTree, err := renderFullParentTree(p, o, true)
 	if err != nil {
 		return []byte{}, errors.Annotate(err, "could not render parent subtree")
@@ -29,12 +30,25 @@ func RenderGenealogytree(p Person, o RenderTreeOptions) ([]byte, error) {
 		siblingsYounger string
 	)
 	if o.MaxParentSiblingsGenerations != GenerationsNone {
-		mom, dad := p.GetParents()
+		mom, err := p.GetMom()
+		if err != nil {
+			return []byte{}, err
+		}
+		dad, err := p.GetDad()
+		if err != nil {
+			return []byte{}, err
+		}
 		siblings := []Person{}
 		if !dad.IsDummy() {
-			siblings = dad.GetChildrenWith(mom)
+			siblings, err = dad.GetChildrenWith(mom)
+			if err != nil {
+				return []byte{}, err
+			}
 		} else if !mom.IsDummy() {
-			siblings = mom.GetChildrenWith(NewDummyFlatPerson())
+			siblings, err = mom.GetChildrenWith(NewDummyFlatPerson())
+			if err != nil {
+				return []byte{}, err
+			}
 		}
 
 		// apply ignore rules

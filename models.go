@@ -14,21 +14,20 @@ type Person interface {
 	GetBaptism() DatePlace
 	GetDeath() DatePlace
 	GetBurial() DatePlace
-	GetParents() (mom Person, dad Person)
 	// GetChildren returns all children of this person
-	GetChildren() []Person
-	GetMom() Person
-	GetDad() Person
+	GetChildren() ([]Person, error)
+	GetMom() (Person, error)
+	GetDad() (Person, error)
 	// GetPartners returns the list partners that are known for this person
 	// A partner is a person that
 	// - has been married with this person for any given moment in the past
 	// OR
 	// - had at least one child with this partner for any given moment in the past
-	GetPartners() []Person
+	GetPartners() ([]Person, error)
 	// GetChildrenWith returns the list of children of this person with a given partner
-	GetChildrenWith(partner Person) []Person
+	GetChildrenWith(partner Person) ([]Person, error)
 	// GetChildrenParents returns the list partners that person has children with (possibly including `nil` iff there is children where no other parent is known)
-	GetChildrenParents() []Person
+	GetChildrenParents() ([]Person, error)
 	GetAttributes() []string
 	AddAttribute(attr string)
 	GetImageFilename() string

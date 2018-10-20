@@ -23,6 +23,7 @@ var (
 	flagRootConfigFile string
 	flagRootShowConfig bool
 	flagRootOpen       bool
+	flagRootCheckIDs   bool
 )
 
 func main() {
@@ -35,6 +36,7 @@ func main() {
 	flags.StringVarP(&flagRootConfigFile, "config-file", "c", "config/document.yml", "config filename")
 	flags.BoolVarP(&flagRootShowConfig, "debug-config", "d", false, "show parsed config")
 	flags.BoolVarP(&flagRootOpen, "open", "o", true, "open generated pdf file")
+	flags.BoolVarP(&flagRootCheckIDs, "check-ids", "i", true, "error on unlinked IDs")
 	rootCmd.AddCommand(getTestCommand())
 
 	if err := rootCmd.Execute(); err != nil {
@@ -88,6 +90,7 @@ func commandRoot(c *cobra.Command, args []string) {
 		}
 
 		o := treeConfig.RenderTreeOptions
+		o.FailForIDLookup = flagRootCheckIDs
 		// template filenames
 		if o.TemplateFilenameTree == "" {
 			o.TemplateFilenameTree = "templates/tree.tpl"

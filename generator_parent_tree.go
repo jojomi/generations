@@ -29,7 +29,14 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 
 	// render parents
 	if level < o.MaxParentGenerations {
-		mom, dad := p.GetParents()
+		mom, err := p.GetMom()
+		if err!=nil{
+			return []byte{}, err
+		}
+		dad, err := p.GetDad()
+		if err!=nil{
+			return []byte{}, err
+		}
 		var parents []Person
 
 		switch o.GenderOrder {
@@ -57,9 +64,15 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 		if level <= o.MaxParentSiblingsGenerations {
 			var siblings []Person
 			if !mom.IsDummy() {
-				siblings = mom.GetChildrenWith(dad)
+				siblings, err = mom.GetChildrenWith(dad)
+				if err != nil {
+					return []byte{}, err
+				}
 			} else if !dad.IsDummy() {
-				siblings = dad.GetChildrenWith(NewDummyFlatPerson())
+				siblings, err = dad.GetChildrenWith(NewDummyFlatPerson())
+				if err != nil {
+					return []byte{}, err
+				}
 			}
 
 			// apply ignore rules
