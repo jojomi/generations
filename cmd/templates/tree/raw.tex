@@ -22,6 +22,20 @@
         {{ if .CustomStyles -}}
         {{ noEmptyLinesString .CustomStyles }}%
         {{- end }}%
+        {{- if ne ($.Options.legend | toString) "none" }}
+        {{- if ne ($.Options.legend | toString) "full" }}
+            symbols record reset,
+        {{- end }}
+        after tree={
+            \node[font=\scriptsize\itshape,text width=4cm,above right,draw,black,xshift=0mm,yshift=0mm] at (current bounding box.south west) {
+            {{- if eq ($.Options.legend | toString) "full" }}
+                \gtrSymbolsFullLegend
+            {{- else -}}
+                \gtrSymbolsLegend
+            {{- end }}
+            };
+        },
+        {{- end }}
         ]{%
         {{ .Content }}%
         } % END genealogytree

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"regexp"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -114,6 +115,17 @@ func withoutPercentageLines(input []byte) []byte {
 	return re.ReplaceAll(input, []byte("\n"))
 }
 
+func toString(value interface{}) string {
+	switch v := value.(type) {
+	case string:
+		return v
+	case int:
+		return strconv.Itoa(v)
+	default:
+		return ""
+	}
+}
+
 func RenderTemplateFile(filename string, data interface{}) ([]byte, error) {
 	templateContent, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -122,6 +134,7 @@ func RenderTemplateFile(filename string, data interface{}) ([]byte, error) {
 	result, err := strtpl.EvalWithFuncMap(string(templateContent), template.FuncMap{
 		"noEmptyLines":       withoutEmptyLines,
 		"noEmptyLinesString": withoutEmptyLinesString,
+		"toString":           toString,
 		"join":               strings.Join,
 	}, data)
 	if err != nil {
