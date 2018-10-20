@@ -89,7 +89,7 @@ func (y MemoryDatabase) Get(search string) (Person, error) {
 
 func (y MemoryDatabase) GetByID(ID string) (Person, error) {
 	for _, p := range y.Persons {
-		if p.GetID() == ID {
+		if p.MatchesIDUUID(ID) {
 			return p, nil
 		}
 	}
@@ -107,8 +107,12 @@ func GetFourFourYearID(p Person) (string, error) {
 	if name.Last != "" {
 		id += firstLetters(name.Last, 4)
 	}
-	if len(name.First) > 0 && name.First[0] != "" {
-		id += firstLetters(name.First[0], 4)
+	if len(name.Used) > 0 && name.Used != "" {
+		id += firstLetters(name.Used, 4)
+	} else {
+		if len(name.First) > 0 && name.First[0] != "" {
+			id += firstLetters(name.First[0], 4)
+		}
 	}
 	birth := p.GetBirth()
 	if !birth.Empty() {

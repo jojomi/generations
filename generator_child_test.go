@@ -38,7 +38,7 @@ func TestRenderFullChildTree(t *testing.T) {
 			ID:               "gauss",
 			Expected: `child{
 				g[id=gauss,]{}
-				p[id=frau-gauss,]{}
+				p[id=frau-gauss,]{uuid=frau-gauss,}
 				c[id=sohn,]{}
 				c[id=tochter,]{}
 			}`,
@@ -103,7 +103,7 @@ func TestRenderFullChildTree(t *testing.T) {
 			MaxChildGenerations: GenerationsNone,
 			Expected: `child{
 				g[id=gauss,]{}
-				p[id=frau-gauss,]{}
+				p[id=frau-gauss,]{uuid=frau-gauss,}
 			}`,
 		},
 	}

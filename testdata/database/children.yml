@@ -1,5 +1,5 @@
 - id: gauss
-- id: frau-gauss
+- uuid: frau-gauss
   partners:
     - partner_id: gauss
 - id: sohn

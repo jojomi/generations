@@ -55,8 +55,23 @@ func (d *FlatPerson) GetUUID() string {
 	return d.UUID
 }
 
+func (d *FlatPerson) MatchesIDUUID(idUUIDSearches ...string) bool {
+	for _, search := range idUUIDSearches {
+		if search == "" {
+			continue
+		}
+		if d.GetUUID() == search {
+			return true
+		}
+		if d.GetID() == search {
+			return true
+		}
+	}
+	return false
+}
+
 func (d *FlatPerson) MatchesSearch(search string) bool {
-	if d.GetID() == search {
+	if d.MatchesIDUUID(search) {
 		return true
 	}
 	name := d.GetName()
@@ -128,7 +143,7 @@ func (d *FlatPerson) GetPartners() ([]Person, error) {
 	// find explicit partners
 	for _, person := range d.Database.Persons {
 		for _, partner := range person.Partners {
-			if partner.PartnerID == d.GetID() {
+			if d.MatchesIDUUID(partner.PartnerID) {
 				result = append(result, person)
 			}
 		}
@@ -175,10 +190,10 @@ func (d *FlatPerson) GetChildrenParents() ([]Person, error) {
 		}
 
 		// if this FlatPerson is mom or dad the other one is a candidate parent to be returned
-		if mom != nil && mom.GetID() == d.GetID() {
+		if mom != nil && mom.MatchesIDUUID(d.GetUUID(), d.GetID()) {
 			candidate = dad
 		}
-		if dad != nil && dad.GetID() == d.GetID() {
+		if dad != nil && dad.MatchesIDUUID(d.GetUUID(), d.GetID()) {
 			candidate = mom
 		}
 
@@ -210,7 +225,7 @@ func (d *FlatPerson) GetChildren() ([]Person, error) {
 		if err != nil {
 			return []Person{}, err
 		}
-		if mom != nil && mom.GetID() == d.GetID() {
+		if mom != nil && mom.MatchesIDUUID(d.GetUUID(), d.GetID()) {
 			result = append(result, child)
 			continue
 		}
@@ -218,7 +233,7 @@ func (d *FlatPerson) GetChildren() ([]Person, error) {
 		if err != nil {
 			return []Person{}, err
 		}
-		if dad != nil && dad.GetID() == d.GetID() {
+		if dad != nil && dad.MatchesIDUUID(d.GetUUID(), d.GetID()) {
 			result = append(result, child)
 			continue
 		}
@@ -314,7 +329,7 @@ func (d *FlatPerson) IsDummy() bool {
 }
 
 func (d FlatPerson) String() string {
-	return strtpl.MustEval("/Person {{ .GetID }}: {{ with .GetName }}{{ if not .Empty }}{{ range .First }}{{ . }} {{ end }}{{ .Last }}{{ end }}{{ end }}/", &d)
+	return strtpl.MustEval("/Person {{ if .GetID }}{{ .GetID }}{{ else }}{{ .GetUUID }}{{ end }}: {{ with .GetName }}{{ if not .Empty }}{{ range .First }}{{ . }} {{ end }}{{ .Last }}{{ end }}{{ end }}/", &d)
 }
 
 func getOtherPerson(a, b, than Person) Person {

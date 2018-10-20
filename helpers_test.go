@@ -46,7 +46,11 @@ func getPersonSliceIDs(persons []Person) []string {
 			result[i] = "<nil>"
 			continue
 		}
-		result[i] = person.GetID()
+		if person.GetID() != "" {
+			result[i] = person.GetID()
+		} else {
+			result[i] = person.GetUUID()
+		}
 	}
 	return result
 }

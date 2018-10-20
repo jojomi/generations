@@ -1,8 +1,12 @@
 {{- .Options.NodeType -}}[%
-  {{ if not .Options.HideID }}%
-  {{ with .Person.GetID }}%
-  id={{ . }},
-  {{- end }}%
+  {{ if not .Options.HideID -}}
+    {{ if .Person.GetID -}}
+      id={{ .Person.GetID }},
+    {{ else }}
+      {{ if .Person.GetUUID -}}
+        id={{ .Person.GetUUID }},
+      {{- end }}%
+    {{- end }}%
   {{- end }}%
   {{ if not .Options.HideAttributes }}%
   {{ $attributes := .Person.GetAttributes }}%

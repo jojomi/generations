@@ -30,11 +30,11 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 	// render parents
 	if level < o.MaxParentGenerations {
 		mom, err := p.GetMom()
-		if err!=nil{
+		if err != nil {
 			return []byte{}, err
 		}
 		dad, err := p.GetDad()
-		if err!=nil{
+		if err != nil {
 			return []byte{}, err
 		}
 		var parents []Person
@@ -107,7 +107,15 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 	}
 	data.G = string(g)
 	if !o.HideFamilyIDs {
-		data.FamilyID = "family-" + p.GetID()
+		var id string
+		if pID := p.GetID(); pID != "" {
+			id = pID
+		} else {
+			if pUUID := p.GetUUID(); pUUID != "" {
+				id = pUUID
+			}
+		}
+		data.FamilyID = "family-" + id
 	}
 
 	if data.Parents == "" && level > 0 {

@@ -2,6 +2,7 @@ package generations
 
 import (
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -110,7 +111,7 @@ func TestGetChildrenParents(t *testing.T) {
 	}
 }
 
-func TestGetPartner(t *testing.T) {
+func TestGetPartners(t *testing.T) {
 	tests := []struct {
 		Name             string
 		DatabaseFilename string
@@ -139,15 +140,18 @@ func TestGetPartner(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests {
+	for i, test := range tests {
+		if test.Name == "" {
+			test.Name = "Test #" + strconv.Itoa(i+1) + " (1-based)"
+		}
 		database := NewMemoryDatabase()
 		err := database.ParseYamlFile(filepath.Join("testdata", "database", test.DatabaseFilename+".yml"))
-		assert.Nil(t, err, test.Name)
+		assert.Nil(t, err, test.Name+": yaml parsing")
 		person, err := database.GetByID(test.ID)
-		assert.Nil(t, err, test.Name)
+		assert.Nil(t, err, test.Name+": database select by ID")
 		partners, err := person.GetPartners()
-		assert.Nil(t, err, test.Name)
+		assert.Nil(t, err, test.Name+": GetPartners no error")
 		partnerIDs := getPersonSliceIDs(partners)
-		assert.Equal(t, test.ExpectedIDs, partnerIDs, test.Name)
+		assert.Equal(t, test.ExpectedIDs, partnerIDs, test.Name+": partner IDs")
 	}
 }

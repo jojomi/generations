@@ -7,6 +7,7 @@ type Person interface {
 	GetID() string
 	GetUUID() string
 	GetGender() Gender
+	MatchesIDUUID(idUUIDSearches ...string) bool
 	MatchesSearch(search string) bool
 	GetChildNumber() int
 	GetName() Name
