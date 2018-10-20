@@ -2,8 +2,8 @@
 % https://github.com/zerotoc/pdfinlimg
 
 \documentclass[10pt,paper=a4,ngerman,DIV=15,BCOR=0mm,%
-{{ if .DocumentOptions -}}
-{{ .DocumentOptions }}%
+{{ if .Config.DocumentOptions -}}
+{{ .Config.DocumentOptions }}%
 {{- end }}%
 ]{scrartcl}
 
@@ -32,10 +32,10 @@
 % https://esc-now.de/_/latex-individuelle-kopf--und-fusszeilen-update/?lang=en
 \usepackage[footsepline]{scrlayer-scrpage}
 
-{{ if .Attribution }}
+{{ if .Config.Attribution }}
 \pagestyle{scrheadings}
 \clearpairofpagestyles
-\cfoot{ \tiny \textcolor{gray}{ {{- .Attribution -}} }}
+\cfoot{ \tiny \textcolor{gray}{ {{- .Config.Attribution -}} }}
 {{ else }}
 \pagestyle{empty}
 {{ end }}
@@ -47,31 +47,31 @@
 \newcommand{\surnbirth}[1]{\\geb. \surn{#1}}
 \newcommand{\alias}[1]{\surn{#1}}
 
-{{ if .CustomHead -}}
-    {{ .CustomHead }}
+{{ if .Config.CustomHead -}}
+    {{ .Config.CustomHead }}
 {{ end -}}
 
 \setcounter{secnumdepth}{0}
 \begin{document}
 
-{{- if .Title -}}
-\section*{ {{- .Title -}} }
+{{- if .Config.Title -}}
+\section*{ {{- .Config.Title -}} }
 {{- end }}
 
-{{ if .Date -}}
-Stand: \textbf{ {{- .Date -}} }
+{{ if .Config.Date -}}
+Stand: \textbf{ {{- .Config.Date -}} }
 {{- end }}
 
 
-{{- with .PreContent -}}
+{{- with .Config.PreContent -}}
 {{ . }}
 {{- end }}
 
 
-{{ .RenderedTrees }}
+{{ .Config.RenderedTrees }}
 
 
-{{- with .PostContent -}}
+{{- with .Config.PostContent -}}
 {{ . }}
 {{- end }}
 

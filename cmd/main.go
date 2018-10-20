@@ -129,12 +129,14 @@ func commandRoot(c *cobra.Command, args []string) {
 
 	var renderedTrees string
 	for _, treeConfig := range config.Trees {
-		renderedTree, err := generations.RenderTemplateFile(treeConfig.Templates.Tree, struct {
+		renderedTree, err := generations.RenderTemplateFile(treeConfig.Templates.Tree.Filename, struct {
 			Config     Config
 			TreeConfig TreeConfig
+			Options    map[string]interface{}
 		}{
 			Config:     config,
 			TreeConfig: treeConfig,
+			Options:    treeConfig.Templates.Tree.Options,
 		})
 		if err != nil {
 			fmt.Println(err)
@@ -149,7 +151,14 @@ func commandRoot(c *cobra.Command, args []string) {
 		fmt.Println(err)
 		os.Exit(4)
 	}
-	err = renderDocument(config.Templates.Document, config, strings.Replace(config.OutputFilename, ".pdf", ".tex", -1))
+	renderConfig := struct {
+		Config  Config
+		Options map[string]interface{}
+	}{
+		config,
+		config.Templates.Document.Options,
+	}
+	err = renderDocument(config.Templates.Document.Filename, renderConfig, strings.Replace(config.OutputFilename, ".pdf", ".tex", -1))
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(5)

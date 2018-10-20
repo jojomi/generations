@@ -2,11 +2,16 @@ package main
 
 import "github.com/jojomi/generations"
 
+type Template struct {
+	Filename string                 `yaml:"filename,omitempty"`
+	Options  map[string]interface{} `yaml:"options,omitempty"`
+}
+
 type Config struct {
 	Databases []string `yaml:"databases,omitempty"`
 	Templates struct {
-		Document string `yaml:"document,omitempty"`
-		Tree     string `yaml:"tree,omitempty"`
+		Document Template `yaml:"document,omitempty"`
+		Tree     Template `yaml:"tree,omitempty"`
 	} `yaml:"templates,omitempty"`
 
 	DocumentOptions string `yaml:"document-options,omitempty"`
@@ -30,7 +35,7 @@ type Config struct {
 type TreeConfig struct {
 	Databases []string `yaml:"databases,omitempty"`
 	Templates struct {
-		Tree string `yaml:"tree,omitempty"`
+		Tree Template `yaml:"tree,omitempty"`
 	} `yaml:"templates,omitempty"`
 
 	Title       string `yaml:"title,omitempty"`
@@ -55,11 +60,11 @@ type TreeConfig struct {
 }
 
 func (c *Config) SetDefaults() {
-	if c.Templates.Document == "" {
-		c.Templates.Document = "templates/document/basic.tex"
+	if c.Templates.Document.Filename == "" {
+		c.Templates.Document.Filename = "templates/document/basic.tex"
 	}
-	if c.Templates.Tree == "" {
-		c.Templates.Tree = "templates/tree/basic.tex"
+	if c.Templates.Tree.Filename == "" {
+		c.Templates.Tree.Filename = "templates/tree/basic.tex"
 	}
 }
 
@@ -74,7 +79,10 @@ func (t *TreeConfig) AddGlobals(config Config) {
 		t.CustomStyles = config.CustomStyles
 	}
 	// Templates
-	if t.Templates.Tree == "" {
-		t.Templates.Tree = config.Templates.Tree
+	if t.Templates.Tree.Filename == "" {
+		t.Templates.Tree.Filename = config.Templates.Tree.Filename
+	}
+	if t.Templates.Tree.Options == nil {
+		t.Templates.Tree.Options = config.Templates.Tree.Options
 	}
 }
