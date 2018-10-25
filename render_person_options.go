@@ -18,21 +18,21 @@ type RenderPersonOptions struct {
 	LastnamePolicy           LastnamePolicy `yaml:"lastname-policy,omitempty"`
 
 	// Output filter
-	HideID         bool `yaml:"hide-id,omitempty"`
-	HideAttributes bool `yaml:"hide-attributes,omitempty"`
-	HideGender     bool `yaml:"hide-gender,omitempty"`
-	HideName       bool `yaml:"hide-name,omitempty"`
-	HideBirth      bool `yaml:"hide-birth,omitempty"`
-	HideBaptism    bool `yaml:"hide-baptism,omitempty"`
-	HideDeath      bool `yaml:"hide-death,omitempty"`
-	HideBurial     bool `yaml:"hide-burial,omitempty"`
-	HideImage      bool `yaml:"hide-image,omitempty"`
-	HideJobs       bool `yaml:"hide-jobs,omitempty"`
-	HideFloruit    bool `yaml:"hide-floruit,omitempty"`
-	HideComment    bool `yaml:"hide-comment,omitempty"`
-	HideEngagement bool `yaml:"hide-engagement,omitempty"`
-	HideMarriage   bool `yaml:"hide-marriage,omitempty"`
-	HideDivorce    bool `yaml:"hide-divorce,omitempty"`
+	HideID         bool     `yaml:"hide-id,omitempty"`
+	HideAttributes []string `yaml:"hide-attributes,omitempty"`
+	HideGender     bool     `yaml:"hide-gender,omitempty"`
+	HideName       bool     `yaml:"hide-name,omitempty"`
+	HideBirth      bool     `yaml:"hide-birth,omitempty"`
+	HideBaptism    bool     `yaml:"hide-baptism,omitempty"`
+	HideDeath      bool     `yaml:"hide-death,omitempty"`
+	HideBurial     bool     `yaml:"hide-burial,omitempty"`
+	HideImage      bool     `yaml:"hide-image,omitempty"`
+	HideJobs       bool     `yaml:"hide-jobs,omitempty"`
+	HideFloruit    bool     `yaml:"hide-floruit,omitempty"`
+	HideComment    bool     `yaml:"hide-comment,omitempty"`
+	HideEngagement bool     `yaml:"hide-engagement,omitempty"`
+	HideMarriage   bool     `yaml:"hide-marriage,omitempty"`
+	HideDivorce    bool     `yaml:"hide-divorce,omitempty"`
 
 	// special filters
 	HidePlaces      bool `yaml:"hide-places,omitempty"`
@@ -47,7 +47,7 @@ func (o *RenderPersonOptions) SetDefaults() *RenderPersonOptions {
 }
 
 func (o *RenderPersonOptions) HideAllData() {
-	o.HideAttributes = true
+	o.HideAttributes = []string{"all"}
 	o.HideGender = true
 	o.HideName = true
 	o.HideBirth = true

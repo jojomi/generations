@@ -140,16 +140,31 @@ func toString(value interface{}) string {
 	}
 }
 
+func getFilteredStringSlice(source, filterElements []string) []string {
+	result := make([]string, 0, len(source))
+outer:
+	for _, elem := range source {
+		for _, filterElem := range filterElements {
+			if elem == filterElem {
+				continue outer
+			}
+		}
+		result = append(result, elem)
+	}
+	return result
+}
+
 func RenderTemplateFile(filename string, data interface{}) ([]byte, error) {
 	templateContent, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return []byte{}, err
 	}
 	result, err := strtpl.EvalWithFuncMap(string(templateContent), template.FuncMap{
-		"noEmptyLines":       withoutEmptyLines,
-		"noEmptyLinesString": withoutEmptyLinesString,
-		"toString":           toString,
-		"join":               strings.Join,
+		"noEmptyLines":           withoutEmptyLines,
+		"noEmptyLinesString":     withoutEmptyLinesString,
+		"toString":               toString,
+		"join":                   strings.Join,
+		"getFilteredStringSlice": getFilteredStringSlice,
 	}, data)
 	if err != nil {
 		return []byte{}, err

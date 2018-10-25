@@ -8,11 +8,16 @@
       {{- end }}%
     {{- end }}%
   {{- end }}%
-  {{ if not .Options.HideAttributes }}%
-  {{ $attributes := .Person.GetAttributes }}%
+
+  {{- $hideList := $.Options.HideAttributes }}
+  {{ if eq (len $hideList) 1 -}}
+  {{ if eq (index $hideList 0) "all" }}%
+  {{ $hideList = .Person.GetAttributes }}%
+  {{- end }}%
+  {{- end }}%
+  {{ $attributes := getFilteredStringSlice .Person.GetAttributes $hideList }}%
   {{ if $attributes }}%
     {{ join $attributes "," }}
-  {{- end }}%
   {{- end }}%
 ]{
   {{ with .Person.GetUUID }}
