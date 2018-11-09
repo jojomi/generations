@@ -23,6 +23,7 @@ var (
 	flagRootConfigFile string
 	flagRootShowConfig bool
 	flagRootOpen       bool
+	flagRootMinify     bool
 	flagRootCheckIDs   bool
 )
 
@@ -36,6 +37,7 @@ func main() {
 	flags.StringVarP(&flagRootConfigFile, "config-file", "c", "config/document.yml", "config filename")
 	flags.BoolVarP(&flagRootShowConfig, "debug-config", "d", false, "show parsed config")
 	flags.BoolVarP(&flagRootOpen, "open", "o", true, "open generated pdf file")
+	flags.BoolVarP(&flagRootMinify, "minify", "m", true, "minify filesize of generated pdf file")
 	flags.BoolVarP(&flagRootCheckIDs, "check-ids", "i", true, "error on unlinked IDs")
 	rootCmd.AddCommand(getTestCommand())
 
@@ -175,16 +177,21 @@ func commandRoot(c *cobra.Command, args []string) {
 		log.Fatal(err)
 	}
 
-	err = minifyDocument(
-		config.OutputFilename,
-		strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1),
-	)
-	if err != nil {
-		log.Fatal(err)
+	var openFilename = config.OutputFilename
+	if flagRootMinify {
+		smallFilename := strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1)
+		err = minifyDocument(
+			config.OutputFilename,
+			smallFilename,
+		)
+		if err != nil {
+			log.Fatal(err)
+		}
+		openFilename = smallFilename
 	}
 
 	if flagRootOpen {
-		openDocument(strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1))
+		openDocument(openFilename)
 	}
 }
 
