@@ -81,6 +81,7 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 			younger, older := SplitPersons(siblings, p)
 			opts := *o.RenderPersonOptions
 			opts.NodeType = NodeTypeC
+			opts = *opts.HideImageByLevel(o, level)
 			siblingsOlder, err := renderPersonSlice(older, opts)
 			if err != nil {
 				return []byte{}, err
@@ -101,6 +102,7 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 	}
 	opts := *o.RenderPersonOptions
 	opts.NodeType = mainNodeType
+	opts = *opts.HideImageByLevel(o, level)
 	g, err := renderPerson(p, opts)
 	if err != nil {
 		return nil, errors.Annotatef(err, "could not render g node for %s", p)

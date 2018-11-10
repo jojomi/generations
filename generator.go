@@ -58,6 +58,7 @@ func RenderGenealogytree(p Person, o RenderTreeOptions) ([]byte, error) {
 		younger, older := SplitPersons(siblings, p)
 		opts := *o.RenderPersonOptions
 		opts.NodeType = NodeTypeC
+		opts = *opts.HideImageByLevel(o, 0)
 		siblingsOlder, err = renderPersonSlice(older, opts)
 		if err != nil {
 			return []byte{}, err

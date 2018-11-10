@@ -91,6 +91,7 @@ func renderChildTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level
 	}
 	opts := *o.RenderPersonOptions
 	opts.NodeType = mainNodeType
+	opts = *opts.HideImageByLevel(o, -level)
 	if level == 0 && !opts.HideRootNodeHighlighting {
 		rootNodeKey := "rootnode"
 		p.AddAttribute(rootNodeKey)
@@ -135,6 +136,7 @@ func renderUnionData(person, partner Person, o RenderTreeOptions, level int) (un
 	if !partner.IsDummy() && level < o.MaxChildPartnersGenerations {
 		opts := *o.RenderPersonOptions
 		opts.NodeType = NodeTypeP
+		opts = *opts.HideImageByLevel(o, -level)
 		parentData, err := renderPerson(partner, opts)
 		if err != nil {
 			return data, err

@@ -63,6 +63,15 @@ func (o *RenderPersonOptions) HideAllData() {
 	o.HideDivorce = true
 }
 
+func (o *RenderPersonOptions) HideImageByLevel(treeOptions RenderTreeOptions, currentLevel int) *RenderPersonOptions {
+	if (treeOptions.MinImageLevel == nil || *treeOptions.MinImageLevel <= currentLevel) &&
+		(treeOptions.MaxImageLevel == nil || *treeOptions.MaxImageLevel >= currentLevel) {
+		return o
+	}
+	o.HideImage = true
+	return o
+}
+
 /* ENUM(
 g = 1
 p
