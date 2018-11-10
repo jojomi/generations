@@ -1,7 +1,7 @@
 % https://ctan.org/pkg/genealogytree
 % https://github.com/zerotoc/pdfinlimg
 
-\documentclass[10pt,paper=a4,ngerman,DIV=15,BCOR=0mm,%
+\documentclass[10pt,paper=a4,ngerman,parskip,DIV=15,BCOR=0mm,%
 {{ if .Config.DocumentOptions -}}
 {{ .Config.DocumentOptions }}%
 {{- end }}%
@@ -13,6 +13,7 @@
 \usepackage{libertine}
 
 \usepackage[german=quotes]{csquotes}
+\usepackage[dvipsnames,svgnames]{xcolor}
 \usepackage[all]{genealogytree}
 \gtrset{language=german-german}
 \gtrset{image prefix=pictures/}

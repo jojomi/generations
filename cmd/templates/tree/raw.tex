@@ -10,6 +10,10 @@
 
     \vspace{7mm}
 
+    {{ if .PageBreakAfter }}
+        \vfill
+    {{ end }}
+
     {{ if .PreContent -}}
     {{ .PreContent }}
     {{- end }}
@@ -52,6 +56,10 @@
     {{ if .PostContent -}}
         {{ .PostContent }}
     {{- end }}
+
+    {{ if .PageBreakAfter }}
+        \vfill
+    {{ end }}
 
     {{ if .PageBreakAfter }}
         \newpage
