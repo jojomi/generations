@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -23,6 +24,7 @@ var (
 	flagRootConfigFile string
 	flagRootShowConfig bool
 	flagRootCompile    bool
+	flagRootAnonymize  bool
 	flagRootMinify     bool
 	flagRootOpen       bool
 	flagRootCheckIDs   bool
@@ -38,6 +40,7 @@ func main() {
 	flags.StringVarP(&flagRootConfigFile, "config-file", "c", "config/document.yml", "config filename")
 	flags.BoolVarP(&flagRootShowConfig, "debug-config", "d", false, "show parsed config")
 	flags.BoolVarP(&flagRootCheckIDs, "check-ids", "i", true, "error on unlinked IDs")
+	flags.BoolVarP(&flagRootAnonymize, "anonymize", "a", false, "anonymize data")
 	flags.BoolVarP(&flagRootCompile, "compile", "", true, "generate pdf file using lualatex")
 	flags.BoolVarP(&flagRootMinify, "minify", "m", true, "minify filesize of generated pdf file")
 	flags.BoolVarP(&flagRootOpen, "open", "o", true, "open generated pdf file")
@@ -91,6 +94,43 @@ func commandRoot(c *cobra.Command, args []string) {
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
+			}
+		}
+
+		if flagRootAnonymize {
+			for i, p := range database.Persons {
+				yearOfBirth, err := strconv.Atoi(first(p.Birth.Date, 4))
+				if err == nil && yearOfBirth < 1880 {
+					continue
+				}
+				if len(p.Name.First) > 0 {
+					if p.Name.Used != "" {
+						p.Name = generations.Name{
+							First: []string{first(p.Name.Used, 1) + "."},
+						}
+					} else {
+						p.Name = generations.Name{
+							First: []string{first(p.Name.First[0], 1) + "."},
+						}
+					}
+				} else {
+					p.Name = generations.Name{}
+				}
+				p.Birth.Place = ""
+				p.Birth.Date = first(p.Birth.Date, 4)
+				p.Death.Place = ""
+				p.Death.Date = first(p.Death.Date, 4)
+				p.Baptism = generations.DatePlace{}
+				p.Burial = generations.DatePlace{}
+				p.Jobs = ""
+				for j, r := range p.Partners {
+					r.Engagement = generations.DatePlace{}
+					r.Marriage.Date = first(r.Marriage.Date, 4)
+					r.Divorce.Date = first(r.Divorce.Date, 4)
+					p.Partners[j] = r
+				}
+				p.Floruit = ""
+				database.Persons[i] = p
 			}
 		}
 
@@ -199,6 +239,13 @@ func commandRoot(c *cobra.Command, args []string) {
 	if flagRootOpen {
 		openDocument(openFilename)
 	}
+}
+
+func first(input string, count int) string {
+	if len(input) <= count {
+		return input
+	}
+	return string([]rune(input[0:count]))
 }
 
 func compileDocument(inputFile string, numRuns int) error {
