@@ -22,8 +22,9 @@ import (
 var (
 	flagRootConfigFile string
 	flagRootShowConfig bool
-	flagRootOpen       bool
+	flagRootCompile    bool
 	flagRootMinify     bool
+	flagRootOpen       bool
 	flagRootCheckIDs   bool
 )
 
@@ -36,9 +37,10 @@ func main() {
 	flags := rootCmd.PersistentFlags()
 	flags.StringVarP(&flagRootConfigFile, "config-file", "c", "config/document.yml", "config filename")
 	flags.BoolVarP(&flagRootShowConfig, "debug-config", "d", false, "show parsed config")
-	flags.BoolVarP(&flagRootOpen, "open", "o", true, "open generated pdf file")
-	flags.BoolVarP(&flagRootMinify, "minify", "m", true, "minify filesize of generated pdf file")
 	flags.BoolVarP(&flagRootCheckIDs, "check-ids", "i", true, "error on unlinked IDs")
+	flags.BoolVarP(&flagRootCompile, "compile", "", true, "generate pdf file using lualatex")
+	flags.BoolVarP(&flagRootMinify, "minify", "m", true, "minify filesize of generated pdf file")
+	flags.BoolVarP(&flagRootOpen, "open", "o", true, "open generated pdf file")
 	rootCmd.AddCommand(getTestCommand())
 
 	if err := rootCmd.Execute(); err != nil {
@@ -170,6 +172,9 @@ func commandRoot(c *cobra.Command, args []string) {
 		os.Exit(5)
 	}
 
+	if !flagRootCompile {
+		os.Exit(0)
+	}
 	err = compileDocument(
 		strings.Replace(config.OutputFilename, ".pdf", ".tex", -1),
 		2,
