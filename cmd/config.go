@@ -1,6 +1,8 @@
 package main
 
-import "github.com/jojomi/generations"
+import (
+	"github.com/jojomi/generations"
+)
 
 type Template struct {
 	Filename string                 `yaml:"filename,omitempty"`
@@ -18,10 +20,11 @@ type Config struct {
 	Title           string `yaml:"title,omitempty"`
 	Date            string `yaml:"date,omitempty"`
 
-	Attribution string `yaml:"attribution,omitempty"`
-	PreContent  string `yaml:"pre-content,omitempty"`
-	PostContent string `yaml:"post-content,omitempty"`
-	CustomHead  string `yaml:"custom-head,omitempty"`
+	Attribution string      `yaml:"attribution,omitempty"`
+	PreContent  string      `yaml:"pre-content,omitempty"`
+	PostContent string      `yaml:"post-content,omitempty"`
+	CustomHead  string      `yaml:"custom-head,omitempty"`
+	Levels      LevelConfig `yaml:"levels,omitempty"`
 
 	CustomStyles string `yaml:"custom-styles,omitempty"`
 	CustomDraw   string `yaml:"custom-draw,omitempty"`
@@ -42,8 +45,9 @@ type TreeConfig struct {
 	Date        string `yaml:"date,omitempty"`
 	Attribution string `yaml:"attribution,omitempty"`
 
-	Proband      string `yaml:"proband,omitempty"`
-	ProbandLevel int    `yaml:"proband-level,omitempty"`
+	Proband      string      `yaml:"proband,omitempty"`
+	ProbandLevel int         `yaml:"proband-level,omitempty"`
+	Levels       LevelConfig `yaml:"levels,omitempty"`
 
 	PreContent  string `yaml:"pre-content,omitempty"`
 	PostContent string `yaml:"post-content,omitempty"`

@@ -81,6 +81,7 @@ func commandRoot(c *cobra.Command, args []string) {
 	// load config, use it
 	for i, treeConfig := range config.Trees {
 		treeConfig.AddGlobals(config)
+		treeConfig.Levels.Combined = treeConfig.Levels.Combine(treeConfig.ProbandLevel, config.Levels)
 		database := generations.NewMemoryDatabase()
 
 		for _, db := range treeConfig.Databases {
