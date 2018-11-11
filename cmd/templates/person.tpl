@@ -37,7 +37,7 @@
   {{ if and (not $name.Empty) (not .Options.HideName) }}
     {{ with .Person.GetName }}
       name = {%
-        {{ with $name.Title }}{{ if . }}\titlename{ {{- . -}} }{{ end }}{{ end }}\ %
+        {{ with $name.Title }}{{ if . }}\titlename{ {{- . -}} }\ %{{ end }}{{ end }}
         {{ if $name.Used }}
           {{ range .First }}
             {{ if ne . $name.Used }}
