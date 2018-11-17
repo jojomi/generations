@@ -132,6 +132,7 @@ func commandRoot(c *cobra.Command, args []string) {
 					p.Partners[j] = r
 				}
 				p.Floruit = ""
+				p.Comment = ""
 				database.Persons[i] = p
 			}
 		}
