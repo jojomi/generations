@@ -60,7 +60,7 @@
         {{ end -}}
         %
         {{ if .Templates.Tree.Options.contentinline -}}
-        node={list separators={\par}{, }{.}{}},
+        node={list separators={\par}{, }{}{}},
         {{- else -}}
         list separators={\tcbline\hangindent=\tcbfitdim\hangafter=1}{\par\hangindent=\tcbfitdim\hangafter=1}{\par}{\gtrifcommentdefined{\tcbline}{\gtrifprofessiondefined{\tcbline}{}}},
         {{- end }}
@@ -119,7 +119,8 @@
         place text={}{},
         profession code={\textit{\gtrDBprofession}},
         info separators={\tcbline}{\tcbline}{}{},
-        event code={\gtrPrintEventPrefix{#1}\xspace\gtrPrintDate{#1}\xspace\gtrifplacedefined{#1}{ \gtrPrintPlace{#1}}{}},
+        %event text={}{\,}{ }{},
+        event code={\gtrPrintEventPrefix{#1}\,\gtrPrintDate{#1}\xspace\gtrifplacedefined{#1}{ \gtrPrintPlace{#1}}{}},
         %
         {{- if ne ($.Options.legend | toString) "none" }}
             {{- if ne ($.Options.legend | toString) "full" }}
