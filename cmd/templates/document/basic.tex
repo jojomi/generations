@@ -12,6 +12,13 @@
 \usepackage{hyperref}
 \usepackage{libertine}
 
+\usepackage[
+    margin=1.25cm
+    ,includeheadfoot
+    ,nohead
+    %,showframe % <- to show the page layout
+]{geometry}
+
 \usepackage[german=quotes]{csquotes}
 \usepackage[dvipsnames,svgnames]{xcolor}
 \usepackage[all]{genealogytree}
@@ -32,6 +39,11 @@
 
 % https://esc-now.de/_/latex-individuelle-kopf--und-fusszeilen-update/?lang=en
 \usepackage[footsepline]{scrlayer-scrpage}
+
+\RedeclareSectionCommand[
+  beforeskip=-\baselineskip,
+  afterskip=1.0\baselineskip]{subsection}
+
 
 {{ if .Config.Attribution }}
 \pagestyle{scrheadings}
