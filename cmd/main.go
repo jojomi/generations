@@ -21,13 +21,14 @@ import (
 )
 
 var (
-	flagRootConfigFile string
-	flagRootShowConfig bool
-	flagRootCompile    bool
-	flagRootAnonymize  bool
-	flagRootMinify     bool
-	flagRootOpen       bool
-	flagRootCheckIDs   bool
+	flagRootConfigFile     string
+	flagRootShowConfig     bool
+	flagRootCompile        bool
+	flagRootAnonymize      bool
+	flagRootNumCompileRuns int
+	flagRootMinify         bool
+	flagRootOpen           bool
+	flagRootCheckIDs       bool
 )
 
 func main() {
@@ -42,6 +43,7 @@ func main() {
 	flags.BoolVarP(&flagRootCheckIDs, "check-ids", "i", true, "error on unlinked IDs")
 	flags.BoolVarP(&flagRootAnonymize, "anonymize", "a", false, "anonymize data")
 	flags.BoolVarP(&flagRootCompile, "compile", "", true, "generate pdf file using lualatex")
+	flags.IntVarP(&flagRootNumCompileRuns, "compile-runs", "n", 2, "number of times to call lualatex")
 	flags.BoolVarP(&flagRootMinify, "minify", "m", true, "minify filesize of generated pdf file")
 	flags.BoolVarP(&flagRootOpen, "open", "o", true, "open generated pdf file")
 	rootCmd.AddCommand(getTestCommand())
@@ -217,7 +219,7 @@ func commandRoot(c *cobra.Command, args []string) {
 	}
 	err = compileDocument(
 		strings.Replace(config.OutputFilename, ".pdf", ".tex", -1),
-		2,
+		flagRootNumCompileRuns,
 	)
 	if err != nil {
 		log.Fatal(err)
