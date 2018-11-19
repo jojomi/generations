@@ -166,9 +166,9 @@ func (d *FlatPerson) GetPartners() ([]Person, error) {
 	result := []Person{}
 
 	// find explicit partners
-	for _, person := range d.Database.Persons {
-		for _, partner := range person.Partners {
-			if d.MatchesIDUUID(partner.PartnerID) {
+	for _, partner := range d.Partners {
+		for _, person := range d.Database.Persons {
+			if person.MatchesIDUUID(partner.PartnerID) {
 				result = append(result, person)
 			}
 		}
@@ -185,7 +185,7 @@ func (d *FlatPerson) GetPartners() ([]Person, error) {
 
 	finalResult := make([]Person, len(intermediateResult))
 	for i, p := range intermediateResult {
-		finalResult[i] = p
+		finalResult[len(intermediateResult)-1-i] = p
 	}
 	return finalResult, nil
 }
