@@ -29,8 +29,12 @@
     \scalebox{ {{- .Scale -}} }{
     {{ end }}
     \begin{tikzpicture}
+        \gtrset{leaf/.style={
+            node box={code=\tcbset{colframe=gray!60}},
+        }},
         \genealogytree[
         % default style, adapted from "template/database sidewaysportrait"
+        database unknown key=save,
         timeflow=right,
         processing=database,
         database format=full,

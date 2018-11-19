@@ -14,6 +14,8 @@ type Person interface {
 	GetBirth() DatePlace
 	GetBaptism() DatePlace
 	GetDeath() DatePlace
+	// GetDeathAge returns the age in years when the person died. -1 iff the age can't be determined.
+	GetDeathAge() int
 	GetBurial() DatePlace
 	// GetChildren returns all children of this person
 	GetChildren() ([]Person, error)

@@ -23,6 +23,7 @@
     {{ end }}
     \begin{tikzpicture}
         \genealogytree[
+        database unknown key=save,
         {{ if .CustomStyles -}}
         {{ noEmptyLinesString .CustomStyles }}%
         {{- end }}%

@@ -2,6 +2,12 @@
 
 
 [[projects]]
+  branch = "master"
+  name = "github.com/bearbin/go-age"
+  packages = ["."]
+  revision = "316d0c1e7cd1ecf68e4313ac739dc8a714f63934"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
@@ -143,6 +149,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "bf9cd9d0da42abe5f5ce6d11077d7c0c5cd690c7018a44f780278a1c42e94a99"
+  inputs-digest = "88a8f9880a4d09ec21507a04cff32715b131f1cff04ac1c04709b33121a28fb0"
   solver-name = "gps-cdcl"
   solver-version = 1

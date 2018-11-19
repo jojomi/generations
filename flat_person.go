@@ -2,7 +2,9 @@ package generations
 
 import (
 	"sort"
+	"time"
 
+	age "github.com/bearbin/go-age"
 	"github.com/jojomi/strtpl"
 )
 
@@ -109,6 +111,29 @@ func (d *FlatPerson) GetBaptism() DatePlace {
 
 func (d *FlatPerson) GetDeath() DatePlace {
 	return d.Death
+}
+
+func (d *FlatPerson) GetDeathAge() int {
+	birth := d.GetBirth()
+	death := d.GetDeath()
+
+	if birth.Empty() || len(birth.Date) != 10 {
+		return -1
+	}
+	birthTime, err := time.Parse("2006-01-02", birth.Date)
+	if err != nil {
+		return -1
+	}
+
+	if death.Empty() || len(death.Date) != 10 {
+		return -1
+	}
+	deathTime, err := time.Parse("2006-01-02", death.Date)
+	if err != nil {
+		return -1
+	}
+
+	return age.AgeAt(birthTime, deathTime)
 }
 
 func (d *FlatPerson) GetBurial() DatePlace {

@@ -25,6 +25,7 @@ type RenderPersonOptions struct {
 	HideBirth      bool     `yaml:"hide-birth,omitempty"`
 	HideBaptism    bool     `yaml:"hide-baptism,omitempty"`
 	HideDeath      bool     `yaml:"hide-death,omitempty"`
+	HideDeathAge   bool     `yaml:"hide-death-age,omitempty"`
 	HideBurial     bool     `yaml:"hide-burial,omitempty"`
 	HideImage      bool     `yaml:"hide-image,omitempty"`
 	HideJobs       bool     `yaml:"hide-jobs,omitempty"`

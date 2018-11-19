@@ -132,6 +132,13 @@
     {{ end }}
   {{ end }}
 
+  {{ $deathAge := .Person.GetDeathAge }}
+  {{ with $deathAge }}
+    {{ if and (ne . -1) (not $.Options.HideDeathAge) }}
+      deathage = { {{- . -}} },
+    {{ end }}
+  {{ end }}
+
   {{ $burial := .Person.GetBurial }}
   {{ if and (not $burial.Empty) (not .Options.HideBurial) }}
     {{ with $burial }}
