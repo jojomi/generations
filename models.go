@@ -53,7 +53,7 @@ type Marriage struct {
 }
 
 type Name struct {
-	Title string `yaml:"title,omitempty"`
+	Title string   `yaml:"title,omitempty"`
 	First []string `yaml:"first,omitempty"`
 	// If the used first name is different from the first element in the .First slice, it can be set using .Used
 	Used  string `yaml:"used,omitempty"`

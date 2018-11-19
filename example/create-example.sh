@@ -3,7 +3,7 @@ set -ex
 
 cd ../cmd
 go build -o examplebinary
-./examplebinary --config-file ../example/config.yml
+./examplebinary --config-file ../example/config.yml "$@"
 rm examplebinary
 
 lualatex test.tex

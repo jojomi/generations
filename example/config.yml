@@ -2,7 +2,10 @@ title: "Stammbaum-Beispiel"
  
 databases:
 - ../example/database.yml
-template: templates/document-basic.tex
+output-filename: test.tex
+templates:
+  tree:
+    filename: templates/tree/basic.tex
 
 pre-content: "\\tableofcontents \\newpage"
 attribution: "Stand: {{ .Now.Format \"02.01.2006\"}}. Erstellt für Testzwecke."
