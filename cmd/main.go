@@ -149,7 +149,6 @@ func commandRoot(c *cobra.Command, args []string) {
 		}
 
 		o := treeConfig.RenderTreeOptions
-		o.FailForIDLookup = flagRootCheckIDs
 		// template filenames
 		if o.TemplateFilenameTree == "" {
 			o.TemplateFilenameTree = "templates/tree.tpl"
