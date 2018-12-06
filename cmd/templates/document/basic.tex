@@ -57,10 +57,10 @@
         \gtr@list@event{birth}%
         \gtr@list@event{baptism}%
         \gtr@list@event{engagement}%
-        \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ (\pgfkeysvalueof{/gtr/database/save/marriageage})}{}%
+        \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
         \gtr@list@event{divorce}%
         \gtr@list@event{floruit}%
-        \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ (\pgfkeysvalueof{/gtr/database/save/deathage})}{}%
+        \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/deathage})}}{}%
         \gtr@list@event{burial}%
     \end{gtreventlist}%
     \gtr@print@infolist%
