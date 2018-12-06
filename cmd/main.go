@@ -10,6 +10,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/skratchdot/open-golang/open"
+
+	"github.com/jojomi/go-script/print"
+
 	"gopkg.in/yaml.v2"
 
 	"github.com/jojomi/go-script"
@@ -28,6 +32,7 @@ var (
 	flagRootNumCompileRuns int
 	flagRootMinify         bool
 	flagRootOpen           bool
+	flagRootVerbose        bool
 	flagRootCheckIDs       bool
 )
 
@@ -46,6 +51,7 @@ func main() {
 	flags.IntVarP(&flagRootNumCompileRuns, "compile-runs", "n", 2, "number of times to call lualatex")
 	flags.BoolVarP(&flagRootMinify, "minify", "m", true, "minify filesize of generated pdf file")
 	flags.BoolVarP(&flagRootOpen, "open", "o", true, "open generated pdf file")
+	flags.BoolVarP(&flagRootVerbose, "verbose", "v", true, "verbose output (e.g. lualatex output)")
 	rootCmd.AddCommand(getTestCommand())
 
 	if err := rootCmd.Execute(); err != nil {
@@ -57,19 +63,23 @@ func main() {
 func commandRoot(c *cobra.Command, args []string) {
 	sc := script.NewContext()
 
+	print.Boldf("Config file: %s...\n", flagRootConfigFile)
 	if !sc.FileExists(flagRootConfigFile) {
-		log.Fatalf("file not found: %s\n", flagRootConfigFile)
+		log.Fatalf("file not found: %s\n", sc.AbsPath(flagRootConfigFile))
 	}
+	print.Successln("File found.")
 
 	var config Config
 	data, err := ioutil.ReadFile(flagRootConfigFile)
 	if err != nil {
 		log.Fatal(err)
 	}
+	print.Boldln("Reding config data...")
 	err = yaml.UnmarshalStrict(data, &config)
 	if err != nil {
 		log.Fatal(err)
 	}
+	print.Successln("Config data OK.")
 	config.SetDefaults()
 	setDefaultOutputPath(&config, flagRootConfigFile)
 
@@ -78,6 +88,7 @@ func commandRoot(c *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	print.Boldln("Preparing template execution...")
 	templateData := map[string]interface{}{
 		"Now": time.Now(),
 	}
@@ -196,7 +207,9 @@ func commandRoot(c *cobra.Command, args []string) {
 		renderedTrees = renderedTrees + string(renderedTree)
 	}
 	config.RenderedTrees = string(renderedTrees)
+	print.Successln("Templates generated.")
 
+	print.Boldf("Rendering to file: %s\n", config.OutputFilename)
 	err = os.MkdirAll(filepath.Dir(config.OutputFilename), 0750)
 	if err != nil {
 		fmt.Println(err)
@@ -214,20 +227,25 @@ func commandRoot(c *cobra.Command, args []string) {
 		fmt.Println(err)
 		os.Exit(5)
 	}
+	print.Successln("Ouput tex file written.")
 
 	if !flagRootCompile {
 		os.Exit(0)
 	}
+	print.Boldln("Compiling document (lualatex)...")
 	err = compileDocument(
 		strings.Replace(config.OutputFilename, ".pdf", ".tex", -1),
 		flagRootNumCompileRuns,
+		flagRootVerbose,
 	)
 	if err != nil {
 		log.Fatal(err)
 	}
+	print.Successln("Sucesfully compiled.")
 
 	var openFilename = config.OutputFilename
 	if flagRootMinify {
+		print.Boldln("Minifying output PDF...")
 		smallFilename := strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1)
 		err = minifyDocument(
 			config.OutputFilename,
@@ -236,10 +254,12 @@ func commandRoot(c *cobra.Command, args []string) {
 		if err != nil {
 			log.Fatal(err)
 		}
+		print.Successln("Sucesfully minified.")
 		openFilename = smallFilename
 	}
 
 	if flagRootOpen {
+		print.Successf("Opening output file: %s\n", openFilename)
 		openDocument(openFilename)
 	}
 }
@@ -251,7 +271,7 @@ func first(input string, count int) string {
 	return string([]rune(input[0:count]))
 }
 
-func compileDocument(inputFile string, numRuns int) error {
+func compileDocument(inputFile string, numRuns int, verbose bool) error {
 	sc := script.NewContext()
 	if !sc.CommandExists("lualatex") {
 		return fmt.Errorf("lualatex not found in PATH")
@@ -260,12 +280,16 @@ func compileDocument(inputFile string, numRuns int) error {
 
 	localCommand := script.LocalCommandFrom("lualatex --interaction=nonstopmode --shell-escape")
 	localCommand.AddAll(
-		"--aux-directory="+dir,
+		//"--aux-directory="+dir,
 		"--output-directory="+dir,
 		inputFile,
 	)
+	execFunc := sc.ExecuteDebug
+	if !verbose {
+		execFunc = sc.ExecuteSilent
+	}
 	for i := 0; i < numRuns; i++ {
-		pr, err := sc.ExecuteDebug(localCommand)
+		pr, err := execFunc(localCommand)
 		if err != nil {
 			return err
 		}
@@ -307,21 +331,7 @@ func minifyDocument(inputFile, outputFile string) error {
 }
 
 func openDocument(filename string) {
-	sc := script.NewContext()
-	if !sc.CommandExists("xdg-open") {
-		return
-	}
-
-	command := strtpl.MustEval(
-		`xdg-open "{{ .Filename }}"`,
-		struct {
-			Filename string
-		}{
-			Filename: filename,
-		},
-	)
-	localCommand := script.LocalCommandFrom(command)
-	_, _ = sc.ExecuteDebug(localCommand)
+	open.Start(filename)
 }
 
 func setDefaultOutputPath(config *Config, filename string) {
