@@ -99,7 +99,13 @@ func commandRoot(c *cobra.Command, args []string) {
 	// load config, use it
 	for i, treeConfig := range config.Trees {
 		treeConfig.AddGlobals(config)
-		treeConfig.Levels.Combined = treeConfig.Levels.Combine(treeConfig.ProbandLevel, config.Levels)
+
+		// level handling
+		treeConfig.Levels.AddDefaultLevels(-5, 5)
+		treeConfig.Levels.SetGlobalBoxOptions()
+		treeConfig.Levels.Inherit(treeConfig.ProbandLevel, config.Levels)
+		treeConfig.Levels.Combine(treeConfig.ProbandLevel)
+
 		database := generations.NewMemoryDatabase()
 
 		for _, db := range treeConfig.Databases {
