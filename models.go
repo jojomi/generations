@@ -1,5 +1,11 @@
 package generations
 
+import (
+	"time"
+
+	age "github.com/bearbin/go-age"
+)
+
 //go:generate go-enum -f=models.go
 
 type Person interface {
@@ -67,6 +73,26 @@ type DatePlace struct {
 	// need to support things like "before 1932" here
 	Date  string `yaml:"date,omitempty"`
 	Place string `yaml:"place,omitempty"`
+}
+
+func (d DatePlace) GetAgeBegin(other DatePlace) int {
+	if other.Empty() || len(other.Date) != 10 {
+		return -1
+	}
+	otherTime, err := time.Parse("2006-01-02", other.Date)
+	if err != nil {
+		return -1
+	}
+
+	if d.Empty() || len(d.Date) != 10 {
+		return -1
+	}
+	dateTime, err := time.Parse("2006-01-02", d.Date)
+	if err != nil {
+		return -1
+	}
+
+	return age.AgeAt(otherTime, dateTime)
 }
 
 func (g Gender) IsUnknown() bool {

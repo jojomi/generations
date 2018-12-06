@@ -132,10 +132,12 @@
     {{ end }}
   {{ end }}
 
-  {{ $deathAge := .Person.GetDeathAge }}
-  {{ with $deathAge }}
-    {{ if and (ne . -1) (not $.Options.HideDeathAge) }}
-      deathage = { {{- . -}} },
+  {{ if not $.Options.HideBirth }}
+    {{ $deathAge := .Person.GetDeathAge }}
+    {{ with $deathAge }}
+      {{ if and (ne . -1) (not $.Options.HideDeathAge) }}
+        deathage = { {{- . -}} },
+      {{ end }}
     {{ end }}
   {{ end }}
 
@@ -171,6 +173,15 @@
           marriage = { {{- .Date -}} }{ {{- .Place -}} },
           {{ else }}
           marriage- = { {{- .Date -}} },
+          {{ end }}
+
+          {{ if not $.Options.HideBirth }}
+            {{ $marriageAge := .GetAgeBegin $birth }}
+            {{ with $marriageAge }}
+              {{ if and (ne . -1) (not $.Options.HideMarriageAge) }}
+                marriageage = { {{- . -}} },
+              {{ end }}
+            {{ end }}
           {{ end }}
         {{ end }}
       {{ end }}
