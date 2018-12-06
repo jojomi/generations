@@ -47,3 +47,20 @@ The result should look like this (when converted to images):
 1. What if I don't like LuaLaTeX?
 
 You can compile with other TeX processors too, but you most likely will have to change the document template.
+
+2. How do I use Fraktur fonts?
+
+Install `ttf-unifraktur` package, then in `custom-head` use this code:
+
+    \defaultfontfeatures{Ligatures=TeX}
+    \setmainfont{UnifrakturMaguntia}
+    \setsansfont{UnifrakturMaguntia}
+
+More info: http://unifraktur.sourceforge.net/maguntia.html
+
+
+3. How do I help LaTeX with hyphenating?
+
+In `custom-head` use this code:
+
+    \hyphenation{Spe-cial-town-name}
