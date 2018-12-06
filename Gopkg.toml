@@ -37,3 +37,7 @@
 [[constraint]]
   branch = "master"
   name = "github.com/bearbin/go-age"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/skratchdot/open-golang"
