@@ -101,10 +101,36 @@ func commandRoot(c *cobra.Command, args []string) {
 		treeConfig.AddGlobals(config)
 
 		// level handling
-		treeConfig.Levels.AddDefaultLevels(-5, 5)
-		treeConfig.Levels.SetGlobalBoxOptions()
+		minLevel := -2
+		maxLevel := 2
+		treeConfig.Levels.AddDefaultLevels(minLevel, maxLevel)
+		treeConfig.Levels.SetGlobals()
+		var (
+			lower      string
+			lowerLevel LevelConfig
+		)
+		for i := len(treeConfig.Levels.Themes) - 1; i >= 0; i-- {
+			lower = treeConfig.Levels.Themes[i]
+			data, err := ioutil.ReadFile(filepath.Join("templates", "levels", lower+".yml"))
+			if err != nil {
+				log.Fatal(err)
+			}
+			err = yaml.UnmarshalStrict(data, &lowerLevel)
+			if err != nil {
+				log.Fatal(err)
+			}
+
+			lowerLevel.AddDefaultLevels(minLevel, maxLevel)
+			lowerLevel.SetGlobals()
+			lowerLevel.Combine(treeConfig.ProbandLevel)
+			spew.Dump(lowerLevel)
+			///os.Exit(7)
+			treeConfig.Levels.Inherit(treeConfig.ProbandLevel, lowerLevel)
+		}
 		treeConfig.Levels.Inherit(treeConfig.ProbandLevel, config.Levels)
 		treeConfig.Levels.Combine(treeConfig.ProbandLevel)
+		spew.Dump(treeConfig.Levels.Combined)
+		////os.Exit(1)
 
 		database := generations.NewMemoryDatabase()
 

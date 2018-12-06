@@ -155,17 +155,25 @@ outer:
 	return result
 }
 
+func latexify(input int) string {
+	if input < 0 {
+		return strings.Repeat("A", -input)
+	}
+	return strings.Repeat("I", input)
+}
+
 func RenderTemplateFile(filename string, data interface{}) ([]byte, error) {
 	templateContent, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return []byte{}, err
 	}
 	result, err := strtpl.EvalWithFuncMap(string(templateContent), template.FuncMap{
-		"noEmptyLines":           withoutEmptyLines,
-		"noEmptyLinesString":     withoutEmptyLinesString,
-		"toString":               toString,
-		"join":                   strings.Join,
+		"noEmptyLines":       withoutEmptyLines,
+		"noEmptyLinesString": withoutEmptyLinesString,
+		"toString":           toString,
+		"join":               strings.Join,
 		"getFilteredStringSlice": getFilteredStringSlice,
+		"latexify":               latexify,
 	}, data)
 	if err != nil {
 		return []byte{}, err
