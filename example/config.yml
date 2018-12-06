@@ -2,7 +2,7 @@ title: "Stammbaum-Beispiel"
  
 databases:
 - ../example/database.yml
-output-filename: test.tex
+output-filename: test.pdf
 templates:
   tree:
     filename: templates/tree/basic.tex
@@ -24,8 +24,22 @@ trees:
       proband: "Gerd Pachowski"
       custom-styles: "template=signpost,processing=database,timeflow=down,empty name text={N.N.},pref code={#1},surn code={\\textbf{#1}},edges=rounded,edges={foreground={blue!50,line width=2mm}}"
 
-
     - title: "Variante 3"
+      proband: "Gerd Pachowski"
+      templates:
+        tree:
+          filename: templates/tree/min-space.tex
+          options:
+            legend: none
+            colorful: true
+      render-tree-options:
+        render-person-options:
+          hide-root-node-highlighting: true
+          hide-attributes:
+            - dead
+
+
+    - title: "Variante 4"
       proband: "Gerd Pachowski"
       custom-styles: "template=signpost,processing=database,timeflow=up,level distance=2.0cm,edges={foreground={line width=2pt,red,Circle-LaTeX,shorten <=-4pt}}"
       render-tree-options:
