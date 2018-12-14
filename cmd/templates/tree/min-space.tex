@@ -5,8 +5,8 @@
     \subsection{ {{- .Title -}} }
     {{- end }}
 
-    {{ if .Date -}}
-    Stand: \textbf{ {{- .Date -}} }
+    {{ if and (not .Date.IsZero) (.DateFormat) -}}
+    Stand: \textbf{ {{- .Date.Format .DateFormat -}} }
     {{- end }}
 
     \tikzset{pate/.style={-Latex, blue, dashed, very thick}}

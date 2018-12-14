@@ -107,6 +107,13 @@
       {{ else }}
       birth- = { {{- .Date -}} },
       {{ end }}
+
+      {{ $age := $.Person.GetAge $.Options.Date }}
+      {{ with $age }}
+        {{ if and (ne . -1) ($.Options.ShowAge) ($.Person.GetDeath.Empty) }}
+          age = { {{- . -}} },
+        {{ end }}
+      {{ end }}
     {{ end }}
   {{ end }}
 

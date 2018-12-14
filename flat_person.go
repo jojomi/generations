@@ -113,6 +113,24 @@ func (d *FlatPerson) GetDeath() DatePlace {
 	return d.Death
 }
 
+func (d *FlatPerson) GetAge(now time.Time) int {
+	birth := d.GetBirth()
+
+	if now.IsZero() {
+		return -1
+	}
+
+	if birth.Empty() || len(birth.Date) != 10 {
+		return -1
+	}
+	birthTime, err := time.Parse("2006-01-02", birth.Date)
+	if err != nil {
+		return -1
+	}
+
+	return age.AgeAt(birthTime, now)
+}
+
 func (d *FlatPerson) GetDeathAge() int {
 	birth := d.GetBirth()
 	death := d.GetDeath()

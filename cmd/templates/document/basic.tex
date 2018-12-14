@@ -54,7 +54,7 @@
 \gtrDeclareDatabaseFormat{full-ages}{}{%
     \gtrPrintName%
     \begin{gtreventlist}%
-        \gtr@list@event{birth}%
+        \gtr@list@event{birth}\pgfkeysifdefined{/gtr/database/save/age}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/age})}}{}%
         \gtr@list@event{baptism}%
         \gtr@list@event{engagement}%
         \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
@@ -95,8 +95,8 @@
 \section*{ {{- .Config.Title -}} }
 {{- end }}
 
-{{ if .Config.Date -}}
-Stand: \textbf{ {{- .Config.Date -}} }
+{{ if and (not .Config.Date.IsZero) (.Config.DateFormat) -}}
+Stand: \textbf{ {{- .Config.Date.Format .Config.DateFormat -}} }
 {{- end }}
 
 

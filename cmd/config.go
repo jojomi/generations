@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	"github.com/jojomi/generations"
 )
 
@@ -16,9 +18,10 @@ type Config struct {
 		Tree     Template `yaml:"tree,omitempty"`
 	} `yaml:"templates,omitempty"`
 
-	DocumentOptions string `yaml:"document-options,omitempty"`
-	Title           string `yaml:"title,omitempty"`
-	Date            string `yaml:"date,omitempty"`
+	DocumentOptions string    `yaml:"document-options,omitempty"`
+	Title           string    `yaml:"title,omitempty"`
+	Date            time.Time `yaml:"date,omitempty"`
+	DateFormat      string    `yaml:"date-format,omitempty"`
 
 	Attribution string      `yaml:"attribution,omitempty"`
 	PreContent  string      `yaml:"pre-content,omitempty"`
@@ -41,8 +44,10 @@ type TreeConfig struct {
 		Tree Template `yaml:"tree,omitempty"`
 	} `yaml:"templates,omitempty"`
 
+	Date       time.Time `yaml:"date,omitempty"`
+	DateFormat string    `yaml:"date-format,omitempty"`
+
 	Title       string `yaml:"title,omitempty"`
-	Date        string `yaml:"date,omitempty"`
 	Attribution string `yaml:"attribution,omitempty"`
 
 	Proband      string      `yaml:"proband,omitempty"`
@@ -70,6 +75,9 @@ func (c *Config) SetDefaults() {
 	if c.Templates.Tree.Filename == "" {
 		c.Templates.Tree.Filename = "templates/tree/basic.tex"
 	}
+	if c.Date.IsZero() {
+		c.Date = time.Now()
+	}
 }
 
 func (t *TreeConfig) AddGlobals(config Config) {
@@ -81,6 +89,12 @@ func (t *TreeConfig) AddGlobals(config Config) {
 	}
 	if t.CustomStyles == "" {
 		t.CustomStyles = config.CustomStyles
+	}
+	if t.Date.IsZero() {
+		t.Date = config.Date
+	}
+	if t.DateFormat == "" {
+		t.DateFormat = config.DateFormat
 	}
 	// Templates
 	if t.Templates.Tree.Filename == "" {

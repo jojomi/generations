@@ -1,5 +1,7 @@
 package generations
 
+import "time"
+
 //go:generate go-enum -f=render_person_options.go
 
 /* ENUM(
@@ -12,6 +14,7 @@ type LastnamePolicy int
 type RenderPersonOptions struct {
 	NodeType         NodeType
 	TemplateFilename string
+	Date             time.Time
 
 	// Display filter
 	HideRootNodeHighlighting bool           `yaml:"hide-root-node-highlighting,omitempty"`
@@ -23,6 +26,7 @@ type RenderPersonOptions struct {
 	HideGender      bool     `yaml:"hide-gender,omitempty"`
 	HideName        bool     `yaml:"hide-name,omitempty"`
 	HideBirth       bool     `yaml:"hide-birth,omitempty"`
+	ShowAge         bool     `yaml:"show-age,omitempty"`
 	HideBaptism     bool     `yaml:"hide-baptism,omitempty"`
 	HideDeath       bool     `yaml:"hide-death,omitempty"`
 	HideDeathAge    bool     `yaml:"hide-death-age,omitempty"`

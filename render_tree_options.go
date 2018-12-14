@@ -27,6 +27,8 @@ type RenderTreeOptions struct {
 	TemplateFilenameChildTree          string `yaml:"template-filename-child-tree,omitempty"`
 	TemplateFilenameUnionTree          string `yaml:"template-filename-union-tree,omitempty"`
 
+	FailForIDLookup bool
+
 	GraphType GraphType
 
 	GenderOrder GenderOrder

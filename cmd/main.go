@@ -25,7 +25,6 @@ import (
 )
 
 var (
-	flagRootConfigFile     string
 	flagRootShowConfig     bool
 	flagRootCompile        bool
 	flagRootAnonymize      bool
@@ -40,10 +39,10 @@ func main() {
 	var rootCmd = &cobra.Command{
 		Use:   "generations",
 		Short: "generations creates genealogytrees using (Lua)LaTeX and the awesome genealogytree package",
+		Args:  cobra.MinimumNArgs(1),
 		Run:   commandRoot,
 	}
 	flags := rootCmd.PersistentFlags()
-	flags.StringVarP(&flagRootConfigFile, "config-file", "c", "config/document.yml", "config filename")
 	flags.BoolVarP(&flagRootShowConfig, "debug-config", "d", false, "show parsed config")
 	flags.BoolVarP(&flagRootCheckIDs, "check-ids", "i", true, "error on unlinked IDs")
 	flags.BoolVarP(&flagRootAnonymize, "anonymize", "a", false, "anonymize data")
@@ -63,209 +62,212 @@ func main() {
 func commandRoot(c *cobra.Command, args []string) {
 	sc := script.NewContext()
 
-	print.Boldf("Config file: %s...\n", flagRootConfigFile)
-	if !sc.FileExists(flagRootConfigFile) {
-		log.Fatalf("file not found: %s\n", sc.AbsPath(flagRootConfigFile))
-	}
-	print.Successln("File found.")
+	for _, configFile := range args {
+		print.Boldf("Config file: %s...\n", configFile)
+		if !sc.FileExists(configFile) {
+			log.Fatalf("file not found: %s\n", sc.AbsPath(configFile))
+		}
+		print.Successln("File found.")
 
-	var config Config
-	data, err := ioutil.ReadFile(flagRootConfigFile)
-	if err != nil {
-		log.Fatal(err)
-	}
-	print.Boldln("Reding config data...")
-	err = yaml.UnmarshalStrict(data, &config)
-	if err != nil {
-		log.Fatal(err)
-	}
-	print.Successln("Config data OK.")
-	config.SetDefaults()
-	setDefaultOutputPath(&config, flagRootConfigFile)
+		var config Config
+		data, err := ioutil.ReadFile(configFile)
+		if err != nil {
+			log.Fatal(err)
+		}
+		print.Boldln("Reding config data...")
+		err = yaml.UnmarshalStrict(data, &config)
+		if err != nil {
+			log.Fatal(err)
+		}
+		print.Successln("Config data OK.")
+		config.SetDefaults()
+		setDefaultOutputPath(&config, configFile)
 
-	if flagRootShowConfig {
-		spew.Dump(config)
-		os.Exit(1)
-	}
-
-	print.Boldln("Preparing template execution...")
-	templateData := map[string]interface{}{
-		"Now": time.Now(),
-	}
-	config.Title = strtpl.MustEval(config.Title, templateData)
-	config.Attribution = strtpl.MustEval(config.Attribution, templateData)
-	config.Date = strtpl.MustEval(config.Date, templateData)
-
-	// load config, use it
-	for i, treeConfig := range config.Trees {
-		treeConfig.AddGlobals(config)
-
-		// level handling
-		treeConfig.Levels.AddDefaultLevels(-5, 5)
-		treeConfig.Levels.SetGlobalBoxOptions()
-		treeConfig.Levels.Inherit(treeConfig.ProbandLevel, config.Levels)
-		treeConfig.Levels.Combine(treeConfig.ProbandLevel)
-
-		database := generations.NewMemoryDatabase()
-
-		for _, db := range treeConfig.Databases {
-			err := database.ParseYamlFile(db)
-			if err != nil {
-				fmt.Println(err)
-				os.Exit(1)
-			}
+		if flagRootShowConfig {
+			spew.Dump(config)
+			os.Exit(1)
 		}
 
-		if flagRootAnonymize {
-			for i, p := range database.Persons {
-				yearOfBirth, err := strconv.Atoi(first(p.Birth.Date, 4))
-				if err == nil && yearOfBirth < 1880 {
-					continue
+		print.Boldln("Preparing template execution...")
+		templateData := map[string]interface{}{
+			"Now":  time.Now(),
+			"Date": config.Date,
+		}
+		config.Title = strtpl.MustEval(config.Title, templateData)
+		config.Attribution = strtpl.MustEval(config.Attribution, templateData)
+
+		// load config, use it
+		for i, treeConfig := range config.Trees {
+			treeConfig.AddGlobals(config)
+
+			// level handling
+			treeConfig.Levels.AddDefaultLevels(-5, 5)
+			treeConfig.Levels.SetGlobalBoxOptions()
+			treeConfig.Levels.Inherit(treeConfig.ProbandLevel, config.Levels)
+			treeConfig.Levels.Combine(treeConfig.ProbandLevel)
+
+			database := generations.NewMemoryDatabase()
+
+			for _, db := range treeConfig.Databases {
+				err := database.ParseYamlFile(db)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
 				}
-				if len(p.Name.First) > 0 {
-					if p.Name.Used != "" {
-						p.Name = generations.Name{
-							First: []string{first(p.Name.Used, 1) + "."},
+			}
+
+			if flagRootAnonymize {
+				for i, p := range database.Persons {
+					yearOfBirth, err := strconv.Atoi(first(p.Birth.Date, 4))
+					if err == nil && yearOfBirth < 1880 {
+						continue
+					}
+					if len(p.Name.First) > 0 {
+						if p.Name.Used != "" {
+							p.Name = generations.Name{
+								First: []string{first(p.Name.Used, 1) + "."},
+							}
+						} else {
+							p.Name = generations.Name{
+								First: []string{first(p.Name.First[0], 1) + "."},
+							}
 						}
 					} else {
-						p.Name = generations.Name{
-							First: []string{first(p.Name.First[0], 1) + "."},
-						}
+						p.Name = generations.Name{}
 					}
-				} else {
-					p.Name = generations.Name{}
+					p.Birth.Place = ""
+					p.Birth.Date = first(p.Birth.Date, 4)
+					p.Death.Place = ""
+					p.Death.Date = first(p.Death.Date, 4)
+					p.Baptism = generations.DatePlace{}
+					p.Burial = generations.DatePlace{}
+					p.Jobs = ""
+					for j, r := range p.Partners {
+						r.Engagement = generations.DatePlace{}
+						r.Marriage.Date = first(r.Marriage.Date, 4)
+						r.Divorce.Date = first(r.Divorce.Date, 4)
+						p.Partners[j] = r
+					}
+					p.Floruit = ""
+					p.Comment = ""
+					database.Persons[i] = p
 				}
-				p.Birth.Place = ""
-				p.Birth.Date = first(p.Birth.Date, 4)
-				p.Death.Place = ""
-				p.Death.Date = first(p.Death.Date, 4)
-				p.Baptism = generations.DatePlace{}
-				p.Burial = generations.DatePlace{}
-				p.Jobs = ""
-				for j, r := range p.Partners {
-					r.Engagement = generations.DatePlace{}
-					r.Marriage.Date = first(r.Marriage.Date, 4)
-					r.Divorce.Date = first(r.Divorce.Date, 4)
-					p.Partners[j] = r
-				}
-				p.Floruit = ""
-				p.Comment = ""
-				database.Persons[i] = p
 			}
+
+			o := treeConfig.RenderTreeOptions
+			// template filenames
+			if o.TemplateFilenameTree == "" {
+				o.TemplateFilenameTree = "templates/tree.tpl"
+			}
+			if o.TemplateFilenamePerson == "" {
+				o.TemplateFilenamePerson = "templates/person.tpl"
+			}
+			if o.TemplateFilenameParentTree == "" {
+				o.TemplateFilenameParentTree = "templates/parent_tree.tpl"
+			}
+			if o.TemplateFilenameParentTreeHeadless == "" {
+				o.TemplateFilenameParentTreeHeadless = "templates/parent_tree_headless.tpl"
+			}
+			if o.TemplateFilenameChildTree == "" {
+				o.TemplateFilenameChildTree = "templates/child_tree.tpl"
+			}
+			if o.TemplateFilenameUnionTree == "" {
+				o.TemplateFilenameUnionTree = "templates/union_tree.tpl"
+			}
+			if o.RenderPersonOptions != nil {
+				o.RenderPersonOptions.TemplateFilename = o.TemplateFilenamePerson
+			}
+			o.RenderPersonOptions.Date = treeConfig.Date
+
+			person, err := database.Get(treeConfig.Proband)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(2)
+			}
+			tree, err := generations.RenderGenealogytree(person, o)
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(3)
+			}
+
+			treeConfig.Content = string(tree)
+
+			config.Trees[i] = treeConfig
 		}
 
-		o := treeConfig.RenderTreeOptions
-		// template filenames
-		if o.TemplateFilenameTree == "" {
-			o.TemplateFilenameTree = "templates/tree.tpl"
+		var renderedTrees string
+		for _, treeConfig := range config.Trees {
+			renderedTree, err := generations.RenderTemplateFile(treeConfig.Templates.Tree.Filename, struct {
+				Config     Config
+				TreeConfig TreeConfig
+				Options    map[string]interface{}
+			}{
+				Config:     config,
+				TreeConfig: treeConfig,
+				Options:    treeConfig.Templates.Tree.Options,
+			})
+			if err != nil {
+				fmt.Println(err)
+				os.Exit(6)
+			}
+			renderedTrees = renderedTrees + string(renderedTree)
 		}
-		if o.TemplateFilenamePerson == "" {
-			o.TemplateFilenamePerson = "templates/person.tpl"
-		}
-		if o.TemplateFilenameParentTree == "" {
-			o.TemplateFilenameParentTree = "templates/parent_tree.tpl"
-		}
-		if o.TemplateFilenameParentTreeHeadless == "" {
-			o.TemplateFilenameParentTreeHeadless = "templates/parent_tree_headless.tpl"
-		}
-		if o.TemplateFilenameChildTree == "" {
-			o.TemplateFilenameChildTree = "templates/child_tree.tpl"
-		}
-		if o.TemplateFilenameUnionTree == "" {
-			o.TemplateFilenameUnionTree = "templates/union_tree.tpl"
-		}
-		if o.RenderPersonOptions != nil {
-			o.RenderPersonOptions.TemplateFilename = o.TemplateFilenamePerson
-		}
+		config.RenderedTrees = string(renderedTrees)
+		print.Successln("Templates generated.")
 
-		person, err := database.Get(treeConfig.Proband)
+		print.Boldf("Rendering to file: %s\n", config.OutputFilename)
+		err = os.MkdirAll(filepath.Dir(config.OutputFilename), 0750)
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(2)
+			os.Exit(4)
 		}
-		tree, err := generations.RenderGenealogytree(person, o)
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(3)
-		}
-
-		treeConfig.Content = string(tree)
-
-		config.Trees[i] = treeConfig
-	}
-
-	var renderedTrees string
-	for _, treeConfig := range config.Trees {
-		renderedTree, err := generations.RenderTemplateFile(treeConfig.Templates.Tree.Filename, struct {
-			Config     Config
-			TreeConfig TreeConfig
-			Options    map[string]interface{}
+		renderConfig := struct {
+			Config  Config
+			Options map[string]interface{}
 		}{
-			Config:     config,
-			TreeConfig: treeConfig,
-			Options:    treeConfig.Templates.Tree.Options,
-		})
+			config,
+			config.Templates.Document.Options,
+		}
+		err = renderDocument(config.Templates.Document.Filename, renderConfig, strings.Replace(config.OutputFilename, ".pdf", ".tex", -1))
 		if err != nil {
 			fmt.Println(err)
-			os.Exit(6)
+			os.Exit(5)
 		}
-		renderedTrees = renderedTrees + string(renderedTree)
-	}
-	config.RenderedTrees = string(renderedTrees)
-	print.Successln("Templates generated.")
+		print.Successln("Ouput tex file written.")
 
-	print.Boldf("Rendering to file: %s\n", config.OutputFilename)
-	err = os.MkdirAll(filepath.Dir(config.OutputFilename), 0750)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(4)
-	}
-	renderConfig := struct {
-		Config  Config
-		Options map[string]interface{}
-	}{
-		config,
-		config.Templates.Document.Options,
-	}
-	err = renderDocument(config.Templates.Document.Filename, renderConfig, strings.Replace(config.OutputFilename, ".pdf", ".tex", -1))
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(5)
-	}
-	print.Successln("Ouput tex file written.")
-
-	if !flagRootCompile {
-		os.Exit(0)
-	}
-	print.Boldln("Compiling document (lualatex)...")
-	err = compileDocument(
-		strings.Replace(config.OutputFilename, ".pdf", ".tex", -1),
-		flagRootNumCompileRuns,
-		flagRootVerbose,
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	print.Successln("Sucesfully compiled.")
-
-	var openFilename = config.OutputFilename
-	if flagRootMinify {
-		print.Boldln("Minifying output PDF...")
-		smallFilename := strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1)
-		err = minifyDocument(
-			config.OutputFilename,
-			smallFilename,
+		if !flagRootCompile {
+			os.Exit(0)
+		}
+		print.Boldln("Compiling document (lualatex)...")
+		err = compileDocument(
+			strings.Replace(config.OutputFilename, ".pdf", ".tex", -1),
+			flagRootNumCompileRuns,
+			flagRootVerbose,
 		)
 		if err != nil {
 			log.Fatal(err)
 		}
-		print.Successln("Sucesfully minified.")
-		openFilename = smallFilename
-	}
+		print.Successln("Sucesfully compiled.")
 
-	if flagRootOpen {
-		print.Successf("Opening output file: %s\n", openFilename)
-		openDocument(openFilename)
+		var openFilename = config.OutputFilename
+		if flagRootMinify {
+			print.Boldln("Minifying output PDF...")
+			smallFilename := strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1)
+			err = minifyDocument(
+				config.OutputFilename,
+				smallFilename,
+			)
+			if err != nil {
+				log.Fatal(err)
+			}
+			print.Successln("Sucesfully minified.")
+			openFilename = smallFilename
+		}
+
+		if flagRootOpen {
+			print.Successf("Opening output file: %s\n", openFilename)
+			openDocument(openFilename)
+		}
 	}
 }
 

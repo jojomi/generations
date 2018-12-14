@@ -20,6 +20,8 @@ type Person interface {
 	GetBirth() DatePlace
 	GetBaptism() DatePlace
 	GetDeath() DatePlace
+	// GetDeathAge returns the age in years at the given point of time. -1 iff the age can't be determined.
+	GetAge(now time.Time) int
 	// GetDeathAge returns the age in years when the person died. -1 iff the age can't be determined.
 	GetDeathAge() int
 	GetBurial() DatePlace
