@@ -174,9 +174,10 @@ func commandRoot(c *cobra.Command, args []string) {
 			if o.TemplateFilenameUnionTree == "" {
 				o.TemplateFilenameUnionTree = "templates/union_tree.tpl"
 			}
-			if o.RenderPersonOptions != nil {
-				o.RenderPersonOptions.TemplateFilename = o.TemplateFilenamePerson
+			if o.RenderPersonOptions == nil {
+				o.RenderPersonOptions = &generations.RenderPersonOptions{}
 			}
+			o.RenderPersonOptions.TemplateFilename = o.TemplateFilenamePerson
 			o.RenderPersonOptions.Date = treeConfig.Date
 
 			person, err := database.Get(treeConfig.Proband)

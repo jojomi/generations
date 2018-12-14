@@ -8,7 +8,8 @@ templates:
     filename: templates/tree/basic.tex
 
 pre-content: "\\tableofcontents \\newpage"
-attribution: "Stand: {{ .Now.Format \"02.01.2006\"}}. Erstellt für Testzwecke."
+attribution: "Stand: {{ .Date.Format \"02.01.2006\"}}. For testing purposes."
+date-format: ""
 
 trees:
     - title: "Verwandtschaft"
