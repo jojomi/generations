@@ -38,7 +38,7 @@ trees:
           hide-root-node-highlighting: true
           hide-attributes:
             - dead
-
+          
 
     - title: "Variante 4"
       proband: "Gerd Pachowski"

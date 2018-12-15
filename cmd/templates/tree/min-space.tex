@@ -1,6 +1,13 @@
 \gtrset{symlang/Floruit=wohnte~in}
 {{ with .TreeConfig }}
 
+    {{ range .Levels.Combined -}}
+        {{ $commandName := (printf "%s%s" "\\underlineLevel" (.Index | latexify)) }}
+        %\DeclareRobustCommand{ {{- $commandName -}} }[1]{\setulcolor{blue}\ul{#1}}
+        %\soulregister{ {{- $commandName -}} }{1}
+    {{ end }}
+
+
     {{- if .Title -}}
     \subsection{ {{- .Title -}} }
     {{- end }}
