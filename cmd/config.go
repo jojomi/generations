@@ -23,11 +23,11 @@ type Config struct {
 	Date            time.Time `yaml:"date,omitempty"`
 	DateFormat      string    `yaml:"date-format,omitempty"`
 
-	Attribution string      `yaml:"attribution,omitempty"`
-	PreContent  string      `yaml:"pre-content,omitempty"`
-	PostContent string      `yaml:"post-content,omitempty"`
-	CustomHead  string      `yaml:"custom-head,omitempty"`
-	Levels      LevelConfig `yaml:"levels,omitempty"`
+	Attribution string                  `yaml:"attribution,omitempty"`
+	PreContent  string                  `yaml:"pre-content,omitempty"`
+	PostContent string                  `yaml:"post-content,omitempty"`
+	CustomHead  string                  `yaml:"custom-head,omitempty"`
+	Levels      generations.LevelConfig `yaml:"levels,omitempty"`
 
 	CustomStyles string `yaml:"custom-styles,omitempty"`
 	CustomDraw   string `yaml:"custom-draw,omitempty"`
@@ -50,9 +50,9 @@ type TreeConfig struct {
 	Title       string `yaml:"title,omitempty"`
 	Attribution string `yaml:"attribution,omitempty"`
 
-	Proband      string      `yaml:"proband,omitempty"`
-	ProbandLevel int         `yaml:"proband-level,omitempty"`
-	Levels       LevelConfig `yaml:"levels,omitempty"`
+	Proband      string                  `yaml:"proband,omitempty"`
+	ProbandLevel int                     `yaml:"proband-level,omitempty"`
+	Levels       generations.LevelConfig `yaml:"levels,omitempty"`
 
 	PreContent  string `yaml:"pre-content,omitempty"`
 	PostContent string `yaml:"post-content,omitempty"`

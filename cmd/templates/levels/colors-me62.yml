@@ -3,35 +3,35 @@ absolute:
   - index: 11
     color:
       main: DeepSkyBlue
-      leaf: gray!60
+      leaf: DeepSkyBlue!60
   - index: 10
     color:
       main: FireBrick
-      leaf: gray!60
+      leaf: FireBrick!60
   - index: 9
     color:
       main: DodgerBlue!75
-      leaf: gray!60
+      leaf: DodgerBlue!20
   - index: 8
     color:
       main: Goldenrod
-      leaf: gray!60
+      leaf: Goldenrod!50
   - index: 7
     color:
       main: DarkGreen!80
-      leaf: gray!60
+      leaf: DarkGreen!25
   - index: 6
     color:
       main: Salmon
-      leaf: gray!60
+      leaf: Salmon!60
   - index: 5
     color:
       main: Gold!80
-      leaf: gray!60
+      leaf: Gold!30
   - index: 4
     color:
       main: SteelBlue
-      leaf: gray!60
+      leaf: SteelBlue!40
   - index: 3
     color:
       main: LimeGreen!50
@@ -42,5 +42,9 @@ absolute:
       leaf: Tomato!40
   - index: 1
     color:
-      main: DeepPink!80
-      leaf: gray!60
+      main: Khaki
+      leaf: Khaki!50
+  - index: 0
+    color:
+      main: RoyalBlue!80
+      leaf: RoyalBlue!30

@@ -1,3 +1,14 @@
 # right-align in-law relatives
-box-options:
-  leaf: \tcbset{halign upper=flush right,halign lower=right}
+absolute:
+  - index: 1
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: 2
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: 3
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: 4
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}

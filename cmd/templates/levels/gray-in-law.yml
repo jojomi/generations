@@ -1,2 +1,22 @@
-color:
-  leaf: Gray!60
+absolute:
+  - index: 6
+    color:
+      leaf: gray!60
+  - index: 5
+    color:
+      leaf: gray!60
+  - index: 4
+    color:
+      leaf: gray!60
+  - index: 3
+    color:
+      leaf: gray!60
+  - index: 2
+    color:
+      leaf: gray!60
+  - index: 1
+    color:
+      leaf: gray!60
+  - index: 0
+    color:
+      leaf: gray!60

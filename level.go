@@ -1,16 +1,12 @@
-package main
-
-import (
-	"fmt"
-
-	"github.com/jojomi/go-spew/spew"
-)
+package generations
 
 type Level interface {
 	GetColor() LevelColor
 	GetBoxOptions() LevelBoxOptions
+	GetOptions() LevelOptions
 	SetColor(c LevelColor)
 	SetBoxOptions(b LevelBoxOptions)
+	SetOptions(b LevelOptions)
 }
 
 type LevelConfig struct {
@@ -18,8 +14,9 @@ type LevelConfig struct {
 	Relative []RelativeLevel `yaml:"relative,omitempty"`
 
 	// globals
-	BoxOptions LevelBoxOptions `yaml:"box-options,omitempty"`
 	Color      LevelColor      `yaml:"color,omitempty"`
+	BoxOptions LevelBoxOptions `yaml:"box-options,omitempty"`
+	Options    LevelOptions    `yaml:"options,omitempty"`
 
 	Themes []string `yaml:"themes,omitempty"`
 
@@ -40,21 +37,13 @@ func (l *LevelConfig) AddDefaultLevels(from, to int) *LevelConfig {
 	return l
 }
 
-func (l *LevelConfig) SetColorScheme(colorScheme LevelConfig) *LevelConfig {
-	return l
-}
-
 func (l *LevelConfig) SetGlobals() *LevelConfig {
 	for i, level := range l.Absolute {
+		level.Color = *level.Color.OverwriteWith(&l.Color) // TODO inherit
 		level.BoxOptions = *level.BoxOptions.Merge(l.BoxOptions)
-		level.Color = *level.Color.Merge(l.Color)
-		fmt.Println(level.Index)
-		fmt.Println(l.Color, level.Color)
-		spew.Dump(level)
+		level.Options = *level.Options.Merge(l.Options)
 		l.Absolute[i] = level
 	}
-	///spew.Dump(l)
-	///os.Exit(6)
 	return l
 }
 
@@ -67,8 +56,8 @@ outer:
 			if baseConfig.Index != r.Index+probandLevel {
 				continue
 			}
-			Merge(baseConfig, r)
-			combined = append(combined, baseConfig)
+			merged := Merge(&baseConfig, &r).(*AbsoluteLevel)
+			combined = append(combined, *merged)
 			continue outer
 		}
 		combined = append(combined, baseConfig)
@@ -76,14 +65,14 @@ outer:
 	l.Combined = combined
 }
 
-func (l *LevelConfig) Inherit(probandLevel int, baseConfig LevelConfig) {
+func (l *LevelConfig) Inherit(probandLevel int, baseConfig LevelConfig) *LevelConfig {
 outerAbs:
 	for i, a := range l.Absolute {
 		for _, b := range baseConfig.Absolute {
 			if a.Index != b.Index {
 				continue
 			}
-			Merge(a, b)
+			a = *(MergeWithBase(&a, &b).(*AbsoluteLevel))
 			l.Absolute[i] = a
 			continue outerAbs
 		}
@@ -95,25 +84,27 @@ outerRel:
 			if b.Index != r.Index+probandLevel {
 				continue
 			}
-			Merge(r, b)
+			r = *(MergeWithBase(&r, &b).(*RelativeLevel))
 			l.Relative[i] = r
 			continue outerRel
 		}
 	}
+
+	return l
 }
 
 type AbsoluteLevel struct {
 	Index      int             `yaml:"index,omitempty"`
 	Color      LevelColor      `yaml:"color,omitempty"`
 	BoxOptions LevelBoxOptions `yaml:"box-options,omitempty"`
-	Options    string          `yaml:"options,omitempty"`
+	Options    LevelOptions    `yaml:"options,omitempty"`
 }
 
 type RelativeLevel struct {
 	Index      int
 	Color      LevelColor
 	BoxOptions LevelBoxOptions `yaml:"box-options,omitempty"`
-	Options    string          `yaml:"options,omitempty"`
+	Options    LevelOptions    `yaml:"options,omitempty"`
 }
 
 type LevelColor struct {
@@ -129,19 +120,28 @@ func (lc *LevelColor) IsEmpty() bool {
 	return lc.Main == "" && lc.Leaf == ""
 }
 
-func (lc *LevelColor) Merge(inheritedColor LevelColor) *LevelColor {
-	spew.Dump(lc)
-	spew.Dump(inheritedColor)
-	if lc.Main == "" {
-		lc.Main = inheritedColor.Main
+// overwrite
+func (lc *LevelColor) OverwriteWith(lc2 *LevelColor) *LevelColor {
+	result := &LevelColor{
+		Main: lc2.Main,
+		Leaf: lc2.Leaf,
 	}
-	if lc.Leaf == "" {
-		lc.Leaf = inheritedColor.Leaf
+	return result
+}
+
+// merge with default
+func (lc *LevelColor) MergeWithBase(lc2 *LevelColor) *LevelColor {
+	result := &LevelColor{
+		Main: lc2.Main,
+		Leaf: lc2.Leaf,
 	}
-	if lc.Leaf != "" || inheritedColor.Leaf != "" {
-		///os.Exit(6)
+	if lc.Main != "" {
+		result.Main = lc.Main
 	}
-	return lc
+	if lc.Leaf != "" {
+		result.Leaf = lc.Leaf
+	}
+	return result
 }
 
 type LevelBoxOptions struct {
@@ -157,13 +157,27 @@ func (lo *LevelBoxOptions) IsEmpty() bool {
 	return lo.Main == "" && lo.Leaf == ""
 }
 
+// Merge does append!
 func (lo *LevelBoxOptions) Merge(inheritedOpts LevelBoxOptions) *LevelBoxOptions {
-	if lo.Main != "" {
-		lo.Main = inheritedOpts.Main
+	if inheritedOpts.Main != "" && lo.Main != "" {
+		inheritedOpts.Main += "%\n%\n"
 	}
-	if lo.Leaf != "" {
-		lo.Leaf = inheritedOpts.Leaf
+	lo.Main = inheritedOpts.Main + lo.Main
+	if inheritedOpts.Leaf != "" && lo.Leaf != "" {
+		inheritedOpts.Leaf += "%\n%\n"
 	}
+	lo.Leaf = inheritedOpts.Leaf + lo.Leaf
+	return lo
+}
+
+type LevelOptions string
+
+func (lo *LevelOptions) Merge(inheritedOpts LevelOptions) *LevelOptions {
+	if inheritedOpts != "" && *lo != "" {
+		inheritedOpts += "%\n%\n"
+	}
+	result := LevelOptions(string(inheritedOpts) + string(*lo))
+	lo = &result
 	return lo
 }
 
@@ -184,44 +198,84 @@ func (l *AbsoluteLevel) IsProbandLevel(probandLevel int) bool {
 	return l.Index == probandLevel
 }
 
-func (l AbsoluteLevel) GetColor() LevelColor {
+func (l *AbsoluteLevel) GetColor() LevelColor {
 	return l.Color
 }
 
-func (l AbsoluteLevel) SetColor(lc LevelColor) {
+func (l *AbsoluteLevel) SetColor(lc LevelColor) {
 	l.Color = lc
 }
 
-func (l AbsoluteLevel) GetBoxOptions() LevelBoxOptions {
+func (l *AbsoluteLevel) GetBoxOptions() LevelBoxOptions {
 	return l.BoxOptions
 }
 
-func (l AbsoluteLevel) SetBoxOptions(lb LevelBoxOptions) {
+func (l *AbsoluteLevel) SetBoxOptions(lb LevelBoxOptions) {
 	l.BoxOptions = lb
 }
 
-func (l RelativeLevel) GetColor() LevelColor {
+func (l *AbsoluteLevel) GetOptions() LevelOptions {
+	return l.Options
+}
+
+func (l *AbsoluteLevel) SetOptions(lb LevelOptions) {
+	l.Options = lb
+}
+
+func (l *RelativeLevel) GetColor() LevelColor {
 	return l.Color
 }
 
-func (l RelativeLevel) SetColor(lc LevelColor) {
+func (l *RelativeLevel) SetColor(lc LevelColor) {
 	l.Color = lc
 }
 
-func (l RelativeLevel) GetBoxOptions() LevelBoxOptions {
+func (l *RelativeLevel) GetBoxOptions() LevelBoxOptions {
 	return l.BoxOptions
 }
 
-func (l RelativeLevel) SetBoxOptions(lb LevelBoxOptions) {
+func (l *RelativeLevel) SetBoxOptions(lb LevelBoxOptions) {
 	l.BoxOptions = lb
 }
 
-func Merge(a, b Level) {
+func (l *RelativeLevel) GetOptions() LevelOptions {
+	return l.Options
+}
+
+func (l *RelativeLevel) SetOptions(lb LevelOptions) {
+	l.Options = lb
+}
+
+func Merge(a, b Level) Level {
 	aColor := a.GetColor()
-	aColor.Merge(b.GetColor())
-	a.SetColor(aColor)
+	bColor := b.GetColor()
+	resultingColor := aColor.OverwriteWith(&bColor)
+	a.SetColor(*resultingColor)
 
 	aBoxOptions := a.GetBoxOptions()
 	aBoxOptions.Merge(b.GetBoxOptions())
 	a.SetBoxOptions(aBoxOptions)
+
+	aOptions := a.GetOptions()
+	bOptions := b.GetOptions()
+	resultingOptions := aOptions.Merge(bOptions)
+	a.SetOptions(*resultingOptions)
+	return a
+}
+
+func MergeWithBase(a, b Level) Level {
+	aColor := a.GetColor()
+	bColor := b.GetColor()
+	resultingColor := aColor.MergeWithBase(&bColor)
+	a.SetColor(*resultingColor)
+
+	aBoxOptions := a.GetBoxOptions()
+	aBoxOptions.Merge(b.GetBoxOptions())
+	a.SetBoxOptions(aBoxOptions)
+
+	aOptions := a.GetOptions()
+	bOptions := b.GetOptions()
+	resultingOptions := aOptions.Merge(bOptions)
+	a.SetOptions(*resultingOptions)
+	return a
 }

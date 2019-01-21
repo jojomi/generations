@@ -33,6 +33,9 @@ type RenderTreeOptions struct {
 
 	GenderOrder GenderOrder
 
+	// levels
+	Levels []AbsoluteLevel `yaml:"-"`
+
 	// Limits
 	IgnoreIDs                    []string `yaml:"ignore,omitempty"`
 	MaxParentGenerations         int      `yaml:"max-parent-generations,omitempty"`

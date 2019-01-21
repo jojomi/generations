@@ -1,0 +1,7 @@
+absolute:
+  - index: 3
+    options: "child distance=4mm,further distance=6mm"
+  - index: 2
+    options: "child distance=2mm,further distance=4mm"
+  - index: 1
+    options: "child distance=0mm,further distance=2mm"

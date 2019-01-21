@@ -101,13 +101,27 @@ func commandRoot(c *cobra.Command, args []string) {
 			treeConfig.AddGlobals(config)
 
 			// level handling
-			treeConfig.Levels.AddDefaultLevels(-5, 5)
-			treeConfig.Levels.SetGlobalBoxOptions()
+			treeConfig.Levels.AddDefaultLevels(-10, 10)
 			treeConfig.Levels.Inherit(treeConfig.ProbandLevel, config.Levels)
+			// reverse order!
+			themes := treeConfig.Levels.Themes
+			for i := range themes {
+				theme := themes[len(themes)-1-i]
+				themePath := filepath.Join("templates", "levels", theme+".yml")
+				themeData, err := ioutil.ReadFile(themePath)
+				if err != nil {
+					log.Fatal(err)
+				}
+				var themeLevels generations.LevelConfig
+				err = yaml.Unmarshal(themeData, &themeLevels)
+				if err != nil {
+					log.Fatal(err)
+				}
+				treeConfig.Levels.Inherit(treeConfig.ProbandLevel, themeLevels)
+			}
 			treeConfig.Levels.Combine(treeConfig.ProbandLevel)
 
 			database := generations.NewMemoryDatabase()
-
 			for _, db := range treeConfig.Databases {
 				err := database.ParseYamlFile(db)
 				if err != nil {
@@ -155,6 +169,7 @@ func commandRoot(c *cobra.Command, args []string) {
 			}
 
 			o := treeConfig.RenderTreeOptions
+			o.Levels = treeConfig.Levels.Combined
 			// template filenames
 			if o.TemplateFilenameTree == "" {
 				o.TemplateFilenameTree = "templates/tree.tpl"
