@@ -46,7 +46,7 @@
         processing=database,
         database format=full-ages,
         level distance=12mm,
-        level size=5cm,
+        level size=40mm,
         node size from=3mm to 50mm,
         %
         %
@@ -66,7 +66,8 @@
                 {{- with .Color.Main }}{{ if .}}\tcbset{colframe={{- . -}} }{{ end }}{{ end -}}
                 {{- with .BoxOptions.Main }}{{ if .}} {{- . -}} {{ end }}{{ end -}}
             {{- end -}}
-            }}{{ with .Options }}{{ if . }}, {{- . -}} {{ end }}{{ end -}}
+            }}
+            {{- with .Options }}{{ if . }}, {{- . -}} {{ end }}{{ end -}}
         },
         {{ end -}}
         %
@@ -88,12 +89,12 @@
             segmentation style={solid,shorten >=1mm,shorten <=0mm},
             \gtrDBsex,
             if image defined={%
-                height from=32.5mm to 60mm,
-                right=25mm,
-                segmentation style={solid,shorten >=25mm,shorten <=1mm},
+                height from=22.5mm to 40mm,
+                right=15mm,
+                segmentation style={solid,shorten >=15mm,shorten <=1mm},
                 underlay={\begin{tcbclipinterior}%
                 \path[preaction={fill=tcbcol@frame!10!tcbcol@back},fill overzoom DBimage]
-                ([xshift=-24mm]interior.south east) rectangle (interior.north east);
+                ([xshift=-14mm]interior.south east) rectangle (interior.north east);
                 \end{tcbclipinterior}},%
             }{%
                 segmentation style={solid,shorten >=1mm,shorten <=1mm},
