@@ -101,7 +101,7 @@ func commandRoot(c *cobra.Command, args []string) {
 			treeConfig.AddGlobals(config)
 
 			// level handling
-			treeConfig.Levels.AddDefaultLevels(-10, 10)
+			treeConfig.Levels.AddDefaultLevels(-20, 20)
 			treeConfig.Levels.Inherit(treeConfig.ProbandLevel, config.Levels)
 			// reverse order!
 			themes := treeConfig.Levels.Themes
@@ -117,6 +117,8 @@ func commandRoot(c *cobra.Command, args []string) {
 				if err != nil {
 					log.Fatal(err)
 				}
+				themeLevels.AddDefaultLevels(-20, 20)
+				themeLevels.Combine(treeConfig.ProbandLevel)
 				treeConfig.Levels.Inherit(treeConfig.ProbandLevel, themeLevels)
 			}
 			treeConfig.Levels.Combine(treeConfig.ProbandLevel)
@@ -249,7 +251,7 @@ func commandRoot(c *cobra.Command, args []string) {
 			fmt.Println(err)
 			os.Exit(5)
 		}
-		print.Successln("Ouput tex file written.")
+		print.Successln("Output tex file written.")
 
 		if !flagRootCompile {
 			os.Exit(0)

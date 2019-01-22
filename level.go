@@ -68,7 +68,7 @@ outer:
 func (l *LevelConfig) Inherit(probandLevel int, baseConfig LevelConfig) *LevelConfig {
 outerAbs:
 	for i, a := range l.Absolute {
-		for _, b := range baseConfig.Absolute {
+		for _, b := range baseConfig.Combined {
 			if a.Index != b.Index {
 				continue
 			}
@@ -78,7 +78,7 @@ outerAbs:
 		}
 	}
 
-outerRel:
+	/*outerRel:
 	for i, r := range l.Relative {
 		for _, b := range baseConfig.Relative {
 			if b.Index != r.Index+probandLevel {
@@ -88,7 +88,7 @@ outerRel:
 			l.Relative[i] = r
 			continue outerRel
 		}
-	}
+	}*/
 
 	return l
 }

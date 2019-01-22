@@ -1,14 +1,62 @@
 # right-align in-law relatives
-absolute:
-  - index: 1
+relative:
+  - index: 10
     box-options:
       leaf: \tcbset{halign upper=flush right,halign lower=right}
-  - index: 2
+  - index: 9
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: 8
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: 7
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: 6
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: 5
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: 4
     box-options:
       leaf: \tcbset{halign upper=flush right,halign lower=right}
   - index: 3
     box-options:
       leaf: \tcbset{halign upper=flush right,halign lower=right}
-  - index: 4
+  - index: 2
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: 1
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: -1
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: -2
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: -3
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: -4
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: -5
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: -6
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: -7
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: -8
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: -9
+    box-options:
+      leaf: \tcbset{halign upper=flush right,halign lower=right}
+  - index: -10
     box-options:
       leaf: \tcbset{halign upper=flush right,halign lower=right}
