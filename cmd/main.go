@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/skratchdot/open-golang/open"
 
 	"github.com/jojomi/go-script/print"
@@ -25,14 +26,15 @@ import (
 )
 
 var (
-	flagRootShowConfig     bool
-	flagRootCompile        bool
-	flagRootAnonymize      bool
-	flagRootNumCompileRuns int
-	flagRootMinify         bool
-	flagRootOpen           bool
-	flagRootVerbose        bool
-	flagRootCheckIDs       bool
+	flagRootShowConfig      bool
+	flagRootCompile         bool
+	flagRootAnonymize       bool
+	flagRootNumCompileRuns  int
+	flagRootMinify          bool
+	flagRootOpen            bool
+	flagRootDatabaseBaseDir string
+	flagRootVerbose         bool
+	flagRootCheckIDs        bool
 )
 
 func main() {
@@ -43,13 +45,14 @@ func main() {
 		Run:   commandRoot,
 	}
 	flags := rootCmd.PersistentFlags()
-	flags.BoolVarP(&flagRootShowConfig, "debug-config", "d", false, "show parsed config")
+	flags.BoolVarP(&flagRootShowConfig, "debug-config", "c", false, "show parsed config")
 	flags.BoolVarP(&flagRootCheckIDs, "check-ids", "i", true, "error on unlinked IDs")
 	flags.BoolVarP(&flagRootAnonymize, "anonymize", "a", false, "anonymize data")
 	flags.BoolVarP(&flagRootCompile, "compile", "", true, "generate pdf file using lualatex")
 	flags.IntVarP(&flagRootNumCompileRuns, "compile-runs", "n", 2, "number of times to call lualatex")
 	flags.BoolVarP(&flagRootMinify, "minify", "m", true, "minify filesize of generated pdf file")
 	flags.BoolVarP(&flagRootOpen, "open", "o", true, "open generated pdf file")
+	flags.StringVarP(&flagRootDatabaseBaseDir, "database-base-dir", "d", "~/.generations/databases/", "Base dir for database file lookup")
 	flags.BoolVarP(&flagRootVerbose, "verbose", "v", true, "verbose output (e.g. lualatex output)")
 	rootCmd.AddCommand(getTestCommand())
 
@@ -124,7 +127,14 @@ func commandRoot(c *cobra.Command, args []string) {
 			treeConfig.Levels.Combine(treeConfig.ProbandLevel)
 
 			database := generations.NewMemoryDatabase()
+			basePath, err := homedir.Expand(flagRootDatabaseBaseDir)
+			if err != nil {
+				panic(err)
+			}
 			for _, db := range treeConfig.Databases {
+				if !filepath.IsAbs(db) {
+					db = filepath.Join(basePath, db)
+				}
 				err := database.ParseYamlFile(db)
 				if err != nil {
 					fmt.Println(err)
