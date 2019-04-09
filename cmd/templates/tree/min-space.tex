@@ -39,100 +39,103 @@
         \gtrset{leaf/.style={
             node box={code=\tcbset{colframe=gray!60}},
         }}
-        \genealogytree[
-        % default style, adapted from "template/database sidewaysportrait"
-        database unknown key=save,
-        timeflow=right,
-        processing=database,
-        database format=full-ages,
-        level distance=12mm,
-        level size=40mm,
-        node size from=3mm to 50mm,
-        %
-        %
-        % level options
-        {{ range .Levels.Combined -}}
-        level {{ .Index }}/.style={%
-            node box={code={
-            {{- if not (.IsProbandLevel $.TreeConfig.ProbandLevel) -}}
-                {{ if .IsParentLevel $.TreeConfig.ProbandLevel }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end -}}
-                {
-                {{- with .Color.Leaf }}{{ if .}}\tcbset{colframe={{- . -}} }{{ end }}{{ end -}}
-                {{- with .BoxOptions.Leaf }}{{ if .}} {{- . -}} {{ end }}{{ end -}} }%
-                {
-                {{- with .Color.Main }}{{ if .}}\tcbset{colframe={{- . -}} }{{ end }}{{ end -}}
-                {{- with .BoxOptions.Main }}{{ if .}} {{- . -}} {{ end }}{{ end -}} }
-            {{- else -}}
-                {{- with .Color.Main }}{{ if .}}\tcbset{colframe={{- . -}} }{{ end }}{{ end -}}
-                {{- with .BoxOptions.Main }}{{ if .}} {{- . -}} {{ end }}{{ end -}}
-            {{- end -}}
-            }}
-            {{- with .Options }}{{ if . }}, {{- . -}} {{ end }}{{ end -}}
-        },
-        {{ end -}}
-        %
-        {{ if .Templates.Tree.Options.contentinline -}}
-        node={list separators={\par}{, }{}{}},
-        {{- else -}}
-        list separators={\tcbline\hangindent=\tcbfitdim\hangafter=1}{\par\hangindent=\tcbfitdim\hangafter=1}{\par}{\gtrifcommentdefined{\tcbline}{\gtrifprofessiondefined{\tcbline}{}}},
-        {{- end }}
-        box clear,
-        box={
-            enhanced,
-            boxrule=0.3mm,
-            colframe=black,
-            top=1mm,bottom=1mm,left=1mm,right=1mm,middle=0.7mm,boxsep=0pt,
-            fit basedim=7pt,
-            halign=left,
-            fontupper=\sffamily,
-            before upper={\parskip 0.15\tcbfitdim plus 0pt minus 0pt},
-            segmentation style={solid,shorten >=1mm,shorten <=0mm},
-            \gtrDBsex,
-            if image defined={%
-                height from=22.5mm to 40mm,
-                right=15mm,
-                segmentation style={solid,shorten >=15mm,shorten <=1mm},
-                underlay={\begin{tcbclipinterior}%
-                \path[preaction={fill=tcbcol@frame!10!tcbcol@back},fill overzoom DBimage]
-                ([xshift=-14mm]interior.south east) rectangle (interior.north east);
-                \end{tcbclipinterior}},%
-            }{%
-                segmentation style={solid,shorten >=1mm,shorten <=1mm},
+        \gtrset{custom/.style={
+            % default style, adapted from "template/database sidewaysportrait"
+            database unknown key=save,
+            timeflow=right,
+            processing=database,
+            database format=full-ages,
+            level distance=12mm,
+            level size=40mm,
+            node size from=3mm to 50mm,
+            %
+            %
+            % level options
+            {{ range .Levels.Combined -}}
+            level {{ .Index }}/.style={%
+                node box={code={
+                {{- if not (.IsProbandLevel $.TreeConfig.ProbandLevel) -}}
+                    {{ if .IsParentLevel $.TreeConfig.ProbandLevel }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end -}}
+                    {
+                    {{- with .Color.Leaf }}{{ if .}}\tcbset{colframe={{- . -}} }{{ end }}{{ end -}}
+                    {{- with .BoxOptions.Leaf }}{{ if .}} {{- . -}} {{ end }}{{ end -}} }%
+                    {
+                    {{- with .Color.Main }}{{ if .}}\tcbset{colframe={{- . -}} }{{ end }}{{ end -}}
+                    {{- with .BoxOptions.Main }}{{ if .}} {{- . -}} {{ end }}{{ end -}} }
+                {{- else -}}
+                    {{- with .Color.Main }}{{ if .}}\tcbset{colframe={{- . -}} }{{ end }}{{ end -}}
+                    {{- with .BoxOptions.Main }}{{ if .}} {{- . -}} {{ end }}{{ end -}}
+                {{- end -}}
+                }}
+                {{- with .Options }}{{ if . }}, {{- . -}} {{ end }}{{ end -}}
             },
-            boxrule=0.25mm,
-            leftrule=3.0mm,
-            title filled=false,
-        },
-        tcbset={
-            male/.style={colback=white,sharpish corners},
-            female/.style={colback=white},
-            neuter/.style={colback=white}
-        },
-        % distances
-        child distance=10mm,
-        further distance=20mm,
-        %
-        date format=dd.mm.yyyy,
-        rootnode/.style={box={no shadow,fuzzy halo}}, % optional: pivot
-        dead/.style={box={no shadow,fuzzy halo=1mm with black}},
-        {{ if .ProbandLevel }}proband level={{ .ProbandLevel }},{{ end }}%
-        % legend
-        edges={%rounded,
-            foreground={black,line width=0.3mm},
-            background={white,line width=1.2mm}
-        },
-        % marriage handling
-        label options={above,yshift=1mm,fill=white,draw=gray,node font=\footnotesize},
-        label database options={place text={(}{)}},
-        %
-        pref code={\textbf{#1}},
-        nick code={\enquote{\textbf{#1}}},
-        surn code=\textbf{#1},
-        place text={}{},
-        profession code={\textit{\gtrDBprofession}},
-        info separators={\tcbline}{\tcbline}{}{},
-        %event text={}{\,}{ }{},
-        event code={\gtrPrintEventPrefix{#1}\,\gtrPrintDate{#1}\xspace\gtrifplacedefined{#1}{ \gtrPrintPlace{#1}}{}},
+            {{ end -}}
+            %
+            {{ if .Templates.Tree.Options.contentinline -}}
+            node={list separators={\par}{, }{}{}},
+            {{- else -}}
+            list separators={\tcbline\hangindent=\tcbfitdim\hangafter=1}{\par\hangindent=\tcbfitdim\hangafter=1}{\par}{\gtrifcommentdefined{\tcbline}{\gtrifprofessiondefined{\tcbline}{}}},
+            {{- end }}
+            box clear,
+            box={
+                enhanced,
+                boxrule=0.3mm,
+                colframe=black,
+                top=1mm,bottom=1mm,left=1mm,right=1mm,middle=0.7mm,boxsep=0pt,
+                fit basedim=7pt,
+                halign=left,
+                fontupper=\sffamily,
+                before upper={\parskip 0.15\tcbfitdim plus 0pt minus 0pt},
+                segmentation style={solid,shorten >=1mm,shorten <=0mm},
+                \gtrDBsex,
+                if image defined={%
+                    height from=22.5mm to 40mm,
+                    right=15mm,
+                    segmentation style={solid,shorten >=15mm,shorten <=1mm},
+                    underlay={\begin{tcbclipinterior}%
+                    \path[preaction={fill=tcbcol@frame!10!tcbcol@back},fill overzoom DBimage]
+                    ([xshift=-14mm]interior.south east) rectangle (interior.north east);
+                    \end{tcbclipinterior}},%
+                }{%
+                    segmentation style={solid,shorten >=1mm,shorten <=1mm},
+                },
+                boxrule=0.25mm,
+                leftrule=3.0mm,
+            },
+            tcbset={
+                title filled=false,
+                male/.style={colback=white,sharpish corners},
+                female/.style={colback=white},
+                neuter/.style={colback=white}
+            },
+            % distances
+            child distance=10mm,
+            further distance=20mm,
+            %
+            date format=dd.mm.yyyy,
+            rootnode/.style={box={no shadow,fuzzy halo}}, % optional: pivot
+            dead/.style={box={no shadow,fuzzy halo=1mm with black}},
+            {{ if .ProbandLevel }}proband level={{ .ProbandLevel }},{{ end }}%
+            % legend
+            edges={%rounded,
+                foreground={black,line width=0.3mm},
+                background={white,line width=1.2mm}
+            },
+            % marriage handling
+            label options={above,yshift=1mm,fill=white,draw=gray,node font=\footnotesize},
+            label database options={place text={(}{)}},
+            %
+            pref code={\textbf{##1}},
+            nick code={\enquote{\textbf{##1}}},
+            surn code=\textbf{##1},
+            place text={}{},
+            profession code={\textit{\gtrDBprofession}},
+            info separators={\tcbline}{\tcbline}{}{},
+            %event text={}{\,}{ }{},
+            event code={\gtrPrintEventPrefix{##1}\,\gtrPrintDate{##1}\xspace\gtrifplacedefined{##1}{ \gtrPrintPlace{##1}}{}},
+        }}
+        \genealogytree[%
+            custom,
         %
         {{- if ne ($.Options.legend | toString) "none" }}
             {{- if ne ($.Options.legend | toString) "full" }}
