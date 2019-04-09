@@ -205,6 +205,9 @@ func (d *FlatPerson) GetPartners() ([]Person, error) {
 	for i, p := range intermediateResult {
 		finalResult[len(intermediateResult)-1-i] = p
 	}
+
+	// TODO sort by given index marriage date
+
 	return finalResult, nil
 }
 
