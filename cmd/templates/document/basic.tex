@@ -1,7 +1,7 @@
 % https://ctan.org/pkg/genealogytree
 % https://github.com/zerotoc/pdfinlimg
 
-\documentclass[10pt,paper=a4,ngerman,parskip,DIV=15,BCOR=0mm,%
+\documentclass[10pt,paper=a4,ngerman,parskip,DIV=11,BCOR=0mm,%
 {{ if .Config.DocumentOptions -}}
 {{ .Config.DocumentOptions }}%
 {{- end }}%
@@ -13,7 +13,12 @@
 \usepackage{libertine}
 
 \usepackage[
-    margin=1.25cm
+    %margin=1.25cm
+    left=5mm,
+    right=5mm,
+    top=5mm,
+    bottom=10mm,
+    footskip=5mm
     ,includeheadfoot
     ,nohead
     %,showframe % <- to show the page layout

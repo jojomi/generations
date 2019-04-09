@@ -42,9 +42,12 @@ type Person interface {
 	GetAttributes() []string
 	AddAttribute(attr string)
 	GetImageFilename() string
+	SetImageFilename(filename string)
 	GetFloruit() string
 	GetJobs() string
+	SetJobs(jobs string)
 	GetComment() string
+	SetComment(comment string)
 	IsDummy() bool
 }
 

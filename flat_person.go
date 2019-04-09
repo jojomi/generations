@@ -355,8 +355,16 @@ func (d *FlatPerson) GetImageFilename() string {
 	return d.ImageFilename
 }
 
+func (d *FlatPerson) SetImageFilename(filename string) {
+	d.ImageFilename = filename
+}
+
 func (d *FlatPerson) GetJobs() string {
 	return d.Jobs
+}
+
+func (d *FlatPerson) SetJobs(jobs string) {
+	d.Jobs = jobs
 }
 
 func (d *FlatPerson) GetFloruit() string {
@@ -365,6 +373,10 @@ func (d *FlatPerson) GetFloruit() string {
 
 func (d *FlatPerson) GetComment() string {
 	return d.Comment
+}
+
+func (d *FlatPerson) SetComment(comment string) {
+	d.Comment = comment
 }
 
 func (d *FlatPerson) IsDummy() bool {

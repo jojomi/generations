@@ -39,15 +39,21 @@
       name = {%
         {{ with $name.Title }}{{ if . }}\titlename{ {{- . -}} }\ %{{ end }}{{ end }}
         {{ if $name.Used }}
+          {{ $matched := false }}
           {{ range .First }}
             {{ if ne . $name.Used }}
               {{ if and . (not $.Options.HideMiddleNames) }}
                 \middlename{ {{- . -}} }\ %
               {{ end }}
             {{ else }}
+              {{ $matched = true }}
               \pref{ {{- . -}} }\ %
             {{ end }}
           {{ end }}
+          {{ if not $matched }}
+          \pref{ {{- $name.Used -}} }\ %
+          {{ end }}
+
         {{ else }}
           {{ range $i, $name := .First }}
             {{ if ne $i 0 }}
