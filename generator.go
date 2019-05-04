@@ -38,7 +38,7 @@ func RenderGenealogytree(p Person, o RenderTreeOptions) ([]byte, error) {
 		if err != nil {
 			return []byte{}, err
 		}
-		siblings := []Person{}
+		siblings := NewPersonList(nil)
 		if !dad.IsDummy() {
 			siblings, err = dad.GetChildrenWith(mom)
 			if err != nil {
@@ -88,9 +88,9 @@ func RenderGenealogytree(p Person, o RenderTreeOptions) ([]byte, error) {
 	return withoutEmptyLines(result), nil
 }
 
-func renderPersonSlice(persons []Person, renderPersonOptions RenderPersonOptions) (string, error) {
+func renderPersonSlice(personList PersonList, renderPersonOptions RenderPersonOptions) (string, error) {
 	var outputBuffer bytes.Buffer
-	for _, person := range persons {
+	for _, person := range personList.GetPersons() {
 		personData, err := renderPerson(person, renderPersonOptions)
 		if err != nil {
 			return "", errors.Annotate(err, "could not render siblings")
@@ -168,10 +168,10 @@ func RenderTemplateFile(filename string, data interface{}) ([]byte, error) {
 		return []byte{}, err
 	}
 	result, err := strtpl.EvalWithFuncMap(string(templateContent), template.FuncMap{
-		"noEmptyLines":       withoutEmptyLines,
-		"noEmptyLinesString": withoutEmptyLinesString,
-		"toString":           toString,
-		"join":               strings.Join,
+		"noEmptyLines":           withoutEmptyLines,
+		"noEmptyLinesString":     withoutEmptyLinesString,
+		"toString":               toString,
+		"join":                   strings.Join,
 		"getFilteredStringSlice": getFilteredStringSlice,
 		"latexify":               latexify,
 	}, data)

@@ -8,49 +8,6 @@ import (
 
 //go:generate go-enum -f=models.go
 
-type Person interface {
-	SetID(id string)
-	GetID() string
-	GetUUID() string
-	GetGender() Gender
-	MatchesIDUUID(idUUIDSearches ...string) bool
-	MatchesSearch(search string) bool
-	GetChildNumber() int
-	GetName() Name
-	GetBirth() DatePlace
-	GetBaptism() DatePlace
-	GetDeath() DatePlace
-	// GetDeathAge returns the age in years at the given point of time. -1 iff the age can't be determined.
-	GetAge(now time.Time) int
-	// GetDeathAge returns the age in years when the person died. -1 iff the age can't be determined.
-	GetDeathAge() int
-	GetBurial() DatePlace
-	// GetChildren returns all children of this person
-	GetChildren() ([]Person, error)
-	GetMom() (Person, error)
-	GetDad() (Person, error)
-	// GetPartners returns the list partners that are known for this person
-	// A partner is a person that
-	// - has been married with this person for any given moment in the past
-	// OR
-	// - had at least one child with this partner for any given moment in the past
-	GetPartners() ([]Person, error)
-	// GetChildrenWith returns the list of children of this person with a given partner
-	GetChildrenWith(partner Person) ([]Person, error)
-	// GetChildrenParents returns the list partners that person has children with (possibly including `nil` iff there is children where no other parent is known)
-	GetChildrenParents() ([]Person, error)
-	GetAttributes() []string
-	AddAttribute(attr string)
-	GetImageFilename() string
-	SetImageFilename(filename string)
-	GetFloruit() string
-	GetJobs() string
-	SetJobs(jobs string)
-	GetComment() string
-	SetComment(comment string)
-	IsDummy() bool
-}
-
 // Gender x ENUM(
 // unknown
 // male
@@ -61,17 +18,6 @@ type Gender int8
 type Marriage struct {
 	DatePlace
 	Partner Person
-}
-
-type Name struct {
-	Title string   `yaml:"title,omitempty"`
-	First []string `yaml:"first,omitempty"`
-	// If the used first name is different from the first element in the .First slice, it can be set using .Used
-	Used  string `yaml:"used,omitempty"`
-	Last  string `yaml:"last,omitempty"`
-	Birth string `yaml:"birth,omitempty"`
-	Alias string `yaml:"alias,omitempty"`
-	Nick  string `yaml:"nick,omitempty"`
 }
 
 type DatePlace struct {
@@ -112,17 +58,19 @@ func (n Name) Empty() bool {
 	return len(n.First) == 0 && n.Last == "" && n.Birth == ""
 }
 
-func SplitPersons(persons []Person, split Person) (younger []Person, older []Person) {
+func SplitPersons(personList PersonList, split Person) (younger PersonList, older PersonList) {
 	isOlder := true
-	for _, p := range persons {
+	younger = NewPersonList(nil)
+	older = NewPersonList(nil)
+	for _, p := range personList.GetPersons() {
 		if p.GetID() == split.GetID() {
 			isOlder = false
 			continue
 		}
 		if isOlder {
-			older = append(older, p)
+			older.AddPerson(p)
 		} else {
-			younger = append(younger, p)
+			younger.AddPerson(p)
 		}
 	}
 	return

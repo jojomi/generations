@@ -1,7 +1,6 @@
 package generations
 
 import (
-	"sort"
 	"time"
 
 	age "github.com/bearbin/go-age"
@@ -29,13 +28,6 @@ type FlatPerson struct {
 	Comment       string             `yaml:"comment,omitempty"`
 
 	Database *MemoryDatabase `yaml:"-"`
-}
-
-type FlatRelationship struct {
-	PartnerID  string    `yaml:"partner_id,omitempty"`
-	Engagement DatePlace `yaml:"engagement,omitempty"`
-	Marriage   DatePlace `yaml:"marriage,omitempty"`
-	Divorce    DatePlace `yaml:"divorce,omitempty"`
 }
 
 func NewDummyFlatPerson() *FlatPerson {
@@ -99,6 +91,15 @@ func (d *FlatPerson) GetName() Name {
 
 func (d *FlatPerson) GetChildNumber() int {
 	return d.ChildNumber
+}
+
+func (d *FlatPerson) GetRelationships() []Relationship {
+	result := make([]Relationship, len(d.Partners))
+	for i, item := range d.Partners {
+		item.Person = *d
+		result[i] = item
+	}
+	return result
 }
 
 func (d *FlatPerson) GetBirth() DatePlace {
@@ -180,14 +181,14 @@ func (d *FlatPerson) GetDad() (Person, error) {
 	return dad, nil
 }
 
-func (d *FlatPerson) GetPartners() ([]Person, error) {
-	result := []Person{}
+func (d *FlatPerson) GetPartners() (PersonList, error) {
+	result := NewPersonList(nil)
 
 	// find explicit partners
 	for _, partner := range d.Partners {
 		for _, person := range d.Database.Persons {
 			if person.MatchesIDUUID(partner.PartnerID) {
-				result = append(result, person)
+				result.AddPerson(person)
 			}
 		}
 	}
@@ -195,24 +196,19 @@ func (d *FlatPerson) GetPartners() ([]Person, error) {
 	// find partners through common children
 	childrenPartners, err := d.GetChildrenParents()
 	if err != nil {
-		return []Person{}, err
+		return NewPersonList(nil), err
 	}
 
 	// merge results
-	intermediateResult := deduplicatePersonSlices(mergePersonSlices(childrenPartners, result))
-
-	finalResult := make([]Person, len(intermediateResult))
-	for i, p := range intermediateResult {
-		finalResult[len(intermediateResult)-1-i] = p
-	}
+	finalResult := childrenPartners.AddList(&result).RemoveDuplicates().Invert()
 
 	// TODO sort by given index marriage date
 
-	return finalResult, nil
+	return *finalResult, nil
 }
 
-func (d *FlatPerson) GetChildrenParents() ([]Person, error) {
-	result := []Person{}
+func (d *FlatPerson) GetChildrenParents() (PersonList, error) {
+	result := NewPersonList(nil)
 	parentsSeen := make(map[string]struct{}, 0)
 	var (
 		mom       Person
@@ -225,7 +221,7 @@ func (d *FlatPerson) GetChildrenParents() ([]Person, error) {
 	if err != nil {
 		return result, err
 	}
-	for _, child := range children {
+	for _, child := range children.GetPersons() {
 		mom, err = child.GetMom()
 		if err != nil {
 			return result, err
@@ -253,13 +249,13 @@ func (d *FlatPerson) GetChildrenParents() ([]Person, error) {
 		}
 		parentsSeen[candidate.GetID()] = struct{}{}
 
-		result = append(result, candidate)
+		result.AddPerson(candidate)
 	}
 	return result, nil
 }
 
-func (d *FlatPerson) GetChildren() ([]Person, error) {
-	result := []Person{}
+func (d *FlatPerson) GetChildren() (PersonList, error) {
+	result := NewPersonList(nil)
 
 	var (
 		mom Person
@@ -269,18 +265,18 @@ func (d *FlatPerson) GetChildren() ([]Person, error) {
 	for _, child := range d.Database.Persons {
 		mom, err = child.GetMom()
 		if err != nil {
-			return []Person{}, err
+			return NewPersonList(nil), err
 		}
 		if mom != nil && mom.MatchesIDUUID(d.GetUUID(), d.GetID()) {
-			result = append(result, child)
+			result.AddPerson(child)
 			continue
 		}
 		dad, err = child.GetDad()
 		if err != nil {
-			return []Person{}, err
+			return NewPersonList(nil), err
 		}
 		if dad != nil && dad.MatchesIDUUID(d.GetUUID(), d.GetID()) {
-			result = append(result, child)
+			result.AddPerson(child)
 			continue
 		}
 	}
@@ -288,25 +284,25 @@ func (d *FlatPerson) GetChildren() ([]Person, error) {
 	return result, nil
 }
 
-func (d *FlatPerson) GetChildrenWith(partner Person) ([]Person, error) {
-	result := []Person{}
+func (d *FlatPerson) GetChildrenWith(partner Person) (PersonList, error) {
+	result := NewPersonList(nil)
 	children, err := d.GetChildren()
 	if err != nil {
 		return result, err
 	}
-	for _, child := range children {
+	for _, child := range children.GetPersons() {
 		mom, err := child.GetMom()
 		if err != nil {
-			return []Person{}, err
+			return NewPersonList(nil), err
 		}
 		dad, err := child.GetDad()
 		if err != nil {
-			return []Person{}, err
+			return NewPersonList(nil), err
 		}
 		otherParent := getOtherPerson(mom, dad, d)
 		if partner.IsDummy() {
 			if otherParent.IsDummy() {
-				result = append(result, child)
+				result.AddPerson(child)
 			}
 			continue
 		}
@@ -315,16 +311,17 @@ func (d *FlatPerson) GetChildrenWith(partner Person) ([]Person, error) {
 			continue
 		}
 		if otherParent.GetID() == partner.GetID() {
-			result = append(result, child)
+			result.AddPerson(child)
 		}
 	}
 
 	// sort children: first by child-number, then by date of birth
-	sort.SliceStable(result, func(i, j int) bool {
-		if result[i].GetChildNumber() != result[j].GetChildNumber() {
-			return result[i].GetChildNumber() < result[j].GetChildNumber()
+	sortPersons := result.GetPersons()
+	result.SortPersons(func(i, j int) bool {
+		if sortPersons[i].GetChildNumber() != sortPersons[j].GetChildNumber() {
+			return sortPersons[i].GetChildNumber() < sortPersons[j].GetChildNumber()
 		}
-		return result[i].GetBirth().Date < result[j].GetBirth().Date
+		return sortPersons[i].GetBirth().Date < sortPersons[j].GetBirth().Date
 	})
 
 	return result, nil
@@ -407,48 +404,4 @@ func getOtherPerson(a, b, than Person) Person {
 		return a
 	}
 	return nil
-}
-
-// mergePersonSlices merges two slices of FlatPersons filtering duplicate entries
-func mergePersonSlices(sources ...[]Person) []*FlatPerson {
-	if len(sources) == 0 {
-		return []*FlatPerson{}
-	}
-
-	result := []*FlatPerson{}
-	for _, source := range sources {
-		for _, entry := range source {
-			if entry == nil {
-				result = append(result, nil)
-				continue
-			}
-			result = append(result, entry.(*FlatPerson))
-		}
-	}
-	return result
-}
-
-func deduplicatePersonSlices(source []*FlatPerson) []*FlatPerson {
-	var (
-		seen    = map[string]struct{}{}
-		seenNil = false
-		ok      = false
-	)
-	result := []*FlatPerson{}
-	for _, entry := range source {
-		if entry != nil {
-			if _, ok = seen[entry.GetID()]; ok {
-				continue
-			}
-			seen[entry.GetID()] = struct{}{}
-		} else {
-			if seenNil {
-				continue
-			}
-			seenNil = true
-		}
-
-		result = append(result, entry)
-	}
-	return result
 }

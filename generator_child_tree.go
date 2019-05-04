@@ -14,7 +14,7 @@ func renderChildrenWithPartner(person, partner Person, o RenderTreeOptions, leve
 	if err != nil {
 		return "", err
 	}
-	for _, child := range children {
+	for _, child := range children.GetPersons() {
 		if child == nil {
 			continue
 		}
@@ -59,9 +59,9 @@ func renderChildTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level
 	partners := nonIgnored(partnerList, o)
 
 	// unions (other partners)
-	if len(partners) > 0 {
+	if partners.Count() > 0 {
 		var unionBuffer bytes.Buffer
-		for i, partner := range partners {
+		for i, partner := range partners.GetPersons() {
 			// special case: first partner -> no union allowed!
 			if i == 0 {
 				uData, err := renderUnionData(p, partner, o, level)
@@ -148,7 +148,7 @@ func renderUnionData(person, partner Person, o RenderTreeOptions, level int) (un
 	}
 
 	if level < o.MaxChildGenerations {
-		for _, child := range children {
+		for _, child := range children.GetPersons() {
 			if child == nil {
 				continue
 			}
@@ -189,13 +189,13 @@ func isPersonIgnored(p Person, oTree RenderTreeOptions) bool {
 	return false
 }
 
-func nonIgnored(persons []Person, oTree RenderTreeOptions) []Person {
-	result := make([]Person, 0, len(persons))
-	for _, person := range persons {
+func nonIgnored(personList PersonList, oTree RenderTreeOptions) PersonList {
+	result := NewPersonList(nil)
+	for _, person := range personList.GetPersons() {
 		if isPersonIgnored(person, oTree) {
 			continue
 		}
-		result = append(result, person)
+		result.AddPerson(person)
 	}
 	return result
 }

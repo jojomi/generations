@@ -62,7 +62,7 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 
 		// render siblings
 		if level <= o.MaxParentSiblingsGenerations {
-			var siblings []Person
+			var siblings PersonList
 			if !mom.IsDummy() {
 				siblings, err = mom.GetChildrenWith(dad)
 				if err != nil {
