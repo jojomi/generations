@@ -1,0 +1,61 @@
+relative:
+  - index: 10
+    color:
+      leaf: gray!25
+  - index: 9
+    color:
+      leaf: gray!25
+  - index: 8
+    color:
+      leaf: gray!25
+  - index: 7
+    color:
+      leaf: gray!25
+  - index: 6
+    color:
+      leaf: gray!25
+  - index: 5
+    color:
+      leaf: gray!25
+  - index: 4
+    color:
+      leaf: gray!25
+  - index: 3
+    color:
+      leaf: gray!25
+  - index: 2
+    color:
+      leaf: gray!25
+  - index: 1
+    color:
+      leaf: gray!25
+  - index: -1
+    color:
+      leaf: gray!25
+  - index: -2
+    color:
+      leaf: gray!25
+  - index: -3
+    color:
+      leaf: gray!25
+  - index: -4
+    color:
+      leaf: gray!25
+  - index: -5
+    color:
+      leaf: gray!25
+  - index: -6
+    color:
+      leaf: gray!25
+  - index: -7
+    color:
+      leaf: gray!25
+  - index: -8
+    color:
+      leaf: gray!25
+  - index: -9
+    color:
+      leaf: gray!25
+  - index: -10
+    color:
+      leaf: gray!25

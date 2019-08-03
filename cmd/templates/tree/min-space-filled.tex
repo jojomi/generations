@@ -57,13 +57,13 @@
                 {{- if not (.IsProbandLevel $.TreeConfig.ProbandLevel) -}}
                     {{ if .IsParentLevel $.TreeConfig.ProbandLevel }}\gtrifleafchild{{ else }}\gtrifleafparent{{ end -}}
                     {
-                    {{- with .Color.Leaf }}{{ if .}}\tcbset{colframe={{- . -}} }{{ end }}{{ end -}}
+                    {{- with .Color.Leaf }}{{ if .}}\tcbset{colback={{- . -}},colframe=black }{{ end }}{{ end -}}
                     {{- with .BoxOptions.Leaf }}{{ if .}} {{- . -}} {{ end }}{{ end -}} }%
                     {
-                    {{- with .Color.Main }}{{ if .}}\tcbset{colframe={{- . -}} }{{ end }}{{ end -}}
+                    {{- with .Color.Main }}{{ if .}}\tcbset{colback={{- . -}},colframe=black }{{ end }}{{ end -}}
                     {{- with .BoxOptions.Main }}{{ if .}} {{- . -}} {{ end }}{{ end -}} }
                 {{- else -}}
-                    {{- with .Color.Main }}{{ if .}}\tcbset{colframe={{- . -}} }{{ end }}{{ end -}}
+                    {{- with .Color.Main }}{{ if .}}\tcbset{colback={{- . -}},colframe=black }{{ end }}{{ end -}}
                     {{- with .BoxOptions.Main }}{{ if .}} {{- . -}} {{ end }}{{ end -}}
                 {{- end -}}
                 }}
@@ -100,7 +100,7 @@
                     segmentation style={solid,shorten >=1mm,shorten <=1mm},
                 },
                 boxrule=0.25mm,
-                leftrule=3.0mm,
+                %leftrule=3.0mm,
             },
             tcbset={
                 title filled=false,
@@ -114,7 +114,7 @@
             %
             date format=dd.mm.yyyy,
             rootnode/.style={box={no shadow,fuzzy halo}}, % optional: pivot
-            dead/.style={box={no shadow,fuzzy halo=1mm with black}},
+            dead/.style={box={leftrule=1.5mm}},
             {{ if .ProbandLevel }}proband level={{ .ProbandLevel }},{{ end }}%
             % legend
             edges={%rounded,
