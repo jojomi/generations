@@ -46,7 +46,7 @@ func TestGetChildren(t *testing.T) {
 		assert.Nil(t, err, test.Name)
 		children, err := person.GetChildren()
 		assert.Nil(t, err, test.Name)
-		assert.Len(t, children, len(test.ExpectedIDs), test.Name)
+		assert.Len(t, children.GetPersons(), len(test.ExpectedIDs), test.Name)
 		childrenIDs := getPersonSliceIDs(children)
 		assert.Equal(t, test.ExpectedIDs, childrenIDs, test.Name)
 	}
@@ -105,7 +105,7 @@ func TestGetChildrenParents(t *testing.T) {
 		assert.Nil(t, err, test.Name)
 		parents, err := person.GetChildrenParents()
 		assert.Nil(t, err, test.Name)
-		assert.Len(t, parents, len(test.ExpectedIDs), test.Name)
+		assert.Len(t, parents.GetPersons(), len(test.ExpectedIDs), test.Name)
 		parentIDs := getPersonSliceIDs(parents)
 		assert.Equal(t, test.ExpectedIDs, parentIDs, test.Name)
 	}
@@ -121,12 +121,12 @@ func TestGetPartners(t *testing.T) {
 		{
 			DatabaseFilename: "partners",
 			ID:               "gauss",
-			ExpectedIDs:      []string{"frau-gauss"},
+			ExpectedIDs:      []string{}, // because there is no partners entry
 		},
 		{
 			DatabaseFilename: "partners",
 			ID:               "frau-gauss",
-			ExpectedIDs:      []string{}, // because there is no partners entry
+			ExpectedIDs:      []string{"gauss"},
 		},
 		{
 			DatabaseFilename: "children",
