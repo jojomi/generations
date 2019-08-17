@@ -11,7 +11,7 @@ type FlatPerson struct {
 	Dummy         bool               `yaml:"-"`
 	ID            string             `yaml:"id,omitempty"`
 	UUID          string             `yaml:"uuid,omitempty"`
-	ChildNumber   int                `yaml:"child-number,omitempty"`
+	ChildNumber   int                `yaml:"child_number,omitempty"`
 	Name          Name               `yaml:"name,omitempty"`
 	Gender        string             `yaml:"gender,omitempty"`
 	Birth         DatePlace          `yaml:"birth,omitempty"`
