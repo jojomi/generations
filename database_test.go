@@ -76,8 +76,11 @@ func TestMakeIDs(t *testing.T) {
 			First: []string{"Andreas", "Wolfgang"},
 		},
 	}
+	p5 := &FlatPerson{
+		Birth: DatePlace{Date: "24.12.1999"},
+	}
 	db.Persons = []*FlatPerson{
-		p1, p2, p3, p4,
+		p1, p2, p3, p4, p5,
 	}
 	err := db.MakeIDs(FourFourYearIDFunc)
 	assert.Nil(t, err)
@@ -85,4 +88,5 @@ func TestMakeIDs(t *testing.T) {
 	assert.Equal(t, "MüllHein1982", p2.ID)
 	assert.Equal(t, "Noe1826", p3.ID)
 	assert.Equal(t, "Andr", p4.ID)
+	assert.Equal(t, "1999", p5.ID)
 }
