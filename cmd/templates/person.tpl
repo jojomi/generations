@@ -16,8 +16,9 @@
   {{- end }}%
   {{- end }}%
   {{ $attributes := getFilteredStringSlice .Person.GetAttributes $hideList }}%
-  {{ if $attributes }}%
-    {{ join $attributes "," }}
+  ,%
+  {{ if .Person.GetDeadState }}%
+    dead,
   {{- end }}%
 ]{
   {{ with .Person.GetUUID }}
@@ -50,7 +51,7 @@
               \pref{ {{- . -}} }\ %
             {{ end }}
           {{ end }}
-          {{ if not $matched }}
+          {{ if and (not $matched) (ne $name.Used "?") }}
           \pref{ {{- $name.Used -}} }\ %
           {{ end }}
 
@@ -96,7 +97,7 @@
 
       {{ with .Alias }}
       {{ if . }}
-      ~-- \alias{ {{- . -}} }\ %
+      \\ \alias{ {{- . -}} }\ %
       {{ end }}
       {{ end }}
 
@@ -180,24 +181,9 @@
         {{ end }}
       {{ end }}
 
-      {{ with .Marriage }}
-        {{ if and (not $.Options.HideMarriage) (not .Empty) }}
-          {{ if and (not $.Options.HidePlaces) (ne .Place "") }}
-          marriage = { {{- .Date -}} }{ {{- .Place -}} },
-          {{ else }}
-          marriage- = { {{- .Date -}} },
-          {{ end }}
+      {{ template "eventWithAge" (dict "Event" .Marriage "FieldName" "marriage" "AgeFieldName" "marriageage" "HideEvent" $.Options.HideMarriage "HideAge" $.Options.HideMarriageAge "HidePlaces" $.Options.HidePlaces "HideBirth" $.Options.HideBirth "Birth" $birth) }}
 
-          {{ if not $.Options.HideBirth }}
-            {{ $marriageAge := .GetAgeBegin $birth }}
-            {{ with $marriageAge }}
-              {{ if and (ne . -1) (not $.Options.HideMarriageAge) }}
-                marriageage = { {{- . -}} },
-              {{ end }}
-            {{ end }}
-          {{ end }}
-        {{ end }}
-      {{ end }}
+      {{ template "eventWithAge" (dict "Event" .MarriageReligious "FieldName" "marriagereligious" "AgeFieldName" "marriageagereligious" "HideEvent" $.Options.HideMarriageReligious "HideAge" $.Options.HideMarriageReligiousAge "HidePlaces" $.Options.HidePlaces "HideBirth" $.Options.HideBirth "Birth" $birth) }}
 
       {{ with .Divorce }}
         {{ if and (not $.Options.HideDivorce) (not .Empty) }}
@@ -214,19 +200,27 @@
   {{ end }}
 
   {{ if not .Options.HideFloruit }}
-  {{ with .Person.Floruit }}
+  {{ with .Person.Residences }}
     {{ if and . (not $.Options.HidePlaces) }}
-      floruit = {-}{ {{- . -}} },
+      floruit = {-}{
+        {{- range $i, $r := . -}}
+          {{ if $i }}, {{ end -}}
+          {{ $r.City }}
+        {{- end -}}
+      },
     {{ end }}
   {{ end }}
   {{ end }}
 
   {{ if not .Options.HideJobs }}
-  {{ with .Person.GetJobs }}
-    {{ if . }}
-      profession = { {{- . -}} },
+    {{ with .Person.GetJobs }}
+      profession = {
+        {{- range $i, $j := . -}}
+          {{ if $i }}, {{ end -}}
+          {{ $j.Type -}}
+        {{ end -}}
+      },
     {{ end }}
-  {{ end }}
   {{ end }}
 
   {{ if not .Options.HideImage }}
@@ -238,10 +232,31 @@
   {{ end }}
 
   {{ if not .Options.HideComment }}
-  {{ with .Person.GetComment }}
-    {{ if . }}
-      comment = { {{- . -}} },
-    {{ end }}
+  {{ with .Person.GetComments }}
+    comment = { 
+        {{- range . -}}
+        {{ .Text }} {{ end -}}
+    },
   {{ end }}
   {{ end }}
 }
+{{- define "eventWithAge" }}
+      {{ with $.Event }}
+        {{ if and (not $.HideEvent) (not .Empty) }}
+          {{ if and (not $.HidePlaces) (ne .Place "") }}
+          {{ $.FieldName }} = { {{- .Date -}} }{ {{- .Place -}} },
+          {{ else }}
+          {{ $.FieldName }}- = { {{- .Date -}} },
+          {{ end }}
+
+          {{ if not $.HideBirth }}
+            {{ $age := .GetAgeBegin $.Birth }}
+            {{ with $age }}
+              {{ if and (ne . -1) (not $.HideAge) }}
+                {{ $.AgeFieldName }} = { {{- . -}} },
+              {{ end }}
+            {{ end }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+{{ end }}

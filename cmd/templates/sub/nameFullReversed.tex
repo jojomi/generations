@@ -1,0 +1,21 @@
+{{ with .Name -}}
+    {{ if .Last -}}
+        \lastname{ {{- .Last -}} }
+    {{ else -}}
+        ?
+    {{- end -}}, 
+    {{ $used := .GetUsedFirst -}}
+    {{ if eq (len .First) 0 -}}
+        ?
+    {{ end -}}
+    {{ range .First -}}
+        {{ if eq . $used -}}
+            \usedFirstname{ {{- . -}} }
+        {{ else -}}
+            \additionalFirstname{ {{- . -}} }
+        {{ end -}}
+    {{ end -}}
+    {{ with .Nick }}
+        \nickname{ {{- . -}} }
+    {{ end -}}
+{{ end -}}

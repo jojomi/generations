@@ -1,0 +1,13 @@
+{{ with .data -}}
+    {\small 
+    {{ if or .From .To -}}
+        {{ if .From -}}
+            {{ .From | formatDate -}}
+        {{ else -}}
+            {{ if .To -}} ? {{- end -}}
+        {{ end }} -- {{ if .To -}}
+            {{- .To | formatDate -}}
+        {{ end -}}
+    {{ end -}}
+    }
+{{ end -}}

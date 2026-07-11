@@ -2,7 +2,7 @@
 {{ with .TreeConfig }}
 
     {{ range .Levels.Combined -}}
-        {{ $commandName := (printf "%s%s" "\\underlineLevel" (.Index | latexify)) }}
+        {{ $commandName := (printf "%s%s" "\\underlineLevel" .Index) }}
         %\DeclareRobustCommand{ {{- $commandName -}} }[1]{\setulcolor{blue}\ul{#1}}
         %\soulregister{ {{- $commandName -}} }{1}
     {{ end }}

@@ -1,0 +1,5 @@
+{{ if or ($.config.Options.Person.ShowEmpty) (and (not $.data.Empty) (not $.hide)) }}
+    \item[ {{- $.title -}} ] \symbolBox{ {{- $.symbol -}} } %
+    {{ sub "datePlace.tex" "data" $.data "weekday" $.weekday "referencesContainer" $.referencesContainer "config" $.config -}}
+    \mydots{}
+{{- end }}

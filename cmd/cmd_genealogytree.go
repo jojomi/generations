@@ -6,8 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/jojomi/generations"
@@ -15,7 +15,6 @@ import (
 	"github.com/jojomi/go-script/print"
 	"github.com/jojomi/go-spew/spew"
 	"github.com/jojomi/strtpl"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
@@ -60,7 +59,7 @@ func genealogytreeHandler(c *cobra.Command, args []string) {
 		}
 		print.Successln("File found.")
 
-		var config Config
+		var config GenealogytreeConfig
 		data, err := ioutil.ReadFile(configFile)
 		if err != nil {
 			log.Fatal(err)
@@ -114,58 +113,10 @@ func genealogytreeHandler(c *cobra.Command, args []string) {
 			}
 			treeConfig.Levels.Combine(treeConfig.ProbandLevel)
 
-			database := generations.NewMemoryDatabase()
-			basePath, err := homedir.Expand(flagRootDatabaseBaseDir)
-			if err != nil {
-				panic(err)
-			}
-			for _, db := range treeConfig.Databases {
-				if !filepath.IsAbs(db) {
-					db = filepath.Join(basePath, db)
-				}
-				err := database.ParseYamlFile(db)
-				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
-				}
-			}
+			database := loadDatabases(treeConfig.Databases, flagRootDatabaseBaseDir)
 
 			if flagGenealogytreeAnonymize {
-				for i, p := range database.Persons {
-					yearOfBirth, err := strconv.Atoi(first(p.Birth.Date, 4))
-					if err == nil && yearOfBirth < 1880 {
-						continue
-					}
-					if len(p.Name.First) > 0 {
-						if p.Name.Used != "" {
-							p.Name = generations.Name{
-								First: []string{first(p.Name.Used, 1) + "."},
-							}
-						} else {
-							p.Name = generations.Name{
-								First: []string{first(p.Name.First[0], 1) + "."},
-							}
-						}
-					} else {
-						p.Name = generations.Name{}
-					}
-					p.Birth.Place = ""
-					p.Birth.Date = first(p.Birth.Date, 4)
-					p.Death.Place = ""
-					p.Death.Date = first(p.Death.Date, 4)
-					p.Baptism = generations.DatePlace{}
-					p.Burial = generations.DatePlace{}
-					p.Jobs = ""
-					for j, r := range p.Partners {
-						r.Engagement = generations.DatePlace{}
-						r.Marriage.Date = first(r.Marriage.Date, 4)
-						r.Divorce.Date = first(r.Divorce.Date, 4)
-						p.Partners[j] = r
-					}
-					p.Floruit = ""
-					p.Comment = ""
-					database.Persons[i] = p
-				}
+				database.Anonymize()
 			}
 
 			o := treeConfig.RenderTreeOptions
@@ -214,14 +165,14 @@ func genealogytreeHandler(c *cobra.Command, args []string) {
 		var renderedTrees string
 		for _, treeConfig := range config.Trees {
 			renderedTree, err := generations.RenderTemplateFile(treeConfig.Templates.Tree.Filename, struct {
-				Config     Config
+				Config     GenealogytreeConfig
 				TreeConfig TreeConfig
 				Options    map[string]interface{}
 			}{
 				Config:     config,
 				TreeConfig: treeConfig,
 				Options:    treeConfig.Templates.Tree.Options,
-			})
+			}, template.FuncMap{})
 			if err != nil {
 				fmt.Println(err)
 				os.Exit(6)
@@ -238,18 +189,18 @@ func genealogytreeHandler(c *cobra.Command, args []string) {
 			os.Exit(4)
 		}
 		renderConfig := struct {
-			Config  Config
+			Config  GenealogytreeConfig
 			Options map[string]interface{}
 		}{
 			config,
 			config.Templates.Document.Options,
 		}
-		err = renderDocument(config.Templates.Document.Filename, renderConfig, strings.Replace(config.OutputFilename, ".pdf", ".tex", -1))
+		err = renderDocument(config.Templates.Document.Filename, renderConfig, template.FuncMap{}, strings.Replace(config.OutputFilename, ".pdf", ".tex", -1))
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(5)
 		}
-		print.Successln("Output tex file written.")
+		print.Successln("Output source file written.")
 
 		if !flagGenealogytreeCompile {
 			os.Exit(0)
@@ -287,13 +238,6 @@ func genealogytreeHandler(c *cobra.Command, args []string) {
 	}
 }
 
-func first(input string, count int) string {
-	if len(input) <= count {
-		return input
-	}
-	return string([]rune(input[0:count]))
-}
-
 func compileDocument(inputFile string, numRuns int, verbose bool) error {
 	sc := script.NewContext()
 	if !sc.CommandExists("lualatex") {
@@ -305,7 +249,12 @@ func compileDocument(inputFile string, numRuns int, verbose bool) error {
 	localCommand.AddAll(
 		//"--aux-directory="+dir,
 		"--output-directory="+dir,
+		"-halt-on-error",
 		inputFile,
+	)
+	localCommandMakeindex := script.LocalCommandFrom("makeindex")
+	localCommandMakeindex.AddAll(
+		strings.Replace(inputFile, ".tex", ".idx", 1),
 	)
 	execFunc := sc.ExecuteDebug
 	if !verbose {
@@ -318,6 +267,14 @@ func compileDocument(inputFile string, numRuns int, verbose bool) error {
 		}
 		if !pr.Successful() {
 			return fmt.Errorf("lualatex compilation not successful")
+		}
+		pr, err = execFunc(localCommandMakeindex)
+		if err != nil {
+			return err
+		}
+		// depending on the number of previous calls to lualatex this might be okay or at least not a reason to throw up
+		if !pr.Successful() {
+			// return fmt.Errorf("makeindex compilation not successful")
 		}
 	}
 
@@ -357,14 +314,14 @@ func openDocument(filename string) {
 	open.Start(filename)
 }
 
-func setDefaultOutputPath(config *Config, filename string) {
-	if config.OutputFilename != "" {
+func setDefaultOutputPath(config OutputFilenameConfig, filename string) {
+	if config.GetOutputFilename() != "" {
 		return
 	}
 
 	f := filepath.Base(filename)
 	f = strings.TrimSuffix(f, ".yml")
-	config.OutputFilename = filepath.Join("output", f+".pdf")
+	config.SetOutputFilename(filepath.Join("output", f+".pdf"))
 }
 
 func getTestCommand() *cobra.Command {
@@ -377,7 +334,7 @@ func getTestCommand() *cobra.Command {
 }
 
 func commandTest(c *cobra.Command, args []string) {
-	var config Config
+	var config GenealogytreeConfig
 
 	files, err := ioutil.ReadDir(filepath.Join("..", "testdata", "database"))
 	if err != nil {
@@ -435,15 +392,15 @@ func commandTest(c *cobra.Command, args []string) {
 	config.CustomHead = "\\gtrset{empty name text={}}"
 	config.Attribution = fmt.Sprintf("generated at %s", time.Now().Format("2006-01-02"))
 
-	err = renderDocument("templates/document-basic.tex", config, "test.tex")
+	err = renderDocument("templates/document-basic.tex", config, template.FuncMap{}, "test.tex")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(4)
 	}
 }
 
-func renderDocument(templateFilename string, data interface{}, outputFilename string) error {
-	result, err := generations.RenderTemplateFile(templateFilename, data)
+func renderDocument(templateFilename string, data interface{}, customFuncMap template.FuncMap, outputFilename string) error {
+	result, err := generations.RenderTemplateFile(templateFilename, data, customFuncMap)
 	if err != nil {
 		return err
 	}
@@ -452,4 +409,14 @@ func renderDocument(templateFilename string, data interface{}, outputFilename st
 		return err
 	}
 	return nil
+}
+
+func loadDatabases(configDatabases []string, databaseBaseDir string) *generations.MemoryDatabase {
+	print.Boldln("loading databases: " + strings.Join(configDatabases, ", "))
+	database, err := generations.LoadDatabases(configDatabases, databaseBaseDir)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	return database
 }

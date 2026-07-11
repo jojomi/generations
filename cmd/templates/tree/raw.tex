@@ -4,12 +4,6 @@
     \subsection{ {{- .Title -}} }
     {{- end }}
 
-    {{ if .Date -}}
-    Stand: \textbf{ {{- .Date -}} }
-    {{- end }}
-
-    \vspace{7mm}
-
     {{ if .PageBreakAfter }}
         \vfill
     {{ end }}
@@ -23,6 +17,7 @@
     {{ end }}
     \begin{tikzpicture}
         \genealogytree[
+        dead/.style={},
         database unknown key=save,
         {{ if .CustomStyles -}}
         {{ noEmptyLinesString .CustomStyles }}%

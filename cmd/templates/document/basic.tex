@@ -14,9 +14,9 @@
 
 \usepackage[
     %margin=1.25cm
-    left=5mm,
-    right=5mm,
-    top=5mm,
+    left=15mm,
+    right=15mm,
+    top=15mm,
     bottom=10mm,
     footskip=5mm
     ,includeheadfoot
@@ -53,9 +53,57 @@
 %\usepackage{titlesec}
 %\titlespacing*{\section}{0pt}{4.0ex plus 1ex minus .2ex}{2.3ex plus .2ex}
 
+\usetikzlibrary{calc}
+\newcommand{\moretext}{\bfseries\ldots}
+\newlength{\moredist}
+\setlength{\moredist}{1.5cm}
+
+
 
 
 \makeatletter
+\gtr@db@new@event@store{marriagereligious}
+
+\gtrset{
+    %marriageagereligious/.initial=\gtrsymBuried, % no visible effect at all
+    /gtr/event prefix/marriagereligious/.initial=\gtrsymChurch, %  Package pgfkeys Error: I do not know the key '/gtr/event prefix/marriageagereligious', to which you passed 'brel', and I am going to ignore it. Perhaps you misspelled it.
+}
+
+\gtrset{language=german}
+
+\gtr@symbol@factory{Church}{%
+  \begin{gtr@tikzpicture}[line width=3mm,color=gtrsymbol]%
+    \path[use as bounding box] (0,0) rectangle (2.7,2.1);
+    \draw (0.25,0) -- (2.25,0) -- (2.25,1.5) -- (1.8,1.75) -- (1.35,1.5) -- (1.35,1) -- (0.25,1) -- cycle;
+    %\draw (1.35,1) -- (1.35,0);
+  \end{gtr@tikzpicture}%
+}{0.011}%
+
+\gtrset{symlang/Church=kirchl. getraut}
+
+\makeatother
+
+
+\makeatletter
+\gtrDeclareDatabaseFormat{full-ages-one-marriage}{}{%
+    \gtrPrintName%
+    \begin{gtreventlist}%
+        \gtr@list@event{birth}\pgfkeysifdefined{/gtr/database/save/age}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/age})}}{}%
+        \gtr@list@event{baptism}%
+        \gtr@list@event{engagement}%
+        \gtrifeventdefined{marriage}{%
+            \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
+        }{%
+            \gtr@list@event{marriagereligious}\pgfkeysifdefined{/gtr/database/save/marriageagereligious}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageagereligious})}}{}%
+        }%
+        \gtr@list@event{divorce}%
+        \gtr@list@event{floruit}%
+        \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/deathage})}}{}%
+        \gtr@list@event{burial}%
+    \end{gtreventlist}%
+    \gtr@print@infolist%
+}
+
 \gtrDeclareDatabaseFormat{full-ages}{}{%
     \gtrPrintName%
     \begin{gtreventlist}%
@@ -63,6 +111,9 @@
         \gtr@list@event{baptism}%
         \gtr@list@event{engagement}%
         \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
+        \gtrifeventdefined{marriagereligious}{%
+            \gtr@list@event{marriagereligious}\gtrsymBuried \pgfkeysifdefined{/gtr/database/save/marriageagereligious}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageagereligious})}}{}%
+        }{}%
         \gtr@list@event{divorce}%
         \gtr@list@event{floruit}%
         \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/deathage})}}{}%
@@ -77,6 +128,7 @@
         \gtr@list@event{baptism}%
         \gtr@list@event{engagement}%
         \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
+        \gtr@list@event{marriagereligious}\pgfkeysifdefined{/gtr/database/save/marriageagereligious}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageagereligious})}}{}%
         \gtr@list@event{divorce}%
         \gtr@list@event{floruit}%
         \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/deathage})}}{}%
@@ -85,6 +137,33 @@
     \gtr@print@infolist%
 }
 \makeatother
+
+\gtrset{
+    my symbol nodes/.style={
+    processing=database,
+    database format=symbol,
+    level distance=5mm,
+    level size=5mm,
+    node size=5mm,
+    box clear,
+    box={capture=minipage,enhanced,size=fbox,boxsep=0mm,boxrule=0.25mm,
+        halign=center,valign=center,fontupper=\fontsize{4.7mm}{4.7mm}\selectfont,
+        temp@late/symopt/\gtrDBsex},
+    edges={anchoring=center,background={white,line width=0.6mm},foreground={green!25!black,line width=0.3mm}},
+    level 0/.style={
+        child distance in child graph=1cm,
+        further distance=3mm
+    },
+    level -1/.style={
+        child distance in child graph=1mm,
+        %further distance=20mm
+    },
+    level -2/.style={
+        %further distance=10mm
+    },
+    level distance=3cm,
+    },
+}
 
 
 {{ if .Config.Attribution }}

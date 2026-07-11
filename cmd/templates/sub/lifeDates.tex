@@ -1,0 +1,16 @@
+{{ with .Person -}}
+    {{ if or .GetBirth.Date .GetDeath.Date -}}
+        {{ if $.Config.Options.MultilineLists -}}
+            \newline
+        {{ end -}}
+        {{ if .GetBirth.Date -}}
+            {{ if not $.NoSymbols }}\gtrsymBorn{{ end -}}
+            \,{{ .GetBirth.Date | formatDate -}}
+            {{ if and (not $.NoSymbols) .GetDeath.Date -}}, {{ end -}}
+        {{ end -}}
+        {{ if .GetDeath.Date -}}
+            {{ if $.NoSymbols }} -- {{ else }}\gtrsymDied{{ end -}}
+            \,{{- .GetDeath.Date | formatDate -}}
+        {{ end -}}
+    {{ end -}}
+{{ end -}}

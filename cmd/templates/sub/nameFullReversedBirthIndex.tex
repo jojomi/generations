@@ -1,0 +1,26 @@
+{{ with .Name -}}
+    {{ if .Birth -}}
+        {{- .Birth -}}@\textbf{ {{- .Birth -}} }
+    {{- else -}}
+        ?|\textbf{?}
+    {{- end -}}!
+    {{- $used := .GetUsedFirst -}}
+    {{ if eq (len .First) 0 -}}
+        ?
+    {{- end -}}
+    {{ range .First -}}
+        {{ if eq . $used -}} {{ . }} {{ else -}} {{ . }} {{ end }}
+    {{ end -}}
+    {{ with .Nick }} \enquote{ {{- . -}} } {{- end -}}
+    {{ if .Last }} {\color{gray}(verh. {{ .Last -}} )}
+    {{- end }}
+    
+    {{- if or $.GetBirth.Date $.GetDeath.Date }} {\itshape\scriptsize
+        {{- if $.GetBirth.Date -}} \gtrsymBorn\,{{ $.GetBirth.Date | formatDateYear -}}
+        {{ else -}}
+            {{ if $.GetDeath.Date -}} \gtrsymDied\,{{- $.GetDeath.Date | formatDateYear -}}
+            {{ end -}}
+        {{ end -}}
+        }
+    {{ end -}}
+{{ end -}}

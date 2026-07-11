@@ -1,0 +1,10 @@
+{{ if or .data.Years .data.Months .data.Days -}} {{/* TODO: Check error instead of this fake check */}}
+    {{ with .data -}}
+        {{ if and .IsFinished (ge .Years 0) -}}
+            {\footnotesize für {{ printDuration . $.options "nominativ" -}} }
+        {{- end -}}
+        {{ if and (not .IsFinished) ($.config.Options.AllowLiveData) -}}
+            {\footnotesize seit {{ printDuration . $.options "dativ" -}} }
+        {{- end }}
+    {{- end }}
+{{- end }}

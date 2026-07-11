@@ -1,0 +1,13 @@
+{{ with .data -}}
+  {{ range . -}}
+    {{- $key := "" -}}
+    {{ if not ($.referencesContainer.Has .) -}}
+      {{ $key = $.referencesContainer.Add . false -}}
+    {{ else -}}
+      {{ $key = $.referencesContainer.GetKey . -}}
+    {{ end -}}
+      {\color{source-link}\textsuperscript{\hyperref[ {{- $.referencesContainer.GetLabelFor . -}} ]{ {{- $key -}} }%
+        }%
+    }
+  {{ end -}}
+{{ end -}}

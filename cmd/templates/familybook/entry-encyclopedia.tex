@@ -1,0 +1,104 @@
+{{ with .Person }}
+    {{ $p := . }}
+    {{ $now := $.Config.GetNow }}
+    {{ $name := sub "nameFullNoBirth.tex" . | trim -}}
+    {{- $nameText := sub "nameFullText.tex" . | trim -}}
+
+    \item[ {{- with $name -}}
+            {{ . }} 
+        {{- end -}}
+    ] %\raggedright
+    {{ with $nameText -}}
+        \addcontentsline{toc}{section}{ {{- $nameText -}} }
+    {{ end -}}
+    {{ with .GetMainTreePositionID -}}
+        \label{person-{{- . -}} }
+    {{ end -}}
+    \begin{entry}
+    {{ if or (not .GetBirth.Empty) (not .GetDeath.Empty)}}
+    \item \begin{subentry}
+    {{ $d := .GetBirth -}}
+    {{ if not $d.Empty -}}
+        \item geb.
+        {{ with $d.Date -}}
+            {{ if eq (len .) 10 -}} den {{ end -}}
+            {{ . | formatDateText -}} 
+        {{ end -}}
+        {{ with $d.Place }}
+            {{ . -}}
+        {{ end -}}
+        % \gtrsymBorn\,
+    {{ end -}}
+    {{ $d := .GetDeath -}}
+    {{ if not $d.Empty -}}
+        \item gest.
+        {{ with $d.Date -}}
+            {{ if eq (len .) 10 -}} den {{ end -}}
+            {{ . | formatDateText }} 
+        {{ end -}}
+        {{ with $d.Place }}
+            {{ . }}
+        {{ end -}}
+        % \gtrsymDied\,
+    {{ end -}}
+    \end{subentry}
+    {{ end -}}
+
+    % Eltern
+    {{ if or .GetMom .GetDad -}}
+        {{ if or (not .GetMom.IsDummy) (not .GetDad.IsDummy) -}}
+            \item
+            {{ with .GetGender }}
+                {{ if eq .String "female" }}
+                    Tochter
+                {{ end -}}
+                {{ if eq .String "male" }}
+                    Sohn
+                {{ end -}}
+                {{ if eq .String "unknown" }}
+                    Kind
+                {{ end -}}
+            {{ end -}}
+            {{ if not .GetMom.IsDummy -}}
+                {{ with .GetMom -}}
+                    der {{ sub "nameBirth.tex" . | trim -}}
+                    {{ if $p.GetDad }} und {{ end -}}
+                {{ end -}}
+            {{ end -}}
+            {{ if not .GetDad.IsDummy -}}
+                {{ with .GetDad -}}
+                    des {{ sub "nameBirth.tex" . | trim -}}
+                {{ end -}}
+            {{ end -}}
+        {{ end -}}
+    {{ else -}}
+        \item 
+        {{ with .GetGender }}
+            {{ if eq .String "female" }}
+                weibl.
+            {{ end -}}
+            {{ if eq .String "male" }}
+                männl.
+            {{ end -}}
+        {{ end -}}
+        Geschlechts
+    {{ end -}}
+    
+    % Partnerschaften
+
+    % Sonstiges
+    {{ $floruit := .GetFloruit }}
+    {{ $jobs := .GetJobs }}
+    {{ $comment := .GetComment }}
+    {{ with $floruit -}}
+        \item ansäß. in {{ . | latexify }}
+    {{ end -}}
+    {{ with $jobs -}}
+        \item {{ . | latexify }}
+    {{ end -}}
+    {{ with $comment -}}
+        \item {{ . | latexify }}
+    {{ end -}}
+    \item[]{} % TODO fix, see 
+    \end{entry}
+{{ end -}}

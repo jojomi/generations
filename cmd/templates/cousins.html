@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="de">
+
+<head>
+  <meta charset="utf-8">
+  <title>Cousinen/Cousins</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css?family=Red+Hat+Display&display=swap" rel="stylesheet"> 
+  <style>
+      body {
+        font-family: 'Red Hat Display', sans-serif;
+    }
+      th, td {
+          padding: .5em;
+      }
+      th {
+          border-bottom: 2px solid darkgray;
+      }
+      td {
+          border-bottom: 1px solid darkgray;
+      }
+    td.birth, td.death {
+        text-align: center
+    }
+  td.is-dead {
+      font-style: italic;
+      background-color: Lavender;
+  }
+  td.birth.is-dead {
+      background: transparent;
+  }
+  td.foto {
+    text-align: center;
+  }
+  td.name {
+      font-weight: bold;
+  }
+  td.parent {
+      color: gray;
+      font-style: italic;
+      font-size: 90%;
+  }
+  .birthname {
+      color: gray;
+      font-weight: normal;
+  }
+  .foto {
+      width: 100px;
+      height: 100px;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-size: contain;
+      background-position: center;
+  }
+  th.divide, td.divide {
+      border-left: 1px solid gray;
+  }
+
+  @media print {
+      tr {
+          page-break-inside: avoid;
+        }
+    }
+  </style>
+</head>
+
+<body>
+    {{ with .Data }}
+    <table>
+        <thead>
+            <tr>
+                <th>Geburtsdatum</th>
+                {{ if $.Options.UseImages }}
+                <th>Foto</th>
+                {{ end }}
+                <th>Name</th>
+                <th>Familie</th>
+                <th>Sterbedatum</th>
+                {{ if (not $.Options.SingleColumn) }}
+                    <th class="divide">Partner/in</th>
+                    {{ if $.Options.UseImages }}
+                    <th>Foto</th>
+                    {{ end }}
+                    <th>Geburtsdatum</th>
+                    <th>Sterbedatum</th>
+                {{ end }}
+            </tr>
+        </thead>
+        <tbody>
+        {{ range . }}
+        <tr class="{{ if .Cousin.GetDeath.Date -}} is-dead {{- end }}">
+            <td
+            {{ if and (ge .Partners.Count 2) (not $.Options.SingleColumn) -}}
+            rowspan="{{ .Partners.Count }}"
+            {{- end }}
+            class="birth {{ if .Cousin.GetDeath.Date -}} is-dead {{- end }}"
+            {{ if $.Options.UseColors }}
+            style="background-color: {{ .Color.Background }};  {{- if .Color.Foreground }}color: {{ .Color.Foreground }};{{ end }}"
+            {{- end -}}
+            >
+                {{- with .Cousin -}}
+                    {{- $birth := renderDate .GetBirth.Date -}}
+                    {{- if $birth -}} {{ $birth }} {{- end -}}
+                {{- end -}}
+            </td>
+            {{ if $.Options.UseImages }}
+            <td
+            {{ if and (ge .Partners.Count 2) (not $.Options.SingleColumn) -}}
+            rowspan="{{ .Partners.Count }}"
+            {{- end }}
+            class="foto {{ if .Cousin.GetDeath.Date -}} is-dead {{- end }}">
+                {{- with .Cousin -}}
+                    {{- if .GetImageFilename -}}
+                <div class="foto" style="background-image: url('{{ .GetImageFilename | dataURI }}')"></div>
+                    {{- else -}}
+                {{ if eq .GetGender.String "female" }}♀{{ else }}♂{{ end }}
+                    {{- end -}}
+                {{- end -}}
+            </td>
+            {{- end -}}
+            <td
+            {{ if and (ge .Partners.Count 2) (not $.Options.SingleColumn) -}}
+            rowspan="{{ .Partners.Count }}"
+            {{- end }}
+            class="name {{ if .Cousin.GetDeath.Date -}} is-dead {{- end }}">
+                {{- with .Cousin.GetName -}}
+                    {{ index .First 0}} {{- if .Nick }} "{{ .Nick }}"{{- end }} {{ .Last }} {{- if .Birth }}<span class="birthname">, geb. {{ .Birth }}</span>{{ end }}
+                    {{- if .Alias }} – {{ .Alias }} {{- end -}}
+                {{- end -}}
+            </td>
+            <td
+            {{ if and (ge .Partners.Count 2) (not $.Options.SingleColumn) -}}
+            rowspan="{{ .Partners.Count }}"
+            {{- end }}
+            class="parent {{ if .Cousin.GetDeath.Date -}} is-dead {{- end }}">
+            {{ if .Parent }}
+                {{- with .Parent.GetName -}}
+                    {{ index .First 0}} {{ .Last }} {{- if .Birth }}<span class="birthname">, geb. {{ .Birth }}</span>{{ end }}
+                {{- end -}}
+            {{- end -}}
+            </td>
+            <td
+            {{ if and (ge .Partners.Count 2) (not $.Options.SingleColumn) -}}
+            rowspan="{{ .Partners.Count }}"
+            {{- end }}
+            class="death {{ if .Cousin.GetDeath.Date -}} is-dead {{- end }}">
+                {{- with .Cousin -}}
+                    {{- $death := renderDate .GetDeath.Date -}}
+                    {{- if $death -}} † {{ $death }} {{- end -}}
+                {{- end -}}
+            </td>
+
+            {{ if not $.Options.SingleColumn }}
+
+                {{ $color := .Color }}
+                {{ $partners := .Partners }}
+
+                {{ if eq .Partners.Count 0 }}
+                <td class="divide"></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                {{ end }}
+
+                {{ range $index, $p := .Partners.GetPersons -}}
+                    {{ with $p }}
+                    <td class="divide {{ if .GetDeath.Date -}} is-dead {{- end }}">
+                        {{- with .GetName -}}
+                            <div>{{ index .First 0}} {{- if .Nick }} "{{ .Nick }}"{{- end }} {{ .Last }} {{- if .Birth }}<span class="birthname">, geb. {{ .Birth }}</span>{{ end }}
+                                {{- if .Alias }} – {{ .Alias }} {{- end -}}</div>
+                        {{- end -}}
+                    </td>
+                    {{ if $.Options.UseImages }}
+                    <td class="foto {{ if .GetDeath.Date -}} is-dead {{- end }}">
+                        {{- if .GetImageFilename -}}
+                        <div class="foto" style="background-image: url('{{ .GetImageFilename | dataURI }}')"></div>
+                        {{- else -}}
+                            {{ if eq .GetGender.String "female" }}♀{{ else }}♂{{ end }}
+                        {{- end -}}
+                    </td>
+                    {{- end -}}
+                    <td class="birth {{ if .GetDeath.Date -}} is-dead {{- end }}"
+                    {{ if $.Options.UseColors }}
+                    style="background-color: {{ $color.Background }};  {{- if $color.Foreground }}color: {{ $color.Foreground }};{{ end }}"
+                    {{- end -}}
+                    >
+                        {{- $birth := renderDate .GetBirth.Date -}}
+                        {{- if $birth -}} {{ $birth }} {{- end -}}
+                    </td>
+                    <td class="death {{ if .GetDeath.Date -}} is-dead {{- end }}">
+                        {{- $death := renderDate .GetDeath.Date -}}
+                        {{- if $death -}} † {{ $death }} {{- end -}}
+                    </td>
+                    {{ end }}
+
+                    {{- if lt $index (minus $partners.Count 1) -}}
+                    </tr><tr>
+                    {{- end -}}
+                {{ end }}
+            {{ end }}
+            </tr>
+            {{ end }}
+        </tbody>
+    {{ end }}
+    </table>
+
+</body>
+</html>

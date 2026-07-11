@@ -1,0 +1,1353 @@
+% https://ctan.org/pkg/genealogytree
+% https://github.com/zerotoc/pdfinlimg
+
+\documentclass[10pt,paper=a4,ngerman,DIV=11,BCOR=0mm,parskip=half,%
+{{ if .Config.DocumentOptions -}}
+{{ .Config.DocumentOptions }}%
+{{- end }}%
+]{scrbook}
+
+\usepackage[ngerman]{babel}
+\usepackage{fontspec}
+\usepackage{microtype,ellipsis}
+\usepackage{libertine}
+\usepackage{scrlayer-scrpage}
+
+% \usepackage[
+%     %margin=1.25cm
+%     left=5mm,
+%     right=5mm,
+%     top=5mm,
+%     bottom=10mm,
+%     footskip=5mm
+%     ,includeheadfoot
+%     ,nohead
+%     %,showframe % <- to show the page layout
+% ]{geometry}
+
+\usepackage[german=quotes]{csquotes}
+\usepackage{longtable,tabu,xltabular}
+\usepackage[table,dvipsnames,svgnames]{xcolor}
+% https://tex.stackexchange.com/a/323318/71157
+\usepackage[pdfencoding=auto,colorlinks=false,hidelinks,breaklinks=true]{hyperref}
+
+\usepackage[most]{tcolorbox}
+\usepackage[all]{genealogytree}
+%\gtrset{language=german-german}
+%\gtrset{image prefix=pictures/}
+%\usetikzlibrary{backgrounds}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+
+% \colorlet{mainSection}{gray!30}
+% \colorlet{subSection}{gray!15}
+
+% color definitions
+\colorlet{accent}{ {{- if $.Config.Options.AccentColor }} {{- $.Config.Options.AccentColor -}} {{ else -}} Black!35! {{- end -}} }
+\colorlet{relatedLifeDates}{accent}
+\colorlet{fromTo}{accent}
+\colorlet{nonContainedPerson}{black}
+\colorlet{dotfill}{gray!75}
+\colorlet{source-link}{gray!75!black}
+%\definecolor{MaterialOrange}{named}{orange}
+
+\makeatletter
+\newcommand{\mydots}[1]{%
+  {\color{dotfill}%\dotfill}%
+    % source: https://tex.stackexchange.com/a/85338/71157
+    {\leavevmode \cleaders \hb@xt@ .60em{\hss .\hss }\hfill \kern \z@}%
+  }
+}
+\makeatother
+
+
+% \newlength{\titleColumnWidth}
+% \setlength{\titleColumnWidth}{2.5cm}
+\newlength{\ageSpacing}
+\setlength{\ageSpacing}{0.3125em}
+
+\renewcommand{\arraystretch}{1.25}
+
+
+\usepackage{pdfpages}
+
+\usepackage{makeidx}
+\makeindex
+
+\usepackage{enotez}
+\setenotez{
+  reset=true,
+  counter-format=Alph,
+  list-name=Quellen,
+  list-heading={\subsection*{#1}},
+}
+
+\DeclareInstance{enotez-list}{sources}{list}{list-type = itemize}
+
+%\DeclareInstance{enotez-list}{custom}{paragraph}{
+%  heading = {#1},
+%  notes-sep = \baselineskip,
+%  format    = \footnotefont,
+%  number    = \textsuperscript{#1}
+%}
+
+
+\usepackage[inline]{enumitem}
+\setlist[enumerate]{%
+  leftmargin=*,%
+  label=\fbox{\arabic*},%
+  nosep,
+  itemjoin={%
+  {, }%
+  },
+  %topsep=0pt,%
+  %partopsep=0pt,%
+  %noitemsep,%
+}
+\setlist[itemize]{%
+  leftmargin=*,%
+  nosep,
+  itemjoin={%
+  {, }%
+  },
+  %topsep=0pt,%
+  %partopsep=0pt,%
+  %noitemsep,%
+}
+%\setlist[description]{style=nextline}
+%\makeatletter
+\newlist{datalist}{itemize}{1} % description does not work here
+\usepackage{calc}
+\setlist[datalist]{
+  label=(a),
+  wide = 0pt,
+  widest = {\bfseries{}Standesamtlich},
+  leftmargin =*,
+  labelsep = 15pt,
+  font = \bfseries\scshape,
+  itemsep = 2pt,
+  parsep = 1pt,
+}
+\newlist{simplelist}{itemize}{1} % description does not work here
+\setlist[simplelist]{
+  label={},
+  wide = 0pt,
+  widest = {},
+  leftmargin =*,
+  labelsep = 0pt,
+  font = {},
+  itemsep = 2pt,
+  parsep = 1pt,
+}
+
+\newlist{customranking}{itemize}{1} % description does not work here
+\setlist[customranking]{
+  label={1},
+  leftmargin=*,
+  align=left,
+  labelsep=1em,
+  %itemindent=-2.9em, % TODO dynamic
+  font=\niceunderline,
+  itemsep=0em,
+  parsep=0em,
+}
+
+\newlist{enumerateranking}{enumerate}{1}
+\setlist[enumerateranking]{
+  leftmargin=*,%
+  label=\fbox{\arabic*},%
+  nosep,
+  align=right,
+  labelsep=0.4em,
+  widest= {{- $.Config.Options.Stats.Count -}},
+}
+\newcommand{\rankingValue}[1]{\niceunderline{#1}:\hspace{0.25em}}
+\newcommand{\rankingValueRight}[1]{#1}
+
+
+%\makeatother
+
+
+% \RedeclareSectionCommand[
+%   beforeskip=-\baselineskip,
+%   afterskip=1.0\baselineskip]{subsection}
+
+% destroys clickable hyperref links
+%\usepackage{titlesec}
+%\titlespacing*{\section}{0pt}{4.0ex plus 1ex minus .2ex}{2.3ex plus .2ex}
+
+%\usetikzlibrary{calc}
+
+
+% \usepackage{varwidth}
+\newtcolorbox{databox}[2][]{enhanced,skin=enhancedlast jigsaw,sharp corners,breakable,
+  attach boxed title to top left={xshift=-4mm,yshift=-0.5mm},
+  fonttitle=\bfseries\sffamily,varwidth boxed title=0.7\linewidth,
+  colbacktitle=accent,
+  % TODO title with less padding/sep: titlebottom=0pt,
+  colframe=black!20,interior style={top color=white,bottom color=white},
+  boxed title style={empty,arc=0pt,outer arc=0pt,boxrule=0pt},
+  underlay boxed title={
+  \fill[accent] (title.north west) -- (title.north east)
+  -- +(\tcboxedtitleheight-1mm,-\tcboxedtitleheight+1mm)
+  -- ([xshift=4mm,yshift=0.5mm]frame.north east) -- +(0mm,-1mm)
+  -- (title.south west) -- cycle;
+  \fill[accent!50!black] ([yshift=-0.5mm]frame.north west)
+  -- +(-0.4,0) -- +(0,-0.3) -- cycle;
+  \fill[accent!50!black] ([yshift=-0.5mm]frame.north east)
+  -- +(0,-0.3) -- +(0.4,0) -- cycle; },
+  left=3pt,right=3pt,top=3pt,bottom=3pt,
+  title={\strut #2},#1,
+  subtitle style={
+    boxrule=0pt,
+    fontupper={\color{black}},
+    colback=accent!30!white,
+  },
+}
+
+% \renewtcolorbox{databox}[2][]{enhanced,skin=enhancedlast jigsaw,sharp corners,breakable,
+%   fonttitle=\bfseries\sffamily,
+%   %varwidth boxed title=0.7\linewidth,
+%   coltitle=black,
+%   colbacktitle=accent,
+%   colframe=accent,
+%   interior style={top color=white,bottom color=white},
+%   boxed title style={empty,arc=0pt,outer arc=0pt,boxrule=0pt},
+%   title={#2},#1,
+% }
+
+
+% \renewtcolorbox{databox}[2][]{enhanced,
+%   colframe=accent,colback=white,colbacktitle=white,
+%   fonttitle=\bfseries,coltitle=black,attach boxed title to top center=
+%   {yshift=-0.25mm-\tcboxedtitleheight/2,yshifttext=2mm-\tcboxedtitleheight/2},
+%   boxrule=0.25mm,
+%   boxed title style={boxrule=0.5mm,
+%   frame code={ \path[tcb fill frame] ([xshift=-4mm]frame.west)
+%   -- (frame.north west) -- (frame.north east) -- ([xshift=4mm]frame.east)
+%   -- (frame.south east) -- (frame.south west) -- cycle; },
+%   interior code={ \path[tcb fill interior] ([xshift=-2mm]interior.west)
+%   -- (interior.north west) -- (interior.north east)
+%   -- ([xshift=2mm]interior.east) -- (interior.south east) -- (interior.south west)
+%   -- cycle;} },
+%   title={#2},#1,
+% }
+
+
+% simple black attempt
+% \renewtcolorbox{databox}[2][]{enhanced,skin=enhancedlast jigsaw,sharp corners,breakable,
+%   fonttitle=\bfseries\sffamily,
+%   %varwidth boxed title=0.7\linewidth,
+%   coltitle=black,
+%   colbacktitle=white,
+%   interior style={top color=white,bottom color=white},
+%   boxed title style={empty,arc=0pt,outer arc=0pt,boxrule=0pt},
+%   title={\strut #2},#1,
+%   %borderline west={2pt}{0pt}{black},
+%   subtitle style={
+%     boxrule=0pt,
+%     %toprule=0pt,
+%     fontupper={\color{black}},
+%     colback=white,
+%   },
+%   boxrule=0pt,
+%   titlerule=1pt,
+% }
+
+% see page 73 in tcolorbox manual
+
+
+% \newtcolorbox{databoxinner}[2][]{enhanced,skin=tile,sharp corners,breakable,
+%   %fonttitle=,
+%   coltitle=black,
+%   colbacktitle=accent!30!white,
+%   interior style={top color=white,bottom color=white},
+%   left=6pt,right=6pt,boxsep=0pt,
+%   lefttitle=6pt,righttitle=6pt,toptitle=3pt,bottomtitle=1pt,
+%   oversize=0pt,
+%   % https://tex.stackexchange.com/a/435489/71157
+%   title={\strut #2},#1,
+% }
+
+
+
+
+\usepackage{fontawesome}
+
+
+\makeatletter
+
+\newcommand{\pagerefPerson}[1]{%
+{{ if $.Config.Options.Debug.Links -}}
+(trying ref to person-#1) %
+{{- end }}%
+\@ifundefined{r@person-#1}{%
+}{%
+\scalebox{0.8}{\faChevronCircleRight}\,\pageref{person-#1}%
+}%
+}
+
+\newcommand{\pagerefPersonBrackets}[1]{%
+\@ifundefined{r@person-#1}{%
+}{%
+(\pagerefPerson{#1})%
+}%
+}
+
+\newcommand{\refPerson}[2]{%
+\@ifundefined{r@person-#1}{%
+#2
+}{%
+\hyperref[person-#1]{#2}%
+%{#2}\xspace
+}%
+}
+
+\makeatother
+
+\newcommand{\birthname}[1]{, geb. \birthnameStyle{#1}}
+\newcommand{\birthnameStyle}[1]{\textit{#1}}
+\newcommand{\nickname}[1]{\normalfont „#1“}
+\newcommand{\lastname}[1]{\textbf{#1}}
+\newcommand{\firstname}[1]{\normalfont #1}
+% TODO \niceunderline instead of \underline, but not working. \protect or something similar required?
+\newcommand{\usedFirstname}[1]{\normalfont\niceunderline{#1}\xspace}
+%\newcommand{\usedFirstname}[1]{\normalfont{#1}\xspace}
+\newcommand{\additionalFirstname}[1]{\normalfont #1}
+\newcommand{\aliasname}[1]{\normalfont -- #1}
+
+
+{{ $allPersons := allPersons .Generations .ExtraPersons }}
+{{ $allPersonsMerged := $allPersons.GetWithMergedTreePositionIDs }}
+
+\newcommand{\unknownPerson}{?}
+
+
+
+\usepackage{ifthen}
+\newcommand{\age}[1]{%
+\ifthenelse{\equal{#1}{\string -1}}
+{}
+{%
+{\color{gray}\footnotesize(mit #1~J.)}%
+}%
+}
+
+% \newcommand{\duration}[1]{%
+% \textcolor{lightgray}{#1}
+% }
+
+
+\makeatletter
+\gtr@symbol@factory{Unknown}{%
+  \begin{gtr@tikzpicture}[line width=2mm,baseline=-13mm,color=gtrsymbol]%
+    \path[use as bounding box] (-0.9,-1.8) rectangle (0.9,0.8);
+    \draw (0,0) circle (7mm);
+    %\draw[white] (270:7mm) -- (270:18mm);
+    %\draw[white] (-0.4,-1.3)--(0.4,-1.3);
+  \end{gtr@tikzpicture}%
+}{0.011}%
+\makeatother
+
+
+
+\usepackage[normalem]{ulem} % line breaking problems
+\usepackage{soul} % own macro problems
+\usepackage{soulutf8} % said to fix umlaut problems
+% see https://alexwlchan.net/2017/10/latex-underlines/
+\usepackage{contour}
+\renewcommand{\ULdepth}{1.8pt}
+\contourlength{0.8pt}
+\newcommand{\niceunderline}[1]{%
+  \uline{\phantom{#1}}%
+  \llap{\contour[4]{white}{#1}}%
+}
+
+
+\newcommand{\name}[1]{%
+{{ if $.Options.WrapNames -}}
+  \textcolor{lightgray}{$\lfloor$}
+{{- end -}}
+#1
+{{- if $.Options.WrapNames -}}
+  \textcolor{lightgray}{$\rfloor$}%
+{{ end -}}
+}
+
+\newcommand{\renderGender}[1]{
+  \ifthenelse{\equal{#1}{male}}{\gtrsymMale}{}%
+  \ifthenelse{\equal{#1}{female}}{\gtrsymFemale}{}%
+  \ifthenelse{\equal{#1}{unknown}}{\gtrsymUnknown}{}%
+}
+\newcommand{\symbolBox}[1]{
+  \makebox[2.7mm]{\hfill
+  #1
+  \hfill}
+}
+\newcommand{\renderGenderBox}[1]{
+  \symbolBox{\renderGender{#1}}
+}
+\newcommand{\renderGenderBoxLeft}[1]{
+  \makebox[2.5mm]{
+  \renderGender{#1}
+  }
+}
+
+
+{{ if .Config.CustomHead -}}
+    {{ .Config.CustomHead }}
+{{ end -}}
+
+%\setcounter{secnumdepth}{0}
+
+\title{
+{{- if .Config.Title -}}
+  {{ .Config.Title }}
+{{- else -}}
+  Stammbuch
+{{- end -}}
+}
+
+{{ with .Config.Author -}}
+  {{ if . -}}
+    \author{ {{- . -}} }
+  {{- end }}
+{{- end }}
+
+{{ with .Config.GetNow -}}
+  {{ if . -}}
+    \date{ {{- .Format "02.01.2006" -}} }
+  {{- end }}
+{{- end }}
+
+
+% vorher Installation von Manjaro-Paket ttf-google-fonts-git aus AUR
+%\setmainfont{PT Serif}
+%\setsansfont{Rubik}
+
+% \setmainfont{Caveat}
+% \setsansfont{Permanent Marker}
+% \setmonofont{PT Mono}
+
+%%\setmainfont{Quicksand}
+%%\setsansfont{Quicksand}
+%%\setmonofont{PT Mono}
+
+
+{{ if not $.Config.Options.Fancharts.Hide }}
+  % for fancharts (see basic.tex)
+  \gtrset{language=german-german}
+  \gtrset{image prefix=pictures/}
+  \newcommand{\titlename}[1]{#1}
+  \newcommand{\middlename}[1]{%
+  {\normalfont #1}%
+  }
+  \newcommand{\surnbirth}[1]{\normalfont{}, geb. #1}
+  \newcommand{\alias}[1]{\surn{#1}}
+  \renewcommand{\pref}[1]{\bfseries #1}
+  \renewcommand{\surn}[1]{\bfseries #1}
+
+
+  \makeatletter
+  \gtr@db@new@event@store{marriagereligious}
+
+  \gtrset{
+      %marriageagereligious/.initial=\gtrsymBuried, % no visible effect at all
+      /gtr/event prefix/marriagereligious/.initial=\gtrsymChurch, %  Package pgfkeys Error: I do not know the key '/gtr/event prefix/marriageagereligious', to which you passed 'brel', and I am going to ignore it. Perhaps you misspelled it.
+      /gtr/dead/.style={},
+    }
+
+  \gtrset{language=german}
+
+  \gtr@symbol@factory{Church}{%
+    \begin{gtr@tikzpicture}[line width=3mm,color=gtrsymbol]%
+      \path[use as bounding box] (0,0) rectangle (2.7,2.1);
+      \draw (0.25,0) -- (2.25,0) -- (2.25,1.5) -- (1.8,1.75) -- (1.35,1.5) -- (1.35,1) -- (0.25,1) -- cycle;
+      %\draw (1.35,1) -- (1.35,0);
+    \end{gtr@tikzpicture}%
+  }{0.011}%
+
+  \gtrset{symlang/Church=kirchl. getraut}
+
+  \makeatother
+
+
+  \makeatletter
+  \gtrDeclareDatabaseFormat{full-ages-one-marriage}{}{%
+      \gtrPrintName%
+      \begin{gtreventlist}%
+          \gtr@list@event{birth}\pgfkeysifdefined{/gtr/database/save/age}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/age})}}{}%
+          \gtr@list@event{baptism}%
+          \gtr@list@event{engagement}%
+          \gtrifeventdefined{marriage}{%
+              \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
+          }{%
+              \gtr@list@event{marriagereligious}\pgfkeysifdefined{/gtr/database/save/marriageagereligious}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageagereligious})}}{}%
+          }%
+          \gtr@list@event{divorce}%
+          \gtr@list@event{floruit}%
+          \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/deathage})}}{}%
+          \gtr@list@event{burial}%
+      \end{gtreventlist}%
+      \gtr@print@infolist%log.
+  }
+
+  \gtrDeclareDatabaseFormat{full-ages}{}{%
+      \gtrPrintName%
+      \begin{gtreventlist}%
+          \gtr@list@event{birth}\pgfkeysifdefined{/gtr/database/save/age}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/age})}}{}%
+          \gtr@list@event{baptism}%
+          \gtr@list@event{engagement}%
+          \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
+          \gtrifeventdefined{marriagereligious}{%
+              \gtr@list@event{marriagereligious}\gtrsymBuried \pgfkeysifdefined{/gtr/database/save/marriageagereligious}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageagereligious})}}{}%
+          }{}%
+          \gtr@list@event{divorce}%
+          \gtr@list@event{floruit}%
+          \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/deathage})}}{}%
+          \gtr@list@event{burial}%
+      \end{gtreventlist}%
+      \gtr@print@infolist%
+  }
+
+  \gtrDeclareDatabaseFormat{full-ages-no-name}{}{%
+      \begin{gtreventlist}%
+          \gtr@list@event{birth}\pgfkeysifdefined{/gtr/database/save/age}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/age})}}{}%
+          \gtr@list@event{baptism}%
+          \gtr@list@event{engagement}%
+          \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
+          \gtr@list@event{marriagereligious}\pgfkeysifdefined{/gtr/database/save/marriageagereligious}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageagereligious})}}{}%
+          \gtr@list@event{divorce}%
+          \gtr@list@event{floruit}%
+          \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/deathage})}}{}%
+          \gtr@list@event{burial}%
+      \end{gtreventlist}%
+      \gtr@print@infolist%
+  }
+
+  \gtrDeclareDatabaseFormat{fanchart}{}{%
+    \gtrPrintName%
+    {\color{gray}
+      \begin{gtreventlist}%
+          \gtr@list@event{birth}%
+          \gtrifeventdefined{birth}{}{%
+            \gtr@list@event{baptism}%
+          }
+          \gtrifeventdefined{marriage}{%
+              \gtr@list@event{marriage}%
+          }{%
+              \gtr@list@event{marriagereligious}%
+          }%
+          \gtr@list@event{death}%
+      \end{gtreventlist}%
+    }
+  }
+  \makeatother
+{{ end }}
+
+\begin{document}
+
+
+
+{{- if .Config.Attribution }}
+\pagestyle{scrheadings}
+\clearpairofpagestyles
+\cfoot{ \footnotesize \textcolor{gray!50!black}{ {{- .Config.Attribution -}} }}
+\ofoot{ \thepage }
+{{ end -}}
+
+\makeatletter
+\begin{titlepage}
+	\centering
+  ~
+
+  \vfill
+
+  {\Huge\sffamily\bfseries\@title}
+  ~
+
+  \vspace{3em}
+
+  ~
+  \begin{tcbraster}[
+    raster columns=5,
+    raster rows=4,
+    raster height=.485\pageheight,
+    raster valign=center,
+    enhanced,
+    size=small,
+    sharp corners,
+    colframe=white,
+    colback=white,
+    %watermark overzoom=1.0,
+    fit algorithm=hybrid*,
+    %raster equal height=all
+  ]
+  {{ with .Generations -}}
+    {{ range $i, $gen := . -}}
+      {{ if ge $gen.Index 0 -}}
+        {{ range $gen.Persons -}}
+          {{ with .GetImageFilename -}}
+            \tcbox[
+              %colframe=gray!80, colback=gray!10,
+              boxsep=0mm, boxrule=0mm,
+              colback=white,
+            ]{
+              \includegraphics[keepaspectratio,width=.8\linewidth]{pictures/{{ . -}} }
+            }
+          {{ end -}}
+        {{ end -}}
+      {{ end -}}
+    {{ end -}}
+  {{ end -}}
+  \end{tcbraster}
+
+\end{titlepage}
+\makeatother
+
+%\end{document}
+%\maketitle
+
+
+% \chapter*{Einleitung}
+% \addcontentsline{toc}{chapter}{Einleitung}
+% \markboth{Einleitung}{Einleitung}
+
+{{- with .Config.PreContent }}
+{{ . }}
+{{- end }}
+
+\tableofcontents
+
+
+
+{{ with .Generations }}
+  {{ range . }}
+    \chapter*{
+      {{- if ne .Index 0 }}
+        {{- if .IsParent }}
+          {{- .Index -}}. Vorfahrengeneration --~
+        {{- else -}}
+          {{- .Index -}}. Nachfahrengeneration --~
+        {{- end }}
+      {{- end }}
+      {{- .Name -}}
+    }
+    \addcontentsline{toc}{chapter}{
+      {{- if ne .Index 0 }}
+        {{- if .IsParent }}
+          {{- .Index -}}. Vorfahrengeneration --~
+        {{- else -}}
+          {{- .Index -}}. Nachfahrengeneration --~
+        {{- end }}
+      {{- end }}
+      {{- .Name -}}
+    }
+    \markboth{ {{- .Name -}} }{
+      {{- if ne .Index 0 }}
+        {{- if .IsParent }}
+          {{- .Index -}}. Vorfahrengeneration
+        {{- else -}}
+          {{- .Index -}}. Nachfahrengeneration
+        {{- end -}}
+      {{ end -}}
+    }
+
+    {{ with .Persons }}
+      {{ range . }}
+        {{ renderFamilybookEntry $.Config . $.Lineages $allPersons }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+
+{{ with .ExtraPersons }}
+  {{ if .Count }}
+    \chapter*{Weitere Personen}
+    \addcontentsline{toc}{chapter}{Weitere Personen}
+    \markboth{Weitere Personen}{Weitere Personen}
+    {{ range .GetPersons }}
+      {{ renderFamilybookEntry $.Config . $.Lineages $allPersons }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+
+% Empty pages
+{{ if gt .EmptyEntries.Count 0 }}
+  \chapter*{Neue Erkenntnisse}
+  \addcontentsline{toc}{chapter}{Neue Erkenntnisse}
+  \markboth{Neue Erkenntnisse}{Neue Erkenntnisse}
+  {{ $showEmptyConfig := $.Config.CopyWithOptionsPersonShowEmpty }}
+  {{ range .EmptyEntries.GetPersons -}}
+    {{ renderFamilybookEntry $showEmptyConfig . $.Lineages $allPersons }}
+  {{ end -}}
+{{ end -}}
+
+
+% Fancharts
+{{ if not $.Config.Options.Fancharts.Hide }}
+  \chapter*{Übersichten}
+  \addcontentsline{toc}{chapter}{Übersichten}
+  \markboth{Übersichten}{Übersichten}
+
+  {{ range $.FanchartRoots -}}
+    {{ if not (isVollSpitzahn .Root $allPersonsMerged) -}}
+      {{ if ne .Generation 0 -}}
+        \section*{ {{- .Generation -}}. Elterngeneration}
+      {{ end -}}
+      \begin{center}
+        \begin{autosizetikzpicture}{.4\pageheight}{}
+          \gtrfanchart[
+            fanchart open right = 210,
+            fanchart template = spartan,
+            %fanchart boundary color = black!20,
+            %fanchart boundary width = 2mm,
+            fanchart root style = {black!80, fill=black!10, line width = 1.5mm},
+            fanchart inner offset = 3mm,
+            fanchart outer offset = 1.5mm,
+            fanchart text portrait = inwards,
+            fanchart text landscape = clockwise,
+            fanchart landscape from level = 0,
+            %fanchart segment style for levels = {2,4,6,8,10}{fill=red!10},
+            fanchart marker style for levels = {1}{black!10},
+            fanchart marker style for levels = {2}{black!20},
+            fanchart marker style for levels = {3}{black!30},
+            fanchart marker style for levels = {4}{black!40},
+            fanchart marker style for levels = {5}{black!50},
+            fanchart marker style for levels = {6}{black!60},
+            fanchart marker style for levels = {7}{black!70},
+            autofill parents male female = {{ $.Config.Options.Fancharts.GenerationsPerChart }},
+            %complemented phantom,
+            database format=fanchart,
+            date format=dd.mm.yyyy,
+            ]{
+              {{ fanchartParentTree .Root $.Config.Options.Fancharts.GenerationsPerChart .Generation $.Config.Options.MaxParentGenerations }}
+            }
+        \end{autosizetikzpicture}
+      \end{center}
+      \newpage
+    {{ end -}}
+  {{ end -}}    
+{{ end -}}
+
+
+% Spitzahnenliste
+{{ if not $.Config.Options.HideSpitzahnen }}
+  \chapter*{Spitzahnen}
+  \addcontentsline{toc}{chapter}{Spitzahnen}
+  \markboth{Spitzahnen}{Spitzahnen}
+
+  Von einem Spitzahn ist mindestens ein Elternteil vollständig unbekannt.
+  Bei den mit * markierten Vollspitzahnen gibt es keinerlei Information über Eltern oder Vorfahren.
+
+  {{ with .Generations -}}
+    \begin{simplelist}
+    {{ range $i, $gen := . -}}
+      {{ if ge $gen.Index 0 -}}
+        {{ range $gen.Persons -}}
+          {{ if (isSpitzahn . $allPersonsMerged) }}
+            {{ $name := sub "nameFullNoBirth.tex" . | latexify | trim -}}
+            \item {{ sub "personLinkGendered.tex" "person" . "allPersons" $allPersons | trim -}}
+            {{ if isVollSpitzahn . $allPersonsMerged -}} * {{ end -}}
+            \mydots{} {{ $gen.Index }}. Elterngeneration
+          {{ end -}}
+        {{ end -}}
+      {{ end -}}
+    {{ end -}}
+  {{ end -}}
+  \end{simplelist}
+{{ end }}
+
+
+{{ if not $.Config.Options.Groups.Hide }}
+  \chapter*{Gruppen}
+  \addcontentsline{toc}{chapter}{Gruppen}
+  \markboth{Gruppen}{Gruppen}
+
+  {{ $attrs := $allPersons.GetAttributes }}
+  {{ if $attrs }}
+    \begin{customranking}
+    {{ range $attrs }}
+      \item[ {{- .Attribute -}} ]\label{attribute- {{- .Attribute | refName -}} }
+      {{ range $i, $p := .Persons.GetPersons -}}
+        {{- if $i -}}, {{ end -}}
+        {{ sub "personLinkAllRef.tex" "person" $p "allPersons" $allPersons }}
+      {{ end -}}
+    {{ end -}}
+    \end{customranking}
+  {{ end -}}
+{{ end -}}
+
+
+{{ if not $.Config.Options.Calendar.Hide }}
+  \chapter*{Jahreskalender}
+  \addcontentsline{toc}{chapter}{Jahreskalender}
+  \markboth{Jahreskalender}{Jahreskalender}
+
+  {{ with allPersons .Generations .ExtraPersons }}
+    \newpage
+    \section*{Geburtstage}
+    \addcontentsline{toc}{section}{Geburtstage}
+    \markboth{Jahreskalender}{Geburtstage}
+
+    {{ with $.Stats.BirthDays . -}}
+      {{ if len .GetItems }}
+        \begin{customranking}
+          {{ range .GetItems }}
+            \item[{{- .Value -}}]
+            {{ range $index, $e := .Persons.GetPersons -}}
+              {{- if $index }}, {{ end -}}
+              {{ sub "personLinkAllRef.tex" "person" $e "allPersons" $allPersons "hidePages" $.Config.Options.Calendar.HidePages }} %
+              ( {{- (sparseDate .GetBirth.Date ).Format "2006" -}} )
+            {{- end }}
+          {{- end }}
+        \end{customranking}
+      {{- end }}
+    {{- end }}
+
+    \newpage
+    \section*{Sterbetage}
+    \addcontentsline{toc}{section}{Sterbetage}
+    \markboth{Jahreskalender}{Sterbetage}
+
+    {{ with $.Stats.DeathDays . -}}
+      {{ if len .GetItems }}
+        \begin{customranking}
+          {{ range .GetItems }}
+            \item[{{- .Value -}}]
+            {{ range $index, $e := .Persons.GetPersons -}}
+              {{- if $index }}, {{ end -}}
+              {{ sub "personLinkAllRef.tex" "person" $e "allPersons" $allPersons "hidePages" $.Config.Options.Calendar.HidePages }} %
+              ( {{- (sparseDate .GetDeath.Date ).Format "2006" -}} )
+            {{- end }}
+          {{- end }}
+        \end{customranking}
+      {{- end }}
+    {{- end }}
+
+
+    {{ if false }}
+    \newpage
+    \section*{Hochzeitsjahrestage}
+    \addcontentsline{toc}{section}{Hochzeitsjahrestage}
+    \markboth{Jahreskalender}{Hochzeitsjahrestage}
+
+    {{ with $.Stats.MarriageDays . -}}
+      {{ if len .GetItems }}
+        \begin{customranking}
+          {{ range .GetItems }}
+            {{- $value := .Value -}}
+            \item[{{- $value.Format "02.01." -}}]
+            {{ range $index, $e := .Persons.GetPersons }}
+              {{ if $index }} \gtrsymMarried~{{ end -}}
+              {{ sub "personLinkAllRef.tex" "person" $e "allPersons" $allPersons "hidePages" $.Config.Options.Calendar.HidePages }} %
+            {{- end }} %
+            ( {{- $value.Format "2006" -}} )
+          {{- end }}
+        \end{customranking}
+      {{- end }}
+    {{- end }}
+    {{- end }}% if false
+  {{- end }}
+
+{{ end -}}
+
+
+
+{{ if not $.Config.Options.Stats.Hide }}
+\chapter*{Statistik}
+\addcontentsline{toc}{chapter}{Statistik}
+\markboth{Statistik}{Statistik}
+
+    {{ with $allPersons }}
+      {{ $total := .Count -}}
+      {{ $aliveCount := $.Stats.AliveCount . -}}
+
+      {{ if not $.Config.Options.Stats.HideNumbers }}
+        \section*{Anzahl Personen im Stammbuch}
+        \addcontentsline{toc}{section}{Anzahl Personen im Stammbuch}
+
+        {{ $male := $.Stats.MaleCount . -}}
+        {{ $female := $.Stats.FemaleCount . -}}
+        {{ $deadCount := $.Stats.DeadCount . -}}
+        {{ $marriedCount := $.Stats.MarriedCount . -}}
+        \fbox{\textbf{ {{- $total -}} }%
+        }
+
+        \begin{itemize}
+          \item davon \textbf{ {{- $female -}} } weiblich ({{ percentageInt $female $total 0 }}\%) und \textbf{ {{- $male -}} } männlich ({{ percentageInt $male $total 0 }}\%)
+          {{ if $.Config.Options.AllowLiveData -}}
+          \item davon \textbf{ {{- $aliveCount -}} } am Leben ({{ percentageInt $aliveCount $total 0 }}\%) und \textbf{ {{- $deadCount -}} } gestorben ({{ percentageInt $deadCount $total 0 }}\%)
+          {{ end -}}
+          %\item davon \textbf{ {{- $marriedCount -}} } verheiratet
+        \end{itemize}
+      {{- end }}
+
+      {{ if not $.Config.Options.Stats.HideGenerations }}
+        {{ if gt (len $.Generations) 1 }}
+          {{ with $.Generations }}
+            \section*{Generationen}
+            \addcontentsline{toc}{section}{Generationen}
+
+            \begin{itemize}
+              {{ range . }}
+                {{- if ne .Index 0 }}
+                \item \textbf{
+                    {{- if .IsParent }}
+                      {{- .Index -}}. Elterngeneration --
+                    {{- else -}}
+                      {{- .Index -}}. Kindergeneration --
+                    {{- end -}} }
+                  {{ .Name }} \mydots{} {{- len .Persons }} bekannt
+                {{- end }}
+              {{- end }}
+            \end{itemize}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+
+      {{ if not $.Config.Options.Stats.HideAlive }}
+        {{ if and $.Config.Options.AllowLiveData (le $aliveCount $.Config.Options.Stats.Count) }}
+          \section*{Am Leben}
+          \addcontentsline{toc}{section}{Am Leben}
+
+          {{ with $.Stats.AlivePersons . -}}
+          {{ if gt (len .GetPersons) 0 -}}
+            \begin{enumerateranking}
+                {{ range .GetPersons -}}
+                  \item {{ sub "personLinkAllRef.tex" "person" . "allPersons" $allPersons }}
+                {{- end }}
+              \end{enumerateranking}
+            {{- end }}
+          {{- end }}
+        {{ end -}}
+      {{ end -}}
+
+      {{ if not $.Config.Options.Stats.HideEarliestBirth }}
+        \section*{Frühstes Geburtsdatum}
+        \addcontentsline{toc}{section}{Frühestes Geburtsdatum}
+
+        {{ with $.Stats.OldestBirths . -}}
+          \begin{enumerateranking}
+            {{ range .GetTop $.Config.Options.Stats.Count }}
+              \item
+              {{ range .Persons.GetPersons -}}
+                {{ sub "personLinkAllRef.tex" "person" . "allPersons" $allPersons }}
+              {{- end }}
+              \mydots{}
+              \rankingValueRight{ {{- .Value -}} }
+            {{- end }}
+          \end{enumerateranking}
+        {{- end }}
+      {{- end }}
+
+      {{ if not $.Config.Options.Stats.HideLatestBirth }}
+        \section*{Letztes Geburtsdatum}
+        \addcontentsline{toc}{section}{Letztes Geburtsdatum}
+
+        {{ with $.Stats.NewestBirths . -}}
+          \begin{enumerateranking}
+            {{ range .GetTop $.Config.Options.Stats.Count }}
+              \item
+              {{ range .Persons.GetPersons -}}
+                {{ sub "personLinkAllRef.tex" "person" . "allPersons" $allPersons }}
+              {{- end }}
+              \mydots{}
+              \rankingValueRight{ {{- .Value -}} }
+            {{- end }}
+          \end{enumerateranking}
+        {{- end }}
+      {{- end }}
+
+      {{ if not $.Config.Options.Stats.HideOldest }}
+        \section*{Höchstes Alter}
+        \addcontentsline{toc}{section}{Höchstes Alter}
+
+        {{ with $.Stats.Oldest . -}}
+          {{ $data := .GetTop $.Config.Options.Stats.Count }}
+          \begin{enumerateranking}
+            {{ range $data }}
+              \item 
+              {{ range .Persons.GetPersons -}}
+                {{ sub "personLinkAllRef.tex" "person" . "allPersons" $allPersons }}
+              {{- end }}
+              \mydots{}
+              \rankingValueRight{ {{- .Value -}} }
+            {{- end }}
+          \end{enumerateranking}
+        {{- end }}
+      {{- end }}
+
+      {{ if not $.Config.Options.Stats.HideDeathAge }}
+        \section*{Sterbealter}
+        \addcontentsline{toc}{section}{Sterbealter}
+
+        {{ with $.Stats.DeathAges . -}}
+          {{ if len .GetItems }}
+            \begin{center}
+              \begin{tikzpicture}
+                \begin{axis}[
+                  xlabel=Sterbealter,
+                  ylabel={Anzahl},
+                  enlarge x limits=0.015,
+                  legend style={at={(0.5,-0.15)},anchor=north,legend columns=-1},
+                  ybar,
+                  bar width=1.5pt,
+                  %nodes near coords,
+                  ymin=0,
+                  xmin=0, xmax=110,
+                  %symbolic x coords={Januar,Februar,März,April,Mai,Juni,Juli,August,September,Oktober,November,Dezember},
+                  ]
+                  \addplot coordinates {
+                    {{ range .GetItems -}}
+                      ({{ .Value }}, {{- .Persons.Count -}})
+                    {{ end -}}
+                  };
+                \end{axis}
+              \end{tikzpicture}
+            \end{center}
+            \begin{enumerateranking}
+              {{ range .GetItems }}
+                % \textbf{ {{- .Persons.Count -}} }x:
+                \item[] \rankingValue{ {{- .Value }} Jahre}
+
+                {\small
+                {{- range $index, $e := .Persons.GetPersons -}}
+                  {{- if $index }}, {{ end -}}
+                  {{ sub "personLinkAllRef.tex" "person" $e "allPersons" $allPersons }}
+                {{- end }}
+                }
+              {{- end }}
+            \end{enumerateranking}
+          {{ end -}}
+        {{ end -}}
+      {{ end -}}
+
+
+      {{ if not $.Config.Options.Stats.HideMarriageAge }}
+        \section*{Heiratsalter}
+        \addcontentsline{toc}{section}{Heiratsalter}
+
+        \textbf{Durchschnitt}: {{ printf "%.1f" ($.Stats.AvgMarriageAge .) }} Jahre
+
+        {{ with $.Stats.MarriageAges $allPersonsMerged -}}
+          {{ if len .GetItems }}
+            \begin{center}
+              \begin{tikzpicture}
+                \begin{axis}[
+                  xlabel=Heiratsalter,
+                  ylabel={Anzahl},
+                  enlarge x limits=0.015,
+                  legend style={at={(0.5,-0.15)},anchor=north,legend columns=-1},
+                  ybar,
+                  bar width=1.5pt,
+                  %nodes near coords,
+                  ymin=0,
+                  xmin=0, xmax=110,
+                  %symbolic x coords={Januar,Februar,März,April,Mai,Juni,Juli,August,September,Oktober,November,Dezember},
+                  ]
+                  \addplot coordinates {
+                    {{ range .GetItems -}}
+                      ({{ .Value }}, {{- .Persons.Count -}})
+                    {{ end -}}
+                  };
+                \end{axis}
+              \end{tikzpicture}
+            \end{center}
+            \begin{customranking}
+              {{ range .GetItems }}
+                \item[ {{- .Value }} Jahre] % \textbf{ {{- .Persons.Count -}} x}:
+                {{ range $index, $e := .Persons.GetPersons -}}
+                  {{- if $index }}, {{ end -}}
+                  {{ sub "personLinkAllRef.tex" "person" $e "allPersons" $allPersons }}
+                {{- end }}
+              {{- end }}
+            \end{customranking}
+          {{ end -}}
+        {{ end -}}
+      {{ end -}}
+
+
+      {{ if not $.Config.Options.Stats.HideTotalAgeLiving }}
+        \section*{Gesamtalter aller Lebenden}
+        \addcontentsline{toc}{section}{Gesamtalter aller Lebenden}
+
+        {{ with $.Stats.TotalAgeLiving . -}}
+          {{ . }} Jahre
+        {{- end }}
+      {{- end }}
+
+
+      {{ if not $.Config.Options.Stats.HideLongestMarriages }}
+        \section*{Längste Ehen}
+        \addcontentsline{toc}{section}{Längste Ehen}
+
+        {{ with $.Stats.LongestMarriages . -}}
+          {{ $data := .GetTop $.Config.Options.Stats.Count }}
+          {{ if len $data }}
+            \begin{enumerateranking}
+              {{ range $data }}
+                \item
+                {{ range $i, $p := .Persons.GetPersons -}}
+                  {{ if $i }} \gtrsymMarried{}\\ {{ end -}}
+                  {{ with $p -}}
+                    {{ sub "personLinkAllRef.tex" "person" . "allPersons" $allPersons }}
+                  {{- end }}
+                {{- end }}
+                \mydots{}
+                \rankingValueRight{ {{- .Value -}} }
+              {{- end }}
+            \end{enumerateranking}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+
+
+      {{ if not $.Config.Options.Stats.HideLongestName }}
+        \section*{Längster Name}
+        \addcontentsline{toc}{section}{Längster Name}
+
+        {{ with $.Stats.LongestName . -}}
+          \begin{enumerateranking}
+            {{ range .GetTop $.Config.Options.Stats.Count }}
+              \item
+              {{ range .Persons.GetPersons -}}
+                {{ sub "personLinkAllRef.tex" "person" . "allPersons" $allPersons }}
+              {{- end }}
+              \mydots{}
+              \rankingValueRight{ {{- .RankingValue }} Buchstaben}
+            {{- end }}
+          \end{enumerateranking}
+        {{- end }}
+      {{- end }}
+
+
+      {{ if not $.Config.Options.Stats.HideShortestName }}
+        \section*{Kürzester Name}
+        \addcontentsline{toc}{section}{Kürzester Name}
+
+        {{ with $.Stats.ShortestName . -}}
+          \begin{enumerateranking}
+            {{ range .GetTop $.Config.Options.Stats.Count }}
+            \item
+            {{ range .Persons.GetPersons -}}
+              {{ sub "personLinkAllRef.tex" "person" . "allPersons" $allPersons }}
+            {{- end }}
+            \mydots{}
+            \rankingValueRight{ {{- .RankingValue }} Buchstaben}
+          {{- end }}
+          \end{enumerateranking}
+        {{- end }}
+      {{- end }}
+
+
+      {{ if not $.Config.Options.Stats.HideMostChildren }}
+        \section*{Meiste Kinder}
+        \addcontentsline{toc}{section}{Meiste Kinder}
+
+        {{ with $.Stats.ChildrenCount . -}}
+          \begin{enumerateranking}
+            {{ range .GetTop $.Config.Options.Stats.Count }}
+              \item
+              {{ range .Persons.GetPersons -}}
+                {{ sub "personLinkAllRef.tex" "person" . "allPersons" $allPersons }}
+              {{- end }}
+              \mydots{}
+              \rankingValueRight{ {{- .Value }} Kinder}
+            {{- end }}
+          \end{enumerateranking}
+        {{- end }}
+      {{- end }}
+
+
+      {{ if not $.Config.Options.Stats.HideBirthMonths }}
+        \section*{Geburtsmonate}
+        \addcontentsline{toc}{section}{Geburtsmonate}
+
+        {{ with $.Stats.BirthMonths . -}}
+          \begin{center}
+            \begin{tikzpicture}
+              \begin{axis}[
+                xlabel=Monat,
+                ylabel={Anzahl Geburten},
+                enlarge x limits=0.15,
+                legend style={at={(0.5,-0.15)},anchor=north,legend columns=-1},
+                ybar,
+                bar width=12pt,
+                nodes near coords,
+                ymin=0,
+                xmin=1,
+                xmax=12,
+                xtick={1,...,12},
+                %symbolic x coords={Januar,Februar,März,April,Mai,Juni,Juli,August,September,Oktober,November,Dezember},
+                ]
+                \addplot coordinates {
+                  {{ range .GetItems -}}
+                    ({{ .Value }}, {{- .Persons.Count -}})
+                  {{ end -}}
+                };
+              \end{axis}
+            \end{tikzpicture}
+          \end{center}
+          %\begin{enumerateranking}
+          %  {{ range .GetItems }}
+          %    \item[{{ .Value }}] \textbf{ {{- .Persons.Count -}} }x
+          %    ({{ range $index, $e := .Persons.GetPersons -}}
+          %      {{- if $index }}, {{ end -}}
+          %      \refPerson{ {{- $e.GetBestID -}} }{%
+          %        \name{ {{- $e.GetName.GetUsedFirst | latexify -}} } \pagerefPerson{ {{- $e.GetBestID -}} }%
+          %      }
+          %    {{- end }})
+          %  {{- end }})
+          %\end{enumerateranking}
+        {{- end }}
+      {{- end }}
+
+
+      {{ if not $.Config.Options.Stats.HideMostCommonLastNames }}
+        \section*{Häufigste Nachnamen}
+        \addcontentsline{toc}{section}{Häufigste Nachnamen}
+
+        {{ with $.Stats.MostCommonLastNames . -}}
+          \begin{enumerateranking}
+            {{ range .GetTop $.Config.Options.Stats.Count }}
+              \item \rankingValue{ {{- .RankingValue }}x \textbf{ {{- .Value -}} }%
+              }
+
+              {\small
+              {{- range $index, $e := .Persons.GetPersons -}}
+                {{- if $index }}, {{ end -}}
+                {{ sub "personLinkAllRef.tex" "person" $e "allPersons" $allPersons }}
+              {{- end }}
+              }
+            {{- end }}
+          \end{enumerateranking}
+        {{- end }}
+      {{- end }}
+
+
+      {{ if not $.Config.Options.Stats.HideMostCommonFirstNames }}
+        \section*{Häufigste Vornamen}
+        \addcontentsline{toc}{section}{Häufigste Vornamen}
+
+        {{ with $.Stats.MostCommonFirstNames . -}}
+          \begin{enumerateranking}
+            {{ range .GetTop $.Config.Options.Stats.Count }}
+              \item \rankingValue{ {{- .RankingValue }}x \textbf{ {{- .Value -}} }%
+              }
+
+              {\small
+              {{- range $index, $e := .Persons.GetPersons -}}
+                {{- if $index }}, {{ end -}}
+                {{ sub "personLinkAllRef.tex" "person" $e "allPersons" $allPersons }}
+              {{- end }}
+              }
+            {{- end }}
+          \end{enumerateranking}
+        {{- end }}
+      {{- end }}
+
+
+      {{ if not $.Config.Options.Stats.HideUniqueFirstNames }}
+        \section*{Einmalige Vornamen}
+        \addcontentsline{toc}{section}{Einmalige Vornamen}
+
+        {{ with $.Stats.UniqueFirstNames . -}}
+          \begin{enumerateranking}
+            {{ range .RankingItems }}
+              \item
+              {{ range $index, $e := .Persons.GetPersons -}}
+                {{- if $index }}, {{ end -}}
+                {{ sub "personLinkAllRef.tex" "person" $e "allPersons" $allPersons }}
+              {{- end }}
+            {{- end }}
+          \end{enumerateranking}
+        {{- end }}
+      {{- end }}
+
+
+      {{ if not $.Config.Options.Stats.HideCommonBirthdays }}
+        \section*{Gemeinsame Geburtstage}
+        \addcontentsline{toc}{section}{Gemeinsame Geburtstage}
+
+        {{ with $.Stats.NonUniqueBirthdays . -}}
+          {{ if gt (len .RankingItems) 0 }}
+          \begin{customranking}
+              {{ range .RankingItems }}
+              % \textbf{ {{- .Persons.Count -}} }x
+              \item[] {{- .RankingValue -}}
+
+                {{ range $index, $e := .Persons.GetPersons -}}
+                  {{- if $index }}, {{ end -}}
+                  {{ sub "personLinkAllRef.tex" "person" $e "allPersons" $allPersons }}
+                {{- end }}
+              {{- end }}
+            \end{customranking}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+
+
+      {{ if not $.Config.Options.Stats.HideDuplicateNames }}
+        \section*{Mehrfache Namen}
+        \addcontentsline{toc}{section}{Mehrfache Namen}
+
+        {{ with $.Stats.NonUniqueNames . -}}
+          {{ if gt (len .RankingItems) 0 }}
+            \begin{customranking}
+              {{ range .RankingItems }}
+                % \textbf{ {{- .Persons.Count -}} }x
+                \item[ {{- .Value -}}:]
+                
+                ~\newline
+                {\small
+                {{- range $index, $e := .Persons.GetPersons -}}
+                  {{- if $index }}, {{ end -}}
+                  {{ sub "personLinkAllRef.tex" "person" $e "allPersons" $allPersons }}
+                {{- end }}
+                }
+              {{- end }}
+            \end{customranking}
+          {{- end }}
+        {{- end }}
+      {{- end }}
+  {{- end }}
+{{- end }}
+
+
+{{ with $.Config.Sources -}}
+  {{ if len . -}}
+    \chapter*{Quellen}
+    \addcontentsline{toc}{chapter}{Quellen}
+    \markboth{Quellen}{Quellen}
+    {{ range . -}}
+      {{ $sourceTitle := .ID -}}
+      \section*{ {{- $sourceTitle -}} }
+      \addcontentsline{toc}{section}{ {{- $sourceTitle -}} }
+      \markboth{Quellen}{ {{- $sourceTitle -}} }
+      \label{ {{- labelify "src:full" .ID -}} }
+      {{ .Description -}}
+
+      {{ if .PDF }}
+        \includepdf[pages={-}, fitpaper=false, scale=.9
+        {{- if .Rotate -}} ,angle={{ .Rotate }} {{ end -}} ]{ {{- .PDF | expandPath -}} }
+      {{ end -}}
+    {{ end -}}
+  {{ end -}}
+{{ end -}}
+
+
+\clearpage
+\addcontentsline{toc}{chapter}{Index}
+\raggedright
+\printindex
+
+
+{{- with .Config.PostContent -}}
+{{ . }}
+{{- end }}
+
+
+\end{document}

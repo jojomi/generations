@@ -1,13 +1,6 @@
 \gtrset{symlang/Floruit=wohnte~in}
 {{ with .TreeConfig }}
 
-    {{ range .Levels.Combined -}}
-        {{ $commandName := (printf "%s%s" "\\underlineLevel" (.Index | latexify)) }}
-        %\DeclareRobustCommand{ {{- $commandName -}} }[1]{\setulcolor{blue}\ul{#1}}
-        %\soulregister{ {{- $commandName -}} }{1}
-    {{ end }}
-
-
     {{- if .Title -}}
     \subsection{ {{- .Title -}} }
     {{- end }}
@@ -44,7 +37,7 @@
             database unknown key=save,
             timeflow=right,
             processing=database,
-            database format=full-ages,
+            database format=full-ages-one-marriage,
             level distance=12mm,
             level size=40mm,
             node size from=3mm to 50mm,

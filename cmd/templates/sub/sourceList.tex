@@ -1,0 +1,20 @@
+{{ with .data -}}
+  {{ range . -}}
+    {{ $title := .Description -}}
+    {{ if not $title -}}
+      {{ $title = .ID -}}
+    {{ end -}}
+
+    {{- $key := "" -}}
+    {{ if not ($.sourcesContainer.Has $title) -}}
+      %\endnote{\label{ {{- $.sourcesContainer.GetLabelFor $title -}} } {{- $title | latexify -}} }
+      {{ $key = $.sourcesContainer.Add $title -}}
+    {{ else -}}
+      {{ $key = $.sourcesContainer.GetKey $title -}}
+      %\endnotemark[\ref{ {{- $.sourcesContainer.GetLabel $title -}} }]
+    {{ end -}}
+      {\color{source-link}\textsuperscript{\hyperref[ {{- $.sourcesContainer.GetLabelFor $title -}} ]{ {{- $key -}} }%
+        }%
+    }
+  {{ end -}}
+{{ end -}}
