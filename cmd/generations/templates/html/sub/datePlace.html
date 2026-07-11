@@ -1,0 +1,12 @@
+{{ with .data }}
+    {{- sub "date.html" "data" $.data "weekday" $.weekday "referencesContainer" $.referencesContainer "config" $.config -}}
+    {{- if .Place }}
+        {{- if .Date }} {{- space -}} &ndash; {{- space -}} {{ end }}
+        {{- .Place }}
+        {{- if $.referencesContainer }}
+            {{- with $.data.PlaceSources }}
+                {{/*- sub "referenceList.tex" "data" . "referencesContainer" $.referencesContainer */}}
+            {{- end }}
+        {{- end }}
+    {{- end }}
+{{- end -}}

@@ -1,0 +1,337 @@
+{{
+    sub "head.html"
+    "Title" ( .Person.Name )
+    "BaseLevel" 1
+}}
+
+{{- $now := $.Config.GetNow }}
+
+{{- with .Person }}
+    {{ $p := . }}
+    {{- $b := .GetBirth.Date -}}
+    
+    {{/* https://tailwindcomponents.com/component/responsive-card-with-image */}}
+
+    {{- $genderColor := "gray-800" }}
+    {{- if eq .GetGender.String "male" }}
+        {{- $genderColor = "blue-600" }}
+    {{- end }}
+    {{- if eq .GetGender.String "female" }}
+        {{- $genderColor = "pink-600" }}
+    {{- end }}
+    {{- $divideColor := printf "divide-%s" $genderColor }}
+   
+    <div class="w-full relative flex flex-col gap-y-8 divide-y divide-y-4 {{ $divideColor }}">
+        <div>
+            <h1 class="text-3xl">
+                {{- if .GetGender.String -}}
+                    <span class="text-{{ $genderColor }}">{{- symbol .GetGender.String }} {{- space -}}</span>
+                {{ end }}
+                {{- sub "fullNameBirth.html" "Name" .Name -}}
+            </h1>
+            <div class="absolute right-0 top-0 text-gray-300 hover:text-black">
+                {{- .GetBestID -}}
+            </div>
+        </div>
+
+
+        {{ if or ($.Config.Options.Person.ShowEmpty) (and (not .GetBirth.Empty) (not $.Config.Options.Person.HideBirth)) (and (not .GetBaptism.Empty) (not $.Config.Options.Person.HideBaptism)) (and (not .GetSaintsDay.Empty) (not $.Config.Options.Person.HideSaintsDay)) (and (not .GetDeath.Empty) (not $.Config.Options.Person.HideDeath)) (and (not .GetBurial.Empty) (not $.Config.Options.Person.HideBurial)) }}
+            <div>
+                <h2 class="mt-4 mb-2">Lebensdaten</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3-2nd-grow md:gap-x-4 md:gap-y-2">
+                    {{/*- Birth -*/}}
+
+                    {{ $birth := .GetBirth }}
+                    {{- if and (not $birth.Empty) (not $.Config.Options.Person.HideBirth) }}
+                        {{ sub "person/lifeDateEntry.html" "title" "Geboren" "symbol" "birth" "data" $birth "weekday" ($birth.Date | weekday) "config" $.Config "hide" $.Config.Options.Person.HideBirth "referencesContainer" $.ReferencesContainer }}
+                        <span class="text-sm">
+                            {{- if and $.Config.Options.AllowLiveData (not $p.GetDeadState) $p.GetDeath.Empty -}}
+                                {{ with $birth -}}
+                                    {{ with (duration .Date $p.GetDeath.Date $now) -}}
+                                        {{ if and (not .Error) (not .IsFinished) }}
+                                            {{- printDuration . $.Config.Options "nominativ" -}}
+                                        {{ end -}}
+                                    {{ end -}}
+                                {{ end -}}
+                            {{ end -}}
+                        </span>
+                    {{- end }}
+
+
+                    {{/*- Baptism -*/}}
+
+                    {{ $baptism := .GetBaptism }}
+                    {{- if and (not $baptism.Empty) (not $.Config.Options.Person.HideBaptism) }}
+                        {{ sub "person/lifeDateEntry.html" "title" "Getauft" "symbol" "baptism" "data" $baptism "config" $.Config "hide" $.Config.Options.Person.HideBaptism "referencesContainer" $.ReferencesContainer }}
+                        <span class="text-sm">
+                            {{ if or ($.Config.Options.Person.ShowEmpty) (and (not $baptism.Empty) (not $.Config.Options.Person.HideBaptism)) -}}
+                                {{ with $baptism -}}
+                                    {{- with (duration $b .Date $.ZeroDate) -}}
+                                        {{ if not .Error -}}
+                                            {{ if and (eq .Years 0) (eq .Months 0) (eq .Days 0) -}}
+                                                am Geburtstag
+                                            {{ else -}}
+                                                mit {{ printDuration . $.Config.Options "dativ" -}}
+                                            {{- end }}
+                                        {{- end }}
+                                    {{- end }}
+                                {{- end }}
+                            {{- end }}
+                        </span>
+                    {{- end }}
+
+
+                    {{/*- Saint's Day -*/}}
+
+                    {{ $saintsDay := .GetSaintsDay }}
+                    {{- if and (not $saintsDay.Empty) (not $.Config.Options.Person.HideSaintsDay) }}
+                        {{/* TODO: create \\gtrsymSaintsday (lighter version of \\gtrsymBaptism) */}}
+                        {{ sub "person/lifeDateEntry.html" "title" "Namenstag" "symbol" "" "data" $saintsDay "config" $.Config "hide" $.Config.Options.Person.HideSaintsDay "referencesContainer" $.ReferencesContainer }}
+                        <span></span>
+                    {{- end }}
+
+
+                    {{/*- Death -*/}}
+
+                    {{ $death := .GetDeath }}
+                    {{ sub "person/lifeDateEntry.html" "title" "Gestorben" "symbol" "death" "data" $death "config" $.Config "hide" $.Config.Options.Person.HideDeath "referencesContainer" $.ReferencesContainer }}
+                    <span class="text-sm">
+                        {{ if or ($.Config.Options.Person.ShowEmpty) (and (not $death.Empty) (not $.Config.Options.Person.HideDeath)) -}}
+                            {{ with $death -}}
+                                {{ with (duration $p.GetBirth.Date .Date $now) -}}
+                                    {{ if and (not .Error) (or (.IsFinished) ($.Config.Options.AllowLiveData)) -}}
+                                        mit {{ printDuration . $.Config.Options "dativ" -}}
+                                    {{ end -}}
+                                {{ end -}}
+                            {{- end }}
+                        {{- end }}
+                    </span>
+
+                    {{/*- Burial -*/}}
+
+                    {{ $burial := .GetBurial }}
+                    {{ sub "person/lifeDateEntry.html" "title" "Begraben" "symbol" "burial" "data" $burial "config" $.Config "hide" $.Config.Options.Person.HideBurial "referencesContainer" $.ReferencesContainer }}
+                    <span></span>
+                </div>
+            </div>
+        {{- end }}
+
+
+
+        {{ $lineages := $.Lineages.Get .GetMainTreePositionID -}}
+        {{ $hasLineage := and (not $.Config.Options.Person.HideLineage) ($lineages) -}}
+        {{ if $hasLineage -}}
+            {{ $hasLineage = gt $lineages.Count 0 }}
+        {{ end -}}
+        {{ if or $.Config.Options.Person.ShowEmpty (not .GetMom.IsDummy) (not .GetDad.IsDummy) ($hasLineage) -}}
+            <div>
+                <h2 class="mt-4 mb-2">Abstammung</h2>
+
+                {{ $mom := .GetMom }}
+                {{ $dad := .GetDad }}
+                {{ findTreePositionID $mom $p $.Lineages }}
+                {{ findTreePositionID $dad $p $.Lineages }}
+
+                {{- with .ChildNumber }}
+                    <div class="mt-2 mb-1">
+                        {{ . }}.
+                        {{ if not $mom.IsDummy -}}
+                            {{ $parentRel := $mom.GetRelationshipWith $dad -}}
+                            {{ if $parentRel -}}
+                                {{ if $parentRel.HasChildrenCount -}}
+                                    {{ if eq (derefUint .) (derefUint $parentRel.GetChildrenCount) -}}
+                                        {{ if eq (derefUint .) 1 -}}
+                                            und einziges Kind
+                                        {{ else -}}
+                                            und letztes Kind
+                                        {{ end -}}
+                                    {{ else -}}
+                                        von {{ $parentRel.GetChildrenCount }} Kindern
+                                    {{ end -}}
+                                {{ else -}}
+                                    Kind
+                                {{ end -}}
+                            {{ else -}}
+                                Kind
+                            {{ end -}}
+                        {{ else -}}
+                            Kind
+                        {{ end -}}
+                        von
+                    </div>
+                {{- end -}}
+
+                <div class="grid grid-cols-2 md:grid-cols-4-2nd-grow gap-x-4 gap-y-1">
+                    <!-- Dad -->
+                    {{- sub "person/details-parent.html"
+                        "name" "Vater"
+                        "person" $dad
+                        "config" $.Config
+                        "referencesContainer" $.ReferencesContainer
+                        "allPersons" $.AllPersons
+                    -}}
+
+                    <!-- Mom -->
+                    {{/* TODO  $.Config.Options.MaternalOrder */}}
+                    {{- sub "person/details-parent.html"
+                        "name" "Mutter"
+                        "person" $mom
+                        "config" $.Config
+                        "referencesContainer" $.ReferencesContainer
+                        "allPersons" $.AllPersons
+                    -}}
+                </div>
+
+
+                {{ if not $.Config.Options.Person.HideLineage }}
+                    {{ with $lineages -}}
+                        {{ if gt .Count 1 }}
+                            <h3 class="mt-2 text-xl font-semibold">Stammlinie</h3>
+                            <div class="grid grid-cols-2 md:grid-cols-3-1st-grow">
+                                {{ range $i, $p := .GetPersons }}
+                                    <div class="flex gap-2 col-span-2 mt-3 md:col-span-1 md:mt-0">
+                                        <div class="list-index">{{- $i -}}</div>
+                                        {{ sub "personLinkGendered.html" "person" $p "options" $.Config.Options "referencesContainer" $.ReferencesContainer "allPersons" $.AllPersons -}}
+                                        <span class="dots"></span>
+                                    </div>
+                                    {{ sub "birthOrBaptismDate.html" "Person" . "Config" $.Config }}
+                                    {{ sub "deathDate.html" "Person" . "Config" $.Config }}
+                                {{ end }}
+                            </div>
+                        {{ end }}
+                    {{ end }}
+                {{ end }}
+            </div>
+        {{- end -}}
+
+
+        {{ with $p.GetSiblings -}}
+            {{ with .Common }}
+                {{ if and . (gt (len .GetPersons) 0) }}
+                    <div>
+                        <h2 class="mt-4 mb-2">Geschwister</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-3-1st-grow">
+                            {{ range .GetPersons }}
+                                <div class="flex gap-2 col-span-2 mt-3 md:col-span-1 md:mt-0">
+                                    <div class="list-index">
+                                        <!-- TODO: Markierung eigene "Position" mit Linie o.ä. -->
+                                        {{- if .ChildNumber }}
+                                            {{- .ChildNumber -}}
+                                        {{ end -}}
+                                    </div>
+                                    <div>
+                                        {{ sub "personLinkGendered.html" "person" . "options" $.Config.Options "referencesContainer" $.ReferencesContainer "allPersons" $.AllPersons -}}
+                                        {{- if $.Config.Options.Debug.ChildNumbers -}}
+                                            <span class="text-sm mx-4">ChildNumber: {{ .ChildNumber -}}</span>
+                                        {{- end -}}
+                                    </div>
+                                    <span class="dots"></span>
+                                </div>
+                                {{ sub "lifeDates.html" "Person" . "Config" $.Config }}
+                            {{ end -}}
+                        </div>
+                    {{ end -}}
+                </div>
+            {{ end -}}
+            <!-- TODO Halbgeschwister! -->
+        {{ end -}}
+
+
+        {{ $residences := .GetResidences }}
+        {{ if or $.Config.Options.Person.ShowEmpty $residences }}
+            <div>
+                <h2 class="mt-4 mb-2"> {{- len $residences | plural "Wohnort" "Wohnorte" -}} </h2>
+                <div class="">
+                    {{ range $i, $r := $residences -}}
+                        <div class="">
+                            {{ (concat ", " ($r.CO) ($r.Address) (concat " " $r.ZipCode (printf "<div class=\"inline-block font-semibold\">%s</div>" ($r.City)))) | safeHTML }}
+                            {{ if and (ne $r.Country "") (ne $r.Country "Deutschland") }}
+                                ( {{- $r.Country -}} )
+                            {{- end -}}
+                            {{/* sub "referenceList.tex" "data" $r.Sources "referencesContainer" $.ReferencesContainer /*}}
+
+                            <span class="dots"></span>
+                            <span class="text-gray-500">
+                                {{ sub "fromTo.html" "data" $r -}}
+                            </span>
+                        </div>
+                    {{ end -}}
+                </div>
+            </div>
+        {{ end }}
+
+
+        {{ $jobs := .GetJobs }}
+        {{ if or $.Config.Options.Person.ShowEmpty $jobs }}
+            <div>
+                <h2 class="mt-4 mb-2"> {{- len $jobs | plural "Beruf" "Berufe" -}} </h2>
+                <div class="">
+                    {{ range $i, $j := $jobs -}}
+                        <span class="text-semibold">{{- $j.Type -}}</span>
+                        {{- if $j.Company }}
+                            {{- space -}} bei {{ $j.Company -}}
+                        {{ end -}}
+                        {{ if $j.Place }}
+                            {{- space -}} in {{ $j.Place -}}
+                        {{ end -}}
+                        {{/* sub "referenceList.tex" "data" $j.Sources "referencesContainer" $.ReferencesContainer */}}
+
+                        <span class="dots"></span>
+                        <span class="text-gray-500">
+                            {{ sub "fromTo.html" "data" $j }}
+                        </span>
+                    {{ end -}}
+                </div>
+            </div>
+        {{ end }}
+
+
+        {{ $attributes := .GetAttributes }}
+        {{ if $attributes }}
+            <div>
+                <h2 class="mt-4 mb-2"> {{- len $attributes | plural "Attribut" "Attribute" -}} </h2>
+                <div class="relative">
+                    {{ range $i, $a := $attributes -}}
+                        <div class="border-2 border-blue-400 bg-blue-200 p-1 inline-block"> {{- $a -}} </div> {{- space -}}
+                    {{ end -}}
+                </div>
+            </div>
+        {{- end -}}
+
+        {{ $comments := .GetComments }}
+        {{ if $comments }}
+            <div>
+                <h2 class="mt-4 mb-2"> {{- len $attributes | plural "Notiz" "Notizen" -}} </h2>
+                {{ with $comments -}}
+                    <div>
+                        {{ range $i, $c := . -}}
+                            {{ with $c }}
+                                <p>{{ .Text -}}</p>
+                                {{/* sub "referenceList.tex" "data" .Sources "referencesContainer" $.ReferencesContainer */}}
+                            {{ end -}}
+                        {{ end -}}
+                    </div>
+                {{ end -}}
+            </div>
+        {{ end }}
+
+
+        {{ $biographyElements := .GetBiographyElements }}
+        {{ if and (not $.Config.Options.Person.HideBiography) (or $.Config.Options.Person.ShowEmpty $biographyElements) }}
+            <div>
+                <h2 class="mt-4 mb-2">Biographie</h2>
+                {{ range $i, $b := $biographyElements -}}
+                    {{ with $b }}
+                        <p class="text-justify break-words hyphens-auto">{{ .Text -}}</p>
+                        {{/* sub "referenceList.tex" "data" .Sources "referencesContainer" $.ReferencesContainer -*/}}
+                    {{ end -}}
+                {{ end -}}
+            </div>
+        {{ end }}
+
+    </div>
+{{- end -}}
+
+  <script src="s.js"></script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+{{ with .Person -}}
+    {{ sub "deathDate.html" "Person" . }}
+    <span class="inline-block">
+        {{ .GetDeath.Place -}}
+    </span>
+{{ end -}}

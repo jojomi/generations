@@ -1,0 +1,10 @@
+{{ if or ($.config.Options.Person.ShowEmpty) (and (not $.data.Empty) (not $.hide)) }}
+    \item[ {{- $.title -}} ]
+    \symbolBox{ {{- $.symbol -}} } %
+    {{ if eq $.title "Namenstag" -}} 
+        {{ sub "saintsdayDate.tex" "data" $.data "weekday" "" "referencesContainer" $.referencesContainer "config" $.config -}}
+    {{ else -}}
+        {{ sub "datePlace.tex" "data" $.data "weekday" $.weekday "referencesContainer" $.referencesContainer "config" $.config -}}
+    {{ end -}}
+    \mydots{}
+{{- end }}

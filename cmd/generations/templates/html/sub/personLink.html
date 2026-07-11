@@ -1,0 +1,17 @@
+{{ with .person -}}
+    {{ $contained := false -}}
+    {{ with $.allPersons -}}
+        {{ $contained = ($.allPersons | asPersonListPointer ).Contains $.person -}}
+    {{ end -}}
+    {{ if $contained -}}
+        <a class="group-hover:text-black" href="{{ getPersonDetailsURL . }}">
+    {{ else -}}
+        <div class="text-non-contained inline-block group-hover:text-black">
+    {{ end -}}
+        {{- sub "fullNameBirth.html" . -}}
+    {{ if $contained -}}
+        </a>
+    {{ else -}}
+        </div>
+    {{ end -}}
+{{- end -}}

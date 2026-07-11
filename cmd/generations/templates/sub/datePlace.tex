@@ -1,0 +1,12 @@
+{{ with .data -}}
+    {{ sub "date.tex" "data" $.data "weekday" $.weekday "referencesContainer" $.referencesContainer "config" $.config -}}
+    {{ if .Place }} %
+        {{ if .Date }} -- {{ end -}}
+        {{ .Place | latexify -}}
+        {{ if $.referencesContainer -}}
+            {{ with $.data.PlaceSources -}}
+                {{ sub "referenceList.tex" "data" . "referencesContainer" $.referencesContainer -}}
+            {{ end -}}
+        {{ end -}}
+    {{ end -}}
+{{ end -}}

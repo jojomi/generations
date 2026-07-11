@@ -1,0 +1,14 @@
+{{ with .data -}}
+    {{ .Date | formatDateDayMonth -}}
+    {{ if .Description -}}
+        {{ if .Date -}}
+            {{- space -}} &ndash; {{- space -}}
+        {{ end -}}
+        {{ .Description }}
+    {{ end -}}
+    {{ if $.referencesContainer -}}
+        {{ with $.data.Sources -}}
+            {{/* sub "referenceList.tex" "data" . "referencesContainer" $.referencesContainer -*/}}
+        {{ end -}}
+    {{ end -}}
+{{ end -}}

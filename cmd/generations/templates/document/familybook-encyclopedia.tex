@@ -1,0 +1,505 @@
+% https://ctan.org/pkg/genealogytree
+% https://github.com/zerotoc/pdfinlimg
+
+\documentclass[8pt,paper=a4,ngerman,DIV=11,BCOR=0mm,parskip=half,%
+{{ if .Config.DocumentOptions -}}
+{{ .Config.DocumentOptions }}%
+{{- end }}%
+]{scrbook}
+
+% \usepackage{polyglossia}
+% \setmainlanguage[babelshorthands=true]{german}
+\usepackage[ngerman]{babel}
+\usepackage{fontspec}
+\usepackage{xspace}
+\usepackage{microtype,ellipsis}
+\usepackage{libertine}
+\usepackage{scrlayer-scrpage}
+\usepackage{multicol}
+
+% \usepackage[
+%     %margin=1.25cm
+%     left=5mm,
+%     right=5mm,
+%     top=5mm,
+%     bottom=10mm,
+%     footskip=5mm
+%     ,includeheadfoot
+%     ,nohead
+%     %,showframe % <- to show the page layout
+% ]{geometry}
+
+\usepackage[german=quotes]{csquotes}
+\usepackage{longtable,tabu,xltabular}
+\usepackage[table,dvipsnames,svgnames]{xcolor}
+% https://tex.stackexchange.com/a/323318/71157
+\usepackage[pdfencoding=auto,colorlinks=false,hidelinks,breaklinks=true]{hyperref}
+
+\usepackage[most]{tcolorbox}
+\usepackage[all]{genealogytree}
+%\gtrset{language=german-german}
+%\gtrset{image prefix=pictures/}
+%\usetikzlibrary{backgrounds}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.16}
+
+\colorlet{mainSection}{gray!30}
+\colorlet{subSection}{gray!15}
+
+\newlength{\titleColumnWidth}
+\setlength{\titleColumnWidth}{2.5cm}
+\renewcommand{\arraystretch}{1.25}
+
+\usepackage[inline]{enumitem}
+\setlist[enumerate]{%
+  leftmargin=*,%
+  label=\fbox{\arabic*},%
+  nosep,
+  itemjoin={%
+  {, }%
+  },
+  %topsep=0pt,%
+  %partopsep=0pt,%
+  %noitemsep,%
+}
+\setlist[itemize]{%
+  leftmargin=*,%
+  nosep,
+  itemjoin={%
+  {, }%
+  },
+  %topsep=0pt,%
+  %partopsep=0pt,%
+  %noitemsep,%
+}
+%\setlist[description]{style=nextline}
+%\makeatletter
+
+\usepackage{calc}
+
+\newlist{entries}{itemize}{1} % description does not work here
+\setlist[entries]{
+  label=(a),
+  before={\leavevmode},
+  align=left,
+  %left=\parindent .. 2\parindent,
+  %wide = 0pt,
+  %widest = {\bfseries{}Standesamtlich},
+  nosep,
+  leftmargin = 1.25em,
+  labelsep = 0mm,
+  %font = \bfseries\scshape,
+  itemsep = 2pt,
+  parsep = 1pt,
+}
+\newlist{entry}{itemize*}{1} % description does not work here
+\setlist[entry]{
+  label={},
+  before={: },
+  %before*={before*},
+  itemjoin={; },
+  itemjoin*={; },
+  after={.},
+  %align=left,
+  %leftmargin = 0mm,
+  %labelsep = 0.0001mm,
+  %itemsep = 0pt,
+  %parsep = 0pt,
+  %nosep,
+  %partopsep=0mm,
+  %labelwidth=0.0003mm,
+  %itemindent=0.0003mm,
+  %wide=0pt,
+  %widest={},
+}
+\newlist{subentry}{itemize*}{1} % description does not work here
+\setlist[subentry]{
+  label={},
+  before={},
+  itemjoin={, },
+  itemjoin*={, },
+  after={},
+  %align=left,
+  %leftmargin = 0mm,
+  %labelsep = 0mm,
+  %itemsep = 0pt,
+  %parsep = 0pt,
+  %nosep,
+}
+%\makeatother
+
+
+% \RedeclareSectionCommand[
+%   beforeskip=-\baselineskip,
+%   afterskip=1.0\baselineskip]{subsection}
+
+% destroys clickable hyperref links
+%\usepackage{titlesec}
+%\titlespacing*{\section}{0pt}{4.0ex plus 1ex minus .2ex}{2.3ex plus .2ex}
+
+%\usetikzlibrary{calc}
+
+\usepackage{blindtext}
+
+% \usepackage{varwidth}
+\colorlet{accent}{ {{- if $.Config.Options.AccentColor }} {{- $.Config.Options.AccentColor -}} {{ else -}} Black!35! {{- end -}} }
+
+
+\usepackage{fontawesome}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont{UnifrakturMaguntia}
+\setsansfont{UnifrakturMaguntia}
+\setmonofont{UnifrakturMaguntia}
+
+% source: http://unifraktur.sourceforge.net/letterspacing.html
+% fix by: https://tex.stackexchange.com/a/290947/71157
+\newfontfamily{\sperrsatz}{UnifrakturMaguntia}[
+  LetterSpace=20.0,
+  WordSpace=1.5,
+  Ligatures={NoCommon}
+]
+
+\makeatletter
+
+\newcommand{\pagerefPerson}[1]{%
+{{ if $.Config.Options.Debug.IDs -}}
+(trying ref to person-#1) %
+{{- end }}%
+\@ifundefined{r@person-#1}{%
+}{%
+\scalebox{0.8}{\faChevronCircleRight}\,\pageref{person-#1}%
+}%
+}
+
+\newcommand{\pagerefPersonBrackets}[1]{%
+\@ifundefined{r@person-#1}{%
+}{%
+(\pagerefPerson{#1})%
+}%
+}
+
+\newcommand{\refPerson}[2]{%
+\@ifundefined{r@person-#1}{%
+#2
+}{%
+\hyperref[person-#1]{#2}%
+%{#2}\xspace
+}%
+}
+
+\makeatother
+
+\newcommand{\duration}[4]{%
+{\footnotesize
+% years
+#1
+\ifthenelse{\equal{#1}{1}}{%
+  % == 1
+  Jahr%
+}{%
+  % != 1
+  Jahre%
+},
+% months
+#2
+\ifthenelse{\equal{#2}{1}}{%
+  % == 1
+  Monat%
+}{%
+  % != 1
+  Monate%
+},
+% days
+#3
+\ifthenelse{\equal{#3}{1}}{%
+  % == 1
+  Tag%
+}{%
+  % != 1
+  Tage%
+}%
+% finished?
+\ifthenelse{\equal{#4}{false}}{%
+  *%
+}{}%
+}%
+}
+
+\newcommand{\durationPrep}[4]{%
+{\footnotesize
+% years
+#1
+\ifthenelse{\equal{#1}{1}}{%
+  % == 1
+  Jahr%
+}{%
+  % != 1
+  Jahren%
+},
+% months
+#2
+\ifthenelse{\equal{#2}{1}}{%
+  % == 1
+  Monat%
+}{%
+  % != 1
+  Monaten%
+},
+% days
+#3
+\ifthenelse{\equal{#3}{1}}{%
+  % == 1
+  Tag%
+}{%
+  % != 1
+  Tagen%
+}%
+% finished?
+\ifthenelse{\equal{#4}{false}}{%
+  *%
+}{}%
+}%
+}
+
+\newcommand{\fullAge}[4]{%
+{\footnotesize mit
+% years
+#1
+\ifthenelse{\equal{#1}{1}}{%
+  % == 1
+  Jahr%
+}{%
+  % != 1
+  Jahren%
+},
+% months
+#2
+\ifthenelse{\equal{#2}{1}}{%
+  % == 1
+  Monat%
+}{%
+  % != 1
+  Monaten%
+},
+% days
+#3
+\ifthenelse{\equal{#3}{1}}{%
+  % == 1
+  Tag%
+}{%
+  % != 1
+  Tagen%
+}%
+% finished?
+\ifthenelse{\equal{#4}{false}}{%
+  *%
+}{}%
+}%
+}
+
+
+\newcommand{\birthname}[1]{, geb. \birthnameStyle{#1}}
+\newcommand{\birthnameStyle}[1]{\textit{#1}}
+\newcommand{\nickname}[1]{„#1“}
+%\newcommand{\lastname}[1]{\so{#1}}
+\newcommand{\lastname}[1]{%
+  {\sperrsatz #1}%
+}
+\newcommand{\firstname}[1]{#1}
+\newcommand{\usedFirstname}[1]{\uline{#1}}
+\newcommand{\additionalFirstname}[1]{#1}
+\newcommand{\aliasname}[1]{ -- #1}
+
+
+\newcommand{\unknownPerson}{?}
+
+
+
+\usepackage{ifthen}
+\newcommand{\age}[1]{%
+\ifthenelse{\equal{#1}{\string -1}}
+{}
+{%
+{\color{gray}\footnotesize(mit #1~J.)}%
+}%
+}
+
+% \newcommand{\duration}[1]{%
+% \textcolor{lightgray}{#1}
+% }
+
+
+\makeatletter
+\gtr@symbol@factory{Unknown}{%
+  \begin{gtr@tikzpicture}[line width=2mm,baseline=-13mm,color=gtrsymbol]%
+    \path[use as bounding box] (-0.9,-1.8) rectangle (0.9,0.8);
+    \draw (0,0) circle (7mm);
+    %\draw[white] (270:7mm) -- (270:18mm);
+    %\draw[white] (-0.4,-1.3)--(0.4,-1.3);
+  \end{gtr@tikzpicture}%
+}{0.011}%
+\makeatother
+
+
+
+\usepackage[normalem]{ulem} % line breaking problems
+\usepackage{soul} % own macro problems
+\usepackage{soulutf8} % said to fix umlaut problems
+\newcommand{\name}[1]{%
+{{ if $.Options.WrapNames -}}
+  \textcolor{lightgray}{$\lfloor$}
+{{- end -}}
+#1
+{{- if $.Options.WrapNames -}}
+  \textcolor{lightgray}{$\rfloor$}%
+{{ end -}}
+}
+
+\newcommand{\renderGender}[1]{
+  \ifthenelse{\equal{#1}{male}}{\gtrsymMale}{}%
+  \ifthenelse{\equal{#1}{female}}{\gtrsymFemale}{}%
+  \ifthenelse{\equal{#1}{unknown}}{\gtrsymUnknown}{}%
+}
+\newcommand{\symbolBox}[1]{
+  \makebox[2.7mm]{\hfill
+  #1
+  \hfill}
+}
+\newcommand{\renderGenderBox}[1]{
+  \symbolBox{\renderGender{#1}}
+}
+\newcommand{\renderGenderBoxLeft}[1]{
+  \makebox[2.5mm]{
+  \renderGender{#1}
+  }
+}
+
+
+{{ if .Config.CustomHead -}}
+    {{ .Config.CustomHead }}
+{{ end -}}
+
+%\setcounter{secnumdepth}{0}
+\setlength{\columnseprule}{.3pt}
+
+\title{
+{{- if .Config.Title -}}
+  {{ .Config.Title }}
+{{- else -}}
+  Stammbuch
+{{- end -}}
+}
+
+{{ with .Config.Author -}}
+  {{ if . -}}
+    \author{ {{- . -}} }
+  {{- end }}
+{{- end }}
+
+{{ with .Config.GetNow -}}
+  {{ if . -}}
+    \date{ {{- .Format "02.01.2006" -}} }
+  {{- end }}
+{{- end }}
+
+\begin{document}
+
+
+% a b c d e f g h i j k l m n o p q r s t u v w x y z
+
+% A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+
+% \Blindtext
+
+% \end{document}
+
+
+{{- if .Config.Attribution }}
+\pagestyle{scrheadings}
+\clearpairofpagestyles
+\cfoot{ \footnotesize \textcolor{gray!50!black}{ {{- .Config.Attribution -}} }}
+\ofoot{ \thepage }
+{{ end -}}
+
+
+
+\maketitle
+
+
+% \chapter*{Einleitung}
+% \addcontentsline{toc}{chapter}{Einleitung}
+% \markboth{Einleitung}{Einleitung}
+
+{{ $allPersons := allPersons .Generations .ExtraPersons }}
+{{ $allPersonsMerged := $allPersons.GetWithMergedTreePositionIDs }}
+
+
+{{- with .Config.PreContent -}}
+{{ . }}
+{{- end }}
+
+\begin{multicols*}{2}
+
+{{ with .Generations }}
+  {{ range . }}
+    \section*{
+      {{- if ne .Index 0 }}
+        {{- if .IsParent }}
+          {{- .Index -}}. Elterngeneration --~
+        {{- else -}}
+          {{- .Index -}}. Kindergeneration --~
+        {{- end }}
+      {{- end }}
+      {{- .Name -}}
+    }
+    \addcontentsline{toc}{chapter}{
+      {{- if ne .Index 0 }}
+        {{- if .IsParent }}
+          {{- .Index -}}. Elterngeneration --~
+        {{- else -}}
+          {{- .Index -}}. Kindergeneration --~
+        {{- end }}
+      {{- end }}
+      {{- .Name -}}
+    }
+    \markboth{ {{- .Name -}} }{
+      {{- if ne .Index 0 }}
+        {{- if .IsParent }}
+          {{- .Index -}}. Elterngeneration
+        {{- else -}}
+          {{- .Index -}}. Kindergeneration
+        {{- end -}}
+      {{ end -}}
+    }
+
+    \begin{entries}
+    {{ with .Persons }}
+      {{ range . }}
+        {{ renderFamilybookEntry $.Config . $.Lineages $allPersons }}
+      {{- end }}
+    {{- end }}
+    \end{entries}
+  {{- end }}
+{{- end }}
+
+
+{{ with .ExtraPersons }}
+  {{ if .Count }}
+    \chapter*{Weitere Personen}
+    \addcontentsline{toc}{chapter}{Weitere Personen}
+    \markboth{Weitere Personen}{Weitere Personen}
+    {{ range .GetPersons }}
+      {{ renderFamilybookEntry $.Config . $.Lineages $allPersons }}
+    {{- end }}
+  {{- end }}
+{{- end }}
+
+\end{multicols*}
+
+
+{{- with .Config.PostContent -}}
+{{ . }}
+{{- end }}
+
+
+\end{document}

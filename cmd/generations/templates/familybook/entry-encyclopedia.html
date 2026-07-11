@@ -1,0 +1,203 @@
+{{ with .Person }}
+    {{ $p := . }}
+    {{ $now := $.Config.GetNow }}
+
+    {{ $freiburg := false }}
+    {{ if (placeConnection $p "Krautheim" "Winzenhofen" "Unterwittstadt" "Oberwittstadt" "Erlenbach" "Ravenstein" "Assamstadt") }} {{ $freiburg = true }} {{ end -}}
+
+    <div class="person 
+    {{ .GetGender.String }}
+    {{ if or (not .GetMom) (not .GetDad) (.GetMom.IsDummy) (.GetDad.IsDummy) -}} spitzahn {{- end }}
+    {{ if $freiburg -}} erzdiözese-freiburg {{- end }}
+    ">
+    {{ $name := sub "nameFullBirth.html" "Name" .Name "Class" "current" | trim -}}
+
+    {{ $label := "" }}
+    {{ if .GetMainTreePositionID -}}
+        {{ $label = .GetMainTreePositionID }}
+    {{ else -}}
+        {{ if .GetUUID -}}
+            {{ $label = .GetUUID }}
+        {{ else -}}
+            {{ if .GetID -}}
+              {{ $label = .GetID }}
+            {{ end -}}
+        {{ end -}}
+    {{ end -}}
+    <span class="id">{{ .GetBestID }}</span>
+    <!-- <span class="debug">Label: {{- $label -}}</span> -->
+    <a name="person-{{- $label -}}">
+        {{- with $name -}}
+            {{ . }} 
+        {{- end -}}
+    </a>
+    
+    <ul class="level1 inline">
+    {{ if or (not .GetBirth.Empty) (not .GetDeath.Empty)}}
+        {{ $d := .GetBirth -}}
+        {{ if not $d.Empty -}}
+            <li>geb.
+            {{ sub "datePlaceEncyclopedia.html" "data" $d "weekday" false -}}
+            </li>
+        {{ end -}}
+        {{ $d := .GetBaptism -}}
+        {{ if not $d.Empty -}}
+            <li>get.
+            {{ with $d.Date -}}
+                {{ if eq (len .) 10 -}} den {{ end -}}
+                {{ . | formatDateText }} 
+            {{ end -}}
+            {{ with $d.Place }}
+                {{ . }}
+            {{ end -}}
+            </li>
+        {{ end -}}
+        {{ $d := .GetDeath -}}
+        {{ if not $d.Empty -}}
+            <li>gest.
+            {{ with $d.Date -}}
+                {{ if eq (len .) 10 -}} den {{ end -}}
+                {{ . | formatDateText }} 
+            {{ end -}}
+            {{ with $d.Place }}
+                {{ . }}
+            {{ end -}}
+            </li>
+        {{ end -}}
+        {{ $d := .GetBurial -}}
+        {{ if not $d.Empty -}}
+            <li>begr.
+            {{ with $d.Date -}}
+                {{ if eq (len .) 10 -}} den {{ end -}}
+                {{ . | formatDateText }} 
+            {{ end -}}
+            {{ with $d.Place }}
+                {{ . }}
+            {{ end -}}
+            </li>
+        {{ end -}}
+    {{ end -}}
+    <!-- TODO: getauft usw. -->
+
+    <!-- Eltern -->
+    {{ if and (or .GetMom .GetDad) (or (not .GetMom.IsDummy) (not .GetDad.IsDummy)) -}}
+        {{ $lineages := $.Lineages.Get .GetMainTreePositionID -}}
+        <li class="parents"><span class="parents">
+            {{- with .GetGender -}}
+                {{ if eq .String "female" -}}
+                    Tochter
+                {{ end -}}
+                {{ if eq .String "male" -}}
+                    Sohn
+                {{ end -}}
+                {{ if eq .String "unknown" -}}
+                    Kind
+                {{ end -}}
+            {{ end -}}
+            {{ if not .GetMom.IsDummy -}}
+                {{ with .GetMom -}}
+                    {{ findTreePositionID . $p $.Lineages }}
+                    der
+                    {{ sub "personLink.html" "person" . "allPersons" $.AllPersons "showID" true | trim -}}</a>
+                    {{ if $p.GetDad }} und {{ end -}}
+                {{ end -}}
+            {{ end -}}
+            {{ if not .GetDad.IsDummy -}}
+                {{ with .GetDad -}}
+                    {{ findTreePositionID . $p $.Lineages }}
+                    des
+                    {{ sub "personLink.html" "person" . "allPersons" $.AllPersons "showID" true | trim -}}</a>
+                {{ end -}}
+            {{ end -}}
+            </span>
+        </li>
+    {{ else -}}
+        <li class="gender">
+        {{- with .GetGender -}}
+            {{ if eq .String "female" -}}
+                weibl.
+            {{ end -}}
+            {{ if eq .String "male" -}}
+                männl.
+            {{ end -}}
+        {{ end -}}
+        <!--Geschlechts--></li>
+    {{ end -}}
+    
+    <!-- Partnerschaften -->
+    {{ with .GetRelationships }}
+        {{ if gt (len .) 0 }}
+            <li class="partners">{{- "" -}}
+                <ul class="level2 inline no-first">
+                    {{- range . -}}
+                        <li class="partner">
+                            {{- $r := . -}}
+                            {{ with .GetPartnerOrDummy -}}
+                                {{ findTreePositionID . $p $.Lineages -}}
+                                verb. m.
+                                {{ if .IsDummy -}}
+                                    ?
+                                {{- else -}}
+                                    {{ sub "personLink.html" "person" . "allPersons" $.AllPersons "showID" true -}}
+                                {{ end -}}
+                            {{ end -}}
+                            <ul class="level3 inline">
+                                {{- if or (and (not $.Config.Options.Person.HideEngagement) (not .GetEngagement.Empty)) (not .GetMarriage.Empty) (not .GetMarriageReligious.Empty) (not .GetDivorce.Empty) -}}
+                                    {{ if not $.Config.Options.Person.HideEngagement -}}
+                                        {{ with .GetEngagement -}}
+                                            {{ if not .Empty -}}
+                                                <li class="engagement">verl. {{- sub "datePlaceEncyclopedia.html" "data" . "weekday" false -}}</li>
+                                            {{ end -}}
+                                        {{- end -}}
+                                    {{ end -}}
+                                    {{ with .GetMarriage -}}
+                                        {{ if not .Empty -}}
+                                            <li class="marriage">staatl. verh. {{- sub "datePlaceEncyclopedia.html" "data" . "weekday" false -}}</li>
+                                        {{- end -}}
+                                    {{ end -}}
+                                    {{ with .GetMarriageReligious -}}
+                                        {{ if not .Empty -}}
+                                            <li class="marriage-religious">kirchl. verh. {{- sub "datePlaceEncyclopedia.html" "data" . "weekday" false -}}</li>
+                                        {{- end -}}
+                                    {{ end -}}
+                                    {{ with .GetDivorce -}}
+                                        {{ if not .Empty -}}
+                                            <li class="divorce">gesch. {{- sub "datePlaceEncyclopedia.html" "data" . "weekday" false -}}</li>
+                                        {{- end -}}
+                                    {{ end -}}
+                                {{ end -}}
+
+                                {{ $children := $p.GetChildrenWith $r.GetPartnerOrDummy -}}
+                                {{ if gt $children.Count 0 -}}
+                                    <li class="children hidden">Kinder:
+                                        <ul class="inline level3 no-first">
+                                            {{- range $children.GetPersons -}}
+                                                <li>{{- sub "personLink.html" "person" . "allPersons" $.AllPersons "showID" true -}}</li>
+                                            {{- end -}}
+                                        </ul>{{- "" -}}
+                                    </li>
+                                {{- end -}}
+                            </ul>{{- "" -}}
+                        </li>
+                    {{- end -}}
+                </ul>{{- "" -}}
+            </li>
+        {{ end -}}
+    {{ end -}}
+
+    <!-- Sonstiges -->
+    {{ $floruit := .GetFloruit }}
+    {{ $jobs := .GetJobs }}
+    {{ $comment := .GetComment }}
+    {{ with $floruit -}}
+        <li class="floruit">ansäß. in {{ . }}</li>
+    {{ end -}}
+    {{ with $jobs -}}
+        <li class="jobs">{{ . }}</li>
+    {{ end -}}
+    {{ with $comment -}}
+        <li class="comment">{{ . }}</li>
+    {{ end -}}
+    </ul>
+</div>
+{{ end -}}

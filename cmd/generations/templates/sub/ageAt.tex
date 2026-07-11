@@ -1,0 +1,7 @@
+{{- if and $.start $.date -}}
+    {{ with (duration $.start $.date zeroDate) -}}
+        {{ if or .Years .Months .Days -}}
+            \hspace{\ageSpacing} {\footnotesize mit {{ printDuration . $.config "dativ" -}} }
+        {{- end }}
+    {{- end }}
+{{- end }}

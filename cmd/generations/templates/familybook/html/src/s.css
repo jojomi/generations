@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  h1 {
+    @apply font-bold font-sans text-3xl;
+  }
+
+  h2 {
+    @apply font-bold font-sans text-2xl;
+  }
+
+  a {
+    @apply text-green-700 visited:text-green-600;
+  }
+
+  @media print {
+    a {
+      @apply text-black visited:text-black;
+    }
+  }
+
+  .hyphens-auto {
+    hyphens: auto;
+  }
+
+  .list-index {
+    @apply bg-red-300 w-5 h-5 rounded-lg align-middle text-center font-semibold;
+  }
+
+  .dots {
+    @apply ml-2 mr-2 mb-1 hidden md:inline-block print:inline-block flex-1 border-b-2 border-dotted border-gray-500;
+  }
+}

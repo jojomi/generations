@@ -1,0 +1,13 @@
+{{ with .Name -}}
+    <span class="font-semibold">{{- .GetUsedFirst -}}</span>
+    {{- with .Nick }}
+        <q>{{- . -}}</q>
+    {{- end }}
+    <span class="font-bold">{{- .Last -}}</span>
+    {{- with .Birth -}}
+        , <span>geb. {{ . -}}</span>
+    {{ end -}}
+    {{ with .Alias }}
+        (<q class="font-normal italic"> {{- . -}} </q>)
+    {{- end -}}
+{{ end -}}

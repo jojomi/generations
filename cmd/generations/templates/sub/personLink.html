@@ -1,0 +1,32 @@
+{{ with .person -}}
+    {{ $contained := false -}}
+    {{ with $.allPersons -}}
+        {{ $contained = ($.allPersons | asPersonListPointer ).Contains $.person -}}
+    {{ end -}}
+    {{ if $contained -}}
+        <a class="person-link"
+        {{ if .GetMainTreePositionID -}}
+            href="#person-{{- .GetMainTreePositionID -}}">
+        {{- else -}}
+            {{ with .GetBestID -}}
+                href="#person-{{- . -}}">
+            {{ end -}}
+        {{ end -}}
+    {{ else -}}
+        <span class="non-existing-link">
+    {{ end -}}
+    
+    {{- sub "nameBirth.html" "Name" .Name "Class" "link" | trim -}}
+    
+    {{ if $contained -}}
+        {{ if $.showID }}
+            ( {{- .GetBestID -}} )
+        {{- end -}}
+    {{- end -}}
+    
+    {{ if $contained -}}
+        </a>
+    {{- else -}}
+        </span>
+    {{- end }}
+{{- end -}}

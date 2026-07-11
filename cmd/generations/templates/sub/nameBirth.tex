@@ -1,0 +1,13 @@
+{{ with .Name -}}
+    \firstname{ {{- .GetUsedFirst -}} }
+    {{- with .Nick }}
+        \nickname{ {{- . -}} }
+    {{- end }}
+    \lastname{ {{- .Last -}} }
+    {{- with .Birth -}}
+        \birthname{ {{- . -}} }
+    {{ end -}}
+    {{ with .Alias }}
+        \aliasname{ {{- . -}} }
+    {{- end -}}
+{{ end -}}

@@ -1,0 +1,270 @@
+<!doctype html>
+
+<html lang="de">
+
+<head>
+  <meta charset="utf-8">
+
+  {{ $title := "Stammbuch" }}
+  {{- if .Config.Title -}}
+    {{ $title = .Config.Title }}
+  {{- end -}}
+  <title>{{ $title }}</title>
+  <meta name="description" content="Kostenliste">
+  <meta name="author" content="{{ .Config.Author }}">
+
+  <link href="https://fonts.googleapis.com/css?family=PT+Sans&display=swap" rel="stylesheet">
+
+  {{ if .Config.CustomHead -}}
+    {{ .Config.CustomHead }}
+  {{ end -}}
+
+  <style>
+    body {
+        font-family: 'PT Sans', sans-serif;
+    }
+
+    h1 {
+      margin-top: 0;
+      padding-top: 0;
+    }
+
+    .person-list {
+      column-count: 3;
+      column-gap: 2em;
+      column-rule-style: solid;
+      column-rule-width: .1em;
+
+      hyphens: auto;
+    }
+
+    .generation-title {
+      display: block;
+      background-color: slategrey;
+      color: white;
+      padding: .4em;
+      margin-bottom: .3em;
+    }
+
+    .name.current {
+      font-weight: bold;
+      text-decoration: underline;
+      text-decoration-style: solid;
+      text-underline-offset: .2em;
+    }
+
+    .name .first-additional {
+      font-weight: normal;
+    }
+
+    .name .nick {
+      font-style: italic;
+    }
+
+    .person.male {
+      background-color: #fafafa;
+    }
+
+    .person.female {
+      background-color: #eaeaea;
+    }
+
+    @media screen {
+      .person.highlight:nth-child(2n) {
+        background-color: #69fa33;
+      }
+      .person.highlight:nth-child(2n+1) {
+        background-color: #79ea13;
+      }
+    }
+
+    .person {
+      position: relative;
+      /* margin-bottom: .5em; */
+      /* border: 1px solid transparent; */
+      padding: .1em;
+    }
+
+    /* .person:hover {
+      border: 1px solid lightgray;
+    }
+
+    .person ul.main li:hover {
+      border: 1px dashed lightgray;
+    } */
+
+    .person .id {
+      float: right;
+      border: 1px solid black;
+      border-radius: .2em;
+      padding: 0 .2em;
+      margin-left: .3em;
+      font-size: 80%;
+    }
+
+    .person ul.inline {
+      display: inline;
+      list-style: none;
+      padding: 0;
+    }
+
+    .person ul.inline li {
+      display: inline;
+    }
+
+    .person ul.level1:not(.no-first) > li::before,
+    .person ul.level1.no-first > li:not(:first-child)::before {
+      content: "\00b7"; /* middle dot */
+      margin: 0 .25em 0 .05em;
+      font-weight: bold;
+    }
+
+    .person ul.level2:not(.no-first) > li::before,
+    .person ul.level2.no-first > li:not(:first-child)::before {
+      content: "; ";
+    }
+
+    .person ul.level3:not(.no-first) > li::before,
+    .person ul.level3.no-first > li:not(:first-child)::before {
+      content: ", ";
+    }
+
+    .person a.person-link {
+      color: black;
+      text-decoration-style: dashed;
+      text-underline-offset: .2em;
+    }
+
+    .person a.person-link:hover {
+      color: blue;
+      text-decoration-style: solid;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    @media print {
+      .person.highlight {
+        border-left-width: .7em;
+        border-left-style: solid;
+        padding-left: 1em;
+        border-radius: .3em;
+      }
+      .person.highlight:nth-child(2n) {
+        border-left-color: black;
+      }
+      .person.highlight:nth-child(2n+1) {
+        border-left-color: black;
+      }
+
+      #filter {
+        display: none;
+      }
+    }
+
+  </style>
+
+  <script>
+    function filterByClass(clazz) {
+      let allPersons = document.querySelectorAll('.person');
+      for (let i = 0, len = allPersons.length; i < len; i++) {
+        allPersons[i].classList.remove('highlight');
+      }
+
+      let persons = document.querySelectorAll('.person.' + clazz);
+      for (let i = 0, len = persons.length; i < len; i++) {
+        persons[i].classList.add('highlight');
+      }
+    }
+
+    function toggleChildren() {
+      let allChildren = document.querySelectorAll('.children');
+      for (let i = 0, len = allChildren.length; i < len; i++) {
+        allChildren[i].classList.toggle('hidden');
+      }
+    }
+  </script>
+</head>
+
+<body>
+
+<div class="person-list">
+  <h1>{{ $title }}</h1>
+
+  {{ with .Config.Author -}}
+    {{ if . -}}
+      <h2 class="author">{{- . -}}</h2>
+    {{- end }}
+  {{- end }}
+
+  {{ with .Config.GetNow -}}
+    {{ if . -}}
+      <h3 class="date">{{- .Format "02.01.2006" -}}</h3>
+    {{- end }}
+  {{- end }}
+
+  <div id="filter">
+    <button onClick="filterByClass('spitzahn')">Spitzahnen</button>
+    <button onClick="filterByClass('erzdiözese-freiburg')">Rel. Orte</button>
+    <button onClick="toggleChildren()">Kinder an/aus</button>
+  </div>
+
+  <!-- TODO {{- if .Config.Attribution }}
+  \pagestyle{scrheadings}
+  \clearpairofpagestyles
+  \cfoot{ \footnotesize \textcolor{gray!50!black}{ {{- .Config.Attribution -}} }}
+  \ofoot{ \thepage }
+  {{ end -}} -->
+
+
+  {{ $allPersons := allPersons .Generations .ExtraPersons }}
+  {{ $allPersonsMerged := $allPersons.GetWithMergedTreePositionIDs }}
+
+
+  {{- with .Config.PreContent -}}
+  {{ . }}
+  {{- end }}
+
+  {{ with .Generations }}
+    {{ range . }}
+      <h4 class="generation-title">
+        {{- if ne .Index 0 }}
+          {{- if .IsParent }}
+            {{- .Index -}}. Elterngeneration –
+          {{- else -}}
+            {{- .Index -}}. Kindergeneration –
+          {{- end }}
+        {{- end }}
+        {{ .Name -}}
+      </h4>
+
+      <div class="person-block">
+      {{ with .Persons }}
+        {{ range . }}
+          {{ renderFamilybookEntry $.Config . $.Lineages $allPersons }}
+        {{- end }}
+      {{- end }}
+      </div>
+    {{- end }}
+  {{- end }}
+
+
+  {{ with .ExtraPersons }}
+    {{ if .Count }}
+      <h4 class="generation-title">Weitere Personen</h4>
+      <div class="person-block">
+        {{ range .GetPersons }}
+          {{ renderFamilybookEntry $.Config . $.Lineages $allPersons }}
+        {{- end }}
+      </div>
+    {{- end }}
+  {{- end }}
+</div>
+
+{{- with .Config.PostContent -}}
+{{ . }}
+{{- end }}
+
+</body>
+</html>

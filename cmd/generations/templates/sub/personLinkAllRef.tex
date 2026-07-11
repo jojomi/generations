@@ -1,0 +1,31 @@
+{{ with .person -}}
+    {{ $contained := false -}}
+    {{ with $.allPersons -}}
+        {{ $contained = ($.allPersons | asPersonListPointer ).Contains $.person -}}
+    {{ end -}}
+    {{ if not $contained -}}
+        {\color{nonContainedPerson}
+    {{ end -}}
+    {{ if .GetMainTreePositionID -}}
+        \refPerson{ {{- .GetMainTreePositionID -}} }
+    {{- else -}}
+        {{ with .GetBestID -}}
+            \refPerson{ {{- . -}} }
+        {{ end -}}
+    {{ end -}}
+    {\name{ {{- sub "nameBirth.tex" . | latexify | trim -}} }%
+    } %
+    {{ if not $contained -}}
+        }
+    {{ end -}}
+    {{ if not $.hidePages -}}
+        {{ if .GetTreePositionIDs -}}
+            {{ range $index, $t := .GetTreePositionIDs -}}
+                {{ if $index }} {{ end -}}
+                \pagerefPerson{ {{- $t -}} }
+            {{- end }}
+        {{- else -}}
+            \pagerefPerson{ {{- .GetBestID -}} }
+        {{- end }}
+    {{- end }}
+{{- end -}}

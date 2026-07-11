@@ -1,0 +1,64 @@
+{{
+  sub "head.html" "Title" "Zeitleiste"
+}}
+  
+{{ $allPersons := allPersons .Generations .ExtraPersons }}
+{{ $allPersonsMerged := $allPersons.GetWithMergedTreePositionIDs }}
+
+  <h1 class="mb-4">Zeitleiste</h1>
+  <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero itaque ut ex repellat consequuntur commodi! Impedit, dolores iste. Ex sed incidunt, fugiat velit voluptas dolores expedita ad asperiores quibusdam in!</p>
+
+  <canvas id="zeitleiste" width="500" height="500"></canvas>
+  {{ with .Generations -}}
+    {{ range $i, $gen := . -}}
+      {{ if ge $gen.Index 0 -}}
+          {{ range $gen.Persons -}}
+            {{ if (isSpitzahn . $allPersonsMerged) }}
+              <div class="mt-4 md:mt-2 print:mt-2 md:flex">
+                <span>
+                {{- sub "personLinkGendered.html" "person" . "allPersons" $allPersons -}}
+                {{ if isVollSpitzahn . $allPersonsMerged }} {{- space -}} * {{ end -}}
+                </span>
+                <span class="dots"></span>
+              </div>
+              <div class="md:mt-2 print:mt-2">{{ $gen.Index }}. Elterngeneration</div>
+            {{ end -}}
+          {{ end -}}
+        {{ end -}}
+      {{ end -}}
+    {{ end -}}
+  </div>
+
+  <script src="s.js"></script>
+  <script>
+    let canvas = document.getElementById("zeitleiste");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight
+
+    let ctx = canvas.getContext("2d");
+    let data = [
+      {id: 'brigitte-stahl', from: 1966, to: 2021, gen: 0},
+      {id: 'augustin-stahl', from: 1914, to: 1971, gen: 1},
+      {id: 'maria-stahl', from: 1921, to: 2010, gen: 1},
+    ];
+    render(ctx, data);
+
+    function render(ctx, data) {
+      ctx.fillStyle = "red";
+
+      let width = ctx.width;
+      let height = ctx.height;
+
+      // settings
+      let barWidth = 2;
+
+      data.forEach(element => {
+        ctx.beginPath();
+        ctx.rect(20, 20, 150, 100);
+        ctx.fill();
+      });
+    }
+  </script>
+</div>
+</body>
+</html>  

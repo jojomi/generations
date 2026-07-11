@@ -1,0 +1,82 @@
+{{
+  sub "head.html" "Title" "Recherche Archiv"
+}}
+  
+{{ $allPersons := allPersons .Generations .ExtraPersons }}
+{{ $allPersonsMerged := $allPersons.GetWithMergedTreePositionIDs }}
+
+  <div style="columns: 2;">
+    <h1 class="mb-4 print:text-xl">Recherche Archiv</h1>
+
+    <h2 class="print:text-lg">Nach Geburts-/Taufdatum sortiert</h2>
+    
+    <div class="mt-3 text-base print:text-sm">
+      {{ $all := allPersons .Generations }}
+      <ul>
+        {{ range (sortByBirthOrBaptism $all).GetPersons }}
+          <li>
+            <div class="flex flex-col mb-1 pb-1 border-b-2">
+              <div class="flex flex-row">
+                <div class="flex-grow">
+                  {{- sub "personLink.html" "person" . "options" $.Config.Options "allPersons" $allPersons -}}
+                </div>
+                <div class="ml-2 flex-shrink-0">
+                  ⃝ ⧍ ▢
+                </div>
+              </div>
+              <div class="flex flex-row">
+                <div class="flex-1">
+                  {{- sub "birthOrBaptismDate.html" "Person" . -}}
+                </div>
+                <div class="text-right">
+                  {{ if .GetBirth.Date -}}
+                      {{ .GetBirth.Place -}}
+                  {{ else -}}
+                      {{ if .GetBaptism.Date -}}
+                          {{ .GetBaptism.Place -}}
+                      {{ end -}}
+                  {{ end -}}
+                </div>
+              </div>
+            </div>
+          </li>
+        {{ end }}
+      </ul>
+    </div>
+
+
+    <h2 style="page-break-before: always;">Nach Todesdatum sortiert</h2>
+      
+    <div class="mt-3 text-base print:text-sm">
+      {{ $all := allPersons .Generations }}
+      <ul>
+        {{ range (sortByDeath $all).GetPersons }}
+          <li>
+            <div class="flex flex-col mb-1 pb-1 border-b-2">
+              <div class="flex flex-row">
+                <div class="flex-grow">
+                  {{- sub "personLink.html" "person" . "options" $.Config.Options "allPersons" $allPersons -}}
+                </div>
+                <div class="ml-2 flex-shrink-0">
+                  ⃝ ⧍ ▢
+                </div>
+              </div>
+              <div class="flex flex-row">
+                <div class="flex-1">
+                  {{- sub "deathDate.html" "Person" . -}}
+                </div>
+                <div class="text-right">
+                  {{ .GetDeath.Place -}}
+                </div>
+              </div>
+            </div>
+          </li>
+        {{ end }}
+      </ul>
+    </div>
+  </div>
+</div>
+
+</div>
+</body>
+</html>  

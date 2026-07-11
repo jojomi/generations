@@ -1,0 +1,50 @@
+# https://www.latextemplates.com/svgnames-colors
+absolute:
+  - index: 11
+    color:
+      main: DeepSkyBlue
+      leaf: DeepSkyBlue!60
+  - index: 10
+    color:
+      main: FireBrick
+      leaf: FireBrick!60
+  - index: 9
+    color:
+      main: DodgerBlue!75
+      leaf: DodgerBlue!20
+  - index: 8
+    color:
+      main: Goldenrod
+      leaf: Goldenrod!50
+  - index: 7
+    color:
+      main: DarkGreen!80
+      leaf: DarkGreen!25
+  - index: 6
+    color:
+      main: Salmon
+      leaf: Salmon!60
+  - index: 5
+    color:
+      main: Gold!80
+      leaf: Gold!30
+  - index: 4
+    color:
+      main: SteelBlue
+      leaf: SteelBlue!40
+  - index: 3
+    color:
+      main: LimeGreen!50
+      leaf: LimeGreen!15
+  - index: 2
+    color:
+      main: Tomato
+      leaf: Tomato!40
+  - index: 1
+    color:
+      main: Khaki
+      leaf: Khaki!50
+  - index: 0
+    color:
+      main: RoyalBlue!80
+      leaf: RoyalBlue!30

@@ -1,0 +1,17 @@
+{{ with .Name -}}
+    {{ if eq (len .First) 0 -}}
+        ?~
+    {{- end -}}
+    {{- range .First -}}
+        {{- . -}}~
+    {{- end -}}
+    {{ with .Nick -}}
+        " {{- . -}} "~
+    {{- end -}}
+    {{ with .Last -}}
+        {{- . -}}
+    {{- end -}}
+    {{ with .Birth -}}
+        , geb. {{ . -}}
+    {{- end -}}
+{{ end -}}

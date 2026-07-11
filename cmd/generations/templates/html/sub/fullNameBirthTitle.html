@@ -1,0 +1,26 @@
+{{ with .Name -}}
+    {{ $used := .GetUsedFirst -}}
+    {{ if eq (len .First) 0 -}}
+        <span class="font-semibold">?</span>
+    {{ end -}}
+    {{ range .First -}}
+        {{ if eq . $used -}}
+            <span class="font-semibold">{{- . -}}</span>
+        {{ else -}}
+            <span class="font-normal">{{- . -}}</span> {{/* additional first name */}}
+        {{ end -}}
+    {{ end -}}
+
+    {{- with .Nick }}
+        <q class="font-normal">{{- . -}}</q>
+    {{- end -}}
+
+    {{- space -}}
+    <span class="font-bold">{{- .Last -}}</span>
+    {{- with .Birth -}}
+        , <span class="font-normal">geb. {{ . -}}</span>
+    {{ end -}}
+    {{ with .Alias }}
+        (<q class="font-normal italic"> {{- . -}} </q>)
+    {{- end -}}
+{{ end -}}

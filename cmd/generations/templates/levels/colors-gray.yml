@@ -1,0 +1,82 @@
+
+relative:
+  - index: 10
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: 9
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: 8
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: 7
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: 6
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: 5
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: 4
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: 3
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: 2
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: 1
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: -1
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: -2
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: -3
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: -4
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: -5
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: -6
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: -7
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: -8
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: -9
+    color:
+      main: gray!60
+      leaf: gray!30
+  - index: -10
+    color:
+      main: gray!60
+      leaf: gray!30

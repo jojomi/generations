@@ -1,0 +1,25 @@
+{{ with .person -}}
+    
+    {{ $contained := false -}}
+    
+    {{ with $.allPersons -}}
+        {{ $contained = ($.allPersons | asPersonListPointer ).Contains $.person -}}
+    {{ end -}}
+    
+    {{ if not $contained -}}
+        {\gtrSymbolsSetDraw{nonContainedPerson}
+    {{ end -}}
+    
+    \renderGenderBoxLeft{ {{- .GetGender -}} }
+    {{ if not $contained -}}
+        }
+    {{- end -}}
+    
+    {{ sub "personLink.tex" "person" $.person "allPersons" $.allPersons | trim -}}
+    
+    {{ if not $.options.HideSources -}}
+        {{- if and $.referencesContainer .Sources -}}
+            {{ sub "referenceList.tex" "data" .Sources "referencesContainer" $.referencesContainer -}}
+        {{- end -}}
+    {{- end -}}
+{{ end -}}

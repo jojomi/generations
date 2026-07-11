@@ -1,0 +1,19 @@
+{{ with .person -}}
+    {{ $contained := false -}}
+    {{ with $.allPersons -}}
+        {{ $contained = ($.allPersons | asPersonListPointer ).Contains $.person -}}
+    {{ end -}}
+    <div class="inline-block {{- space -}}
+        
+        {{ if not $contained -}}
+            text-non-contained
+        {{ end -}}
+    ">
+
+        {{- symbol .GetGender.String }}
+
+        {{- space 1 -}}
+
+        {{ sub "personLink.html" "person" $.person "allPersons" $.allPersons -}}
+    </div>
+{{ end -}}

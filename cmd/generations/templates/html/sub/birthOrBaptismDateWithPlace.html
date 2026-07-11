@@ -1,0 +1,12 @@
+{{ with .Person -}}
+    {{ sub "birthOrBaptismDate.html" "Person" . }}
+    <span class="inline-block">
+        {{ if .GetBirth.Date -}}
+            {{ .GetBirth.Place -}}
+        {{ else -}}
+            {{ if .GetBaptism.Date -}}
+                {{ .GetBaptism.Place -}}
+            {{ end -}}
+        {{ end -}}
+    </span>
+{{ end -}}

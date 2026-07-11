@@ -1,0 +1,30 @@
+{{ with .person }}
+    {{ if not .IsDummy }}
+        <div class="font-bold text-md col-span-2 md:col-span-1 mt-3 md:mt-0 align-middle">
+            {{ $.name }}
+        </div>
+        <div class="col-span-2 md:col-span-1 text-md flex">
+            <span>
+            {{- sub "personLinkGendered.html"
+                "person" .
+                "options" $.config.Options
+                "referencesContainer" $.referencesContainer
+                "allPersons" $.allPersons
+            -}}
+            </span>
+            <span class="dots"></span>
+        </div>
+        <div>
+            {{- sub "birthOrBaptismDate.html"
+                "Person" .
+                "Config" $.config
+            -}}
+        </div>
+        <div class="text-right md:text-left">
+            {{- sub "deathDate.html"
+                "Person" .
+                "Config" $.config
+            -}}
+        </div>
+    {{- end }}
+{{- end }}

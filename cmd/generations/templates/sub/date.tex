@@ -1,0 +1,12 @@
+{{ with .data -}}
+    {{ $weekday := .Date | weekday -}}
+    {{ if $weekday -}}
+        {{ $weekday }},~
+    {{- end -}}
+    {{ .Date | formatDate -}}
+    {{ if $.referencesContainer -}}
+        {{ with $.data.DateSources -}}
+            {{ sub "referenceList.tex" "data" . "referencesContainer" $.referencesContainer -}}
+        {{ end -}}
+    {{ end -}}
+{{ end -}}

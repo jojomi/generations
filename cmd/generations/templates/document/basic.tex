@@ -1,0 +1,214 @@
+% https://ctan.org/pkg/genealogytree
+% https://github.com/zerotoc/pdfinlimg
+
+\documentclass[10pt,paper=a4,ngerman,parskip,DIV=11,BCOR=0mm,%
+{{ if .Config.DocumentOptions -}}
+{{ .Config.DocumentOptions }}%
+{{- end }}%
+]{scrartcl}
+
+\usepackage[ngerman]{babel}
+\usepackage{microtype,ellipsis}
+\usepackage{hyperref}
+\usepackage{libertine}
+
+\usepackage[
+    %margin=1.25cm
+    left=15mm,
+    right=15mm,
+    top=15mm,
+    bottom=10mm,
+    footskip=5mm
+    ,includeheadfoot
+    ,nohead
+    %,showframe % <- to show the page layout
+]{geometry}
+
+\usepackage[german=quotes]{csquotes}
+\usepackage[dvipsnames,svgnames]{xcolor}
+\usepackage[all]{genealogytree}
+\gtrset{language=german-german}
+\gtrset{image prefix=pictures/}
+\usetikzlibrary{backgrounds}
+\definecolor{amaranth}{rgb}{0.9, 0.17, 0.31} % red
+\definecolor{bleudefrance}{rgb}{0.19, 0.55, 0.91} % blue
+\definecolor{caribbeangreen}{rgb}{0.0, 0.8, 0.6} % green
+\definecolor{burgundy}{rgb}{0.5, 0.0, 0.13}
+\definecolor{byzantine}{rgb}{0.74, 0.2, 0.64} % purple
+\definecolor{cream}{rgb}{1.0, 0.99, 0.82}
+\definecolor{darkblue}{rgb}{0.0, 0.0, 0.55} % blue
+\definecolor{darkseagreen}{rgb}{0.56, 0.74, 0.56}
+\definecolor{darkslategray}{rgb}{0.18, 0.31, 0.31}
+\definecolor{darktangerine}{rgb}{1.0, 0.66, 0.07} % orange
+\definecolor{darkturquoise}{rgb}{0.0, 0.81, 0.82}
+
+% https://esc-now.de/_/latex-individuelle-kopf--und-fusszeilen-update/?lang=en
+\usepackage[footsepline]{scrlayer-scrpage}
+
+\RedeclareSectionCommand[
+  beforeskip=-\baselineskip,
+  afterskip=1.0\baselineskip]{subsection}
+
+% destroys clickable hyperref links
+%\usepackage{titlesec}
+%\titlespacing*{\section}{0pt}{4.0ex plus 1ex minus .2ex}{2.3ex plus .2ex}
+
+\usetikzlibrary{calc}
+\newcommand{\moretext}{\bfseries\ldots}
+\newlength{\moredist}
+\setlength{\moredist}{1.5cm}
+
+
+
+
+\makeatletter
+\gtr@db@new@event@store{marriagereligious}
+
+\gtrset{
+    %marriageagereligious/.initial=\gtrsymBuried, % no visible effect at all
+    /gtr/event prefix/marriagereligious/.initial=\gtrsymChurch, %  Package pgfkeys Error: I do not know the key '/gtr/event prefix/marriageagereligious', to which you passed 'brel', and I am going to ignore it. Perhaps you misspelled it.
+}
+
+\gtrset{language=german}
+
+\gtr@symbol@factory{Church}{%
+  \begin{gtr@tikzpicture}[line width=3mm,color=gtrsymbol]%
+    \path[use as bounding box] (0,0) rectangle (2.7,2.1);
+    \draw (0.25,0) -- (2.25,0) -- (2.25,1.5) -- (1.8,1.75) -- (1.35,1.5) -- (1.35,1) -- (0.25,1) -- cycle;
+    %\draw (1.35,1) -- (1.35,0);
+  \end{gtr@tikzpicture}%
+}{0.011}%
+
+\gtrset{symlang/Church=kirchl. getraut}
+
+\makeatother
+
+
+\makeatletter
+\gtrDeclareDatabaseFormat{full-ages-one-marriage}{}{%
+    \gtrPrintName%
+    \begin{gtreventlist}%
+        \gtr@list@event{birth}\pgfkeysifdefined{/gtr/database/save/age}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/age})}}{}%
+        \gtr@list@event{baptism}%
+        \gtr@list@event{engagement}%
+        \gtrifeventdefined{marriage}{%
+            \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
+        }{%
+            \gtr@list@event{marriagereligious}\pgfkeysifdefined{/gtr/database/save/marriageagereligious}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageagereligious})}}{}%
+        }%
+        \gtr@list@event{divorce}%
+        \gtr@list@event{floruit}%
+        \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/deathage})}}{}%
+        \gtr@list@event{burial}%
+    \end{gtreventlist}%
+    \gtr@print@infolist%
+}
+
+\gtrDeclareDatabaseFormat{full-ages}{}{%
+    \gtrPrintName%
+    \begin{gtreventlist}%
+        \gtr@list@event{birth}\pgfkeysifdefined{/gtr/database/save/age}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/age})}}{}%
+        \gtr@list@event{baptism}%
+        \gtr@list@event{engagement}%
+        \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
+        \gtrifeventdefined{marriagereligious}{%
+            \gtr@list@event{marriagereligious}\gtrsymBuried \pgfkeysifdefined{/gtr/database/save/marriageagereligious}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageagereligious})}}{}%
+        }{}%
+        \gtr@list@event{divorce}%
+        \gtr@list@event{floruit}%
+        \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/deathage})}}{}%
+        \gtr@list@event{burial}%
+    \end{gtreventlist}%
+    \gtr@print@infolist%
+}
+
+\gtrDeclareDatabaseFormat{full-ages-no-name}{}{%
+    \begin{gtreventlist}%
+        \gtr@list@event{birth}\pgfkeysifdefined{/gtr/database/save/age}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/age})}}{}%
+        \gtr@list@event{baptism}%
+        \gtr@list@event{engagement}%
+        \gtr@list@event{marriage}\pgfkeysifdefined{/gtr/database/save/marriageage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageage})}}{}%
+        \gtr@list@event{marriagereligious}\pgfkeysifdefined{/gtr/database/save/marriageagereligious}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/marriageagereligious})}}{}%
+        \gtr@list@event{divorce}%
+        \gtr@list@event{floruit}%
+        \gtr@list@event{death}\pgfkeysifdefined{/gtr/database/save/deathage}{ \textcolor{gray}{(\pgfkeysvalueof{/gtr/database/save/deathage})}}{}%
+        \gtr@list@event{burial}%
+    \end{gtreventlist}%
+    \gtr@print@infolist%
+}
+\makeatother
+
+\gtrset{
+    my symbol nodes/.style={
+    processing=database,
+    database format=symbol,
+    level distance=5mm,
+    level size=5mm,
+    node size=5mm,
+    box clear,
+    box={capture=minipage,enhanced,size=fbox,boxsep=0mm,boxrule=0.25mm,
+        halign=center,valign=center,fontupper=\fontsize{4.7mm}{4.7mm}\selectfont,
+        temp@late/symopt/\gtrDBsex},
+    edges={anchoring=center,background={white,line width=0.6mm},foreground={green!25!black,line width=0.3mm}},
+    level 0/.style={
+        child distance in child graph=1cm,
+        further distance=3mm
+    },
+    level -1/.style={
+        child distance in child graph=1mm,
+        %further distance=20mm
+    },
+    level -2/.style={
+        %further distance=10mm
+    },
+    level distance=3cm,
+    },
+}
+
+
+{{ if .Config.Attribution }}
+\pagestyle{scrheadings}
+\clearpairofpagestyles
+\cfoot{ \tiny \textcolor{gray}{ {{- .Config.Attribution -}} }}
+{{ else }}
+\pagestyle{empty}
+{{ end }}
+
+
+\newcommand{\titlename}[1]{#1}
+\newcommand{\middlename}[1]{%
+{\normalfont #1}%
+}
+\newcommand{\surnbirth}[1]{\newline\mbox{geb. \surn{#1}}}
+\newcommand{\alias}[1]{\surn{#1}}
+
+{{ if .Config.CustomHead -}}
+    {{ .Config.CustomHead }}
+{{ end -}}
+
+\setcounter{secnumdepth}{0}
+\begin{document}
+
+{{- if .Config.Title -}}
+\section*{ {{- .Config.Title -}} }
+{{- end }}
+
+{{ if and (not .Config.Date.IsZero) (.Config.DateFormat) -}}
+Stand: \textbf{ {{- .Config.Date.Format .Config.DateFormat -}} }
+{{- end }}
+
+
+{{- with .Config.PreContent -}}
+{{ . }}
+{{- end }}
+
+
+{{ .Config.RenderedTrees }}
+
+
+{{- with .Config.PostContent -}}
+{{ . }}
+{{- end }}
+
+
+\end{document}

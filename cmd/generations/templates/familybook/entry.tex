@@ -1,0 +1,632 @@
+{{ with .Person }}
+{{ $p := . }}
+{{ if not .IsDummy -}}
+
+
+{{ if $.Config.Options.SinglePersonPages -}}
+\newpage
+{{- end }}
+
+{{ $now := $.Config.GetNow }}
+
+{{/* $title := titleName .Name | latexify -*/}}
+{{/* $name := nameFullNoBirth .Name | latexify | trim -*/}}
+{{ $name := sub "nameFullNoBirth.tex" . | latexify | trim -}}
+{{- $nameText := sub "nameFullText.tex" . | latexify | trim -}}
+
+
+\section*{
+{{- with .GetGender -}} 
+    \renderGenderBoxLeft{ {{- . -}} }
+    \normalfont{ {{- sub "referenceList.tex" "data" $p.GetGenderSources "referencesContainer" $.ReferencesContainer -}} }
+{{ else -}}
+    {{- if $.Config.Options.Person.ShowEmpty -}} 
+        \renderGenderBoxLeft{unknown}
+    {{ end -}}
+{{ end -}}
+{{ if not $p.Name.IsEmpty -}}
+    {{ $name }}
+    {{- sub "referenceList.tex" "data" $p.Name.Sources "referencesContainer" $.ReferencesContainer }} %
+{{ end -}}
+{{ if not ($p.IsAlive $now) -}}
+    \hfill\gtrsymDied
+{{- end -}}
+}
+
+{{ if not $p.Name.IsEmpty -}}
+    % Inhaltsverzeichnis
+    \addcontentsline{toc}{section}{
+        \texorpdfstring{ {{- $nameText }}
+            {\color{gray}\footnotesize{}
+                {{- sub "lifeDates.tex" "Person" $p "Config" $.Config "NoSymbols" true -}}
+            }
+        }{
+            {{- $nameText -}}
+        }
+    }
+
+    % Index
+    \index{ {{- sub "nameFullReversedIndex.tex" . | latexify | collapseWhitespace | trim -}} }
+    {{ if $p.Name.Birth -}}
+    \index{ {{- sub "nameFullReversedBirthIndex.tex" . | latexify | collapseWhitespace | trim -}} }
+    {{ end -}}
+    {{ if $p.Name.Alias -}}
+    %\index{ {{- sub "nameAliasIndex.tex" . | latexify | collapseWhitespace | trim -}} }
+    {{ end -}}
+{{- end }}
+
+
+
+{{ if .GetMainTreePositionID -}}
+    \label{person- {{- .GetMainTreePositionID -}} }
+{{ else -}}
+    {{ if .GetUUID -}}
+        \label{person- {{- .GetUUID -}} }
+    {{ else -}}
+        {{ if .GetID -}}
+            \label{person- {{- .GetID -}} }
+        {{ end -}}
+    {{ end -}}
+{{ end -}}
+
+{{ if $.Config.Options.Debug.IDs -}}
+ID: {{ .GetID }}\\
+Best ID: {{ .GetBestID }}\\
+{{- end }}
+{{ if $.Config.Options.Debug.TreePos -}}
+TreePos: {{ .GetMainTreePositionID }}\\
+{{- end }}
+{{ if $.Config.Options.Debug.UUIDs -}}
+UUID: {{ .GetUUID }}\\
+{{- end }}
+
+{{- $b := .GetBirth.Date -}}
+{{- $p := . }}
+
+{{ if not $.Config.Options.Person.HideImage }}
+    {{ with .GetImageFilename -}}
+        {{ if . -}}
+            \begin{center}
+                \tcbox[colframe=gray!80, colback=gray!10, boxsep=0mm, boxrule=.25mm]{
+                    \includegraphics[keepaspectratio,width=\textwidth,height=.5\textheight]{pictures/{{ . -}} }
+                }
+            \end{center}
+        {{ end -}}
+    {{ end -}}
+{{ end -}}
+
+
+{{ if or $.Config.Options.Person.ShowEmpty .Name.Birth .Name.Alias -}}
+    \begin{databox}{Name}
+        \begin{datalist}
+            % \item[Voller Name]
+            % {{- with .GetGender -}} 
+            % \renderGenderBoxLeft{ {{- . -}} }
+            % {{ else -}}
+            %     {{- if $.Config.Options.Person.ShowEmpty -}} 
+            %         \renderGenderBoxLeft{unknown}
+            %     {{ end -}}
+            % {{ end -}}
+            % {{/* $name */}} %
+            % {{ if and $.Config.Options.Person.ShowEmpty (not $name) -}}
+            %     \mydots{}
+            % {{- end }}
+
+        {{ if or $.Config.Options.Person.ShowEmpty .Name.Birth -}}
+            \item[Geburtsname] \birthnameStyle{ {{- .Name.Birth | latexify | trim -}} } %
+            {{ if and $.Config.Options.Person.ShowEmpty (not .Name.Alias) -}}
+                \mydots{}
+            {{- end }}
+        {{- end }}
+        {{ if or $.Config.Options.Person.ShowEmpty .Name.Alias -}}
+            \item[Alias] {{ .Name.Alias | latexify | trim }} %
+            {{ if and $.Config.Options.Person.ShowEmpty (not .Name.Alias) -}}
+                \mydots{}
+            {{- end }}
+        {{- end }}
+        \end{datalist}
+    \end{databox}
+{{- end }}
+
+
+{{ if or ($.Config.Options.Person.ShowEmpty) (and (not .GetBirth.Empty) (not $.Config.Options.Person.HideBirth)) (and (not .GetBaptism.Empty) (not $.Config.Options.Person.HideBaptism)) (and (not .GetSaintsDay.Empty) (not $.Config.Options.Person.HideSaintsDay)) (and (not .GetDeath.Empty) (not $.Config.Options.Person.HideDeath)) (and (not .GetBurial.Empty) (not $.Config.Options.Person.HideBurial)) }}
+    \begin{databox}{Lebensdaten}
+        \begin{datalist}
+
+        % Birth
+        {{ $birth := .GetBirth }}
+        {{ sub "lifeDateEntry.tex" "title" "Geboren" "symbol" "\\gtrsymBorn" "data" $birth "weekday" ($birth.Date | weekday) "config" $.Config "hide" $.Config.Options.Person.HideBirth "referencesContainer" $.ReferencesContainer }} %
+        {{- if and $.Config.Options.AllowLiveData (not $p.GetDeadState) $p.GetDeath.Empty -}}
+            {{ with $birth -}}
+                {{ with (duration .Date $p.GetDeath.Date $now) -}}
+                    {{ if and (not .Error) (not .IsFinished) }}
+                        {\footnotesize {{ printDuration . $.Config.Options "nominativ" -}} }
+                    {{ end -}}
+                {{ end -}}
+            {{ end -}}
+        {{ end -}}
+
+        % Baptism
+        {{ $baptism := .GetBaptism }}
+        {{ sub "lifeDateEntry.tex" "title" "Getauft" "symbol" "\\gtrsymBaptized" "data" $baptism "config" $.Config "hide" $.Config.Options.Person.HideBaptism "referencesContainer" $.ReferencesContainer }}
+        {{ if or ($.Config.Options.Person.ShowEmpty) (and (not $baptism.Empty) (not $.Config.Options.Person.HideBaptism)) -}}
+            {{ with $baptism -}}
+                {{- with (duration $b .Date $.ZeroDate) -}}
+                    {{ if not .Error -}}
+                        {{ if and (eq .Years 0) (eq .Months 0) (eq .Days 0) -}}
+                            {\footnotesize am Geburtstag}
+                        {{ else -}}
+                            {\footnotesize mit {{ printDuration . $.Config.Options "dativ" -}} }
+                        {{- end }}
+                    {{- end }}
+                {{- end }}
+            {{- end }}
+        {{- end }}
+
+        % Saint's Day
+        {{ $saintsDay := .GetSaintsDay }}
+        {{/* TODO: create \\gtrsymSaintsday (lighter version of \\gtrsymBaptism) */}}
+        {{ sub "lifeDateEntry.tex" "title" "Namenstag" "symbol" "" "data" $saintsDay "config" $.Config "hide" $.Config.Options.Person.HideSaintsDay "referencesContainer" $.ReferencesContainer }}
+
+        % Death
+        {{ $death := .GetDeath }}
+        {{ sub "lifeDateEntry.tex" "title" "Gestorben" "symbol" "\\gtrsymDied" "data" $death "config" $.Config "hide" $.Config.Options.Person.HideDeath "referencesContainer" $.ReferencesContainer }}
+        {{ if or ($.Config.Options.Person.ShowEmpty) (and (not $death.Empty) (not $.Config.Options.Person.HideDeath)) -}}
+            {{ with $death -}}
+                {{ with (duration $p.GetBirth.Date .Date $now) -}}
+                    {{ if and (not .Error) (or (.IsFinished) ($.Config.Options.AllowLiveData)) -}}
+                        {\footnotesize mit {{ printDuration . $.Config.Options "dativ" -}} }
+                    {{ end -}}
+                {{ end -}}
+            {{- end }}
+        {{- end }}
+
+        % Burial
+        {{ $burial := .GetBurial }}
+        {{ sub "lifeDateEntry.tex" "title" "Begraben" "symbol" "\\gtrsymBuried" "data" $burial "config" $.Config "hide" $.Config.Options.Person.HideBurial "referencesContainer" $.ReferencesContainer }}
+        \end{datalist}
+    \end{databox}
+{{- end }}
+
+
+{{ $lineages := $.Lineages.Get .GetMainTreePositionID -}}
+{{ $hasLineage := and (not $.Config.Options.Person.HideLineage) ($lineages) -}}
+{{ if $hasLineage -}}
+    {{ $hasLineage = gt $lineages.Count 0 }}
+{{ end -}}
+{{ if or $.Config.Options.Person.ShowEmpty (not .GetMom.IsDummy) (not .GetDad.IsDummy) ($hasLineage) -}}
+    \begin{databox}{Abstammung}
+        {{ $mom := .GetMom }}
+        {{ $dad := .GetDad }}
+        {{ findTreePositionID $mom $p $.Lineages }}
+        {{ findTreePositionID $dad $p $.Lineages }}
+
+        {{- with .ChildNumber }}
+            {{ . }}.
+            {{ if not $mom.IsDummy -}}
+                {{ $parentRel := $mom.GetRelationshipWith $dad -}}
+                {{ if $parentRel -}}
+                    {{ if $parentRel.HasChildrenCount -}}
+                        {{ if eq (derefUint .) (derefUint $parentRel.GetChildrenCount) -}}
+                            {{ if eq (derefUint .) 1 -}}
+                                und einziges Kind
+                            {{ else -}}
+                                und letztes Kind
+                            {{ end -}}
+                        {{ else -}}
+                            von {{ $parentRel.GetChildrenCount }} Kindern
+                        {{ end -}}
+                    {{ else -}}
+                        Kind
+                    {{ end -}}
+                {{ else -}}
+                    Kind
+                {{ end -}}
+            {{ else -}}
+                Kind
+            {{ end -}}
+            von
+        {{- end -}}
+
+        {{ if or $.Config.Options.Person.ShowEmpty (not $mom.IsDummy) (not $dad.IsDummy) -}}
+        {{ if .ChildNumber -}}
+            \vspace{-.5em}
+        {{ end -}}
+        \begin{datalist}[widest={\bfseries{}Mutter}]
+
+            % Mom (maternal order)
+            {{ if and (or $.Config.Options.Person.ShowEmpty (not $mom.IsDummy)) $.Config.Options.MaternalOrder }}
+                \item[Mutter] \raggedright
+                {{ if not $mom.IsDummy -}}
+                    {{ sub "personLinkGendered.tex" "person" $mom "options" $.Config.Options "referencesContainer" $.ReferencesContainer "allPersons" $.AllPersons | trim -}}
+                {{ end -}}
+                {{ if or $.Config.Options.Person.ShowEmpty (not $.Config.Options.MultilineLists) -}}
+                    \mydots{}
+                {{ end -}}
+                {{ if not $mom.IsDummy -}}
+                    {{ with $mom -}}
+                        {{ sub "lifeDatesRelated.tex" "Person" . "Config" $.Config }}
+                    {{ end -}}
+                {{ end }}
+            {{ end }}
+
+            % Dad
+            {{ if or $.Config.Options.Person.ShowEmpty (not $dad.IsDummy) }}
+                \item[Vater] \raggedright
+                {{ if not $dad.IsDummy -}}
+                    {{ sub "personLinkGendered.tex" "person" $dad "options" $.Config.Options "referencesContainer" $.ReferencesContainer "allPersons" $.AllPersons | trim -}}
+                {{ end -}}
+                {{ if or $.Config.Options.Person.ShowEmpty (not $.Config.Options.MultilineLists) -}}
+                    \mydots{}
+                {{ end -}}
+                {{ if not $dad.IsDummy -}}
+                    {{ with $dad -}}
+                        {{ sub "lifeDatesRelated.tex" "Person" . "Config" $.Config }}
+                    {{ end -}}
+                {{ end -}}
+            {{ end }}
+
+            % Mom (non-maternal order)
+            {{ if and (or $.Config.Options.Person.ShowEmpty (not $mom.IsDummy)) (not $.Config.Options.MaternalOrder) }}
+                \item[Mutter] \raggedright
+                {{ if not $mom.IsDummy -}}
+                    {{ sub "personLinkGendered.tex" "person" $mom "options" $.Config.Options "referencesContainer" $.ReferencesContainer "allPersons" $.AllPersons | trim -}}
+                {{ end -}}
+                {{ if or $.Config.Options.Person.ShowEmpty (not $.Config.Options.MultilineLists) -}}
+                    \mydots{}
+                {{ end -}}
+                {{ if not $mom.IsDummy -}}
+                    {{ with $mom -}}
+                        {{ sub "lifeDatesRelated.tex" "Person" . "Config" $.Config }}
+                    {{ end -}}
+                {{ end }}
+            {{ end }}
+        \end{datalist}
+        {{ end -}}
+
+        {{ if not $.Config.Options.Person.HideLineage }}
+            {{ with $lineages -}}
+                {{ if gt .Count 1 }}
+                    \tcbsubtitle{\bfseries\scshape{}Stammlinie}
+                    \begin{enumerate {{- if $.Config.Options.ShortLists -}} * {{- end -}} }
+                    {{ range $i, $p := .GetPersons }}
+                        {{ if gt $i 0 }}
+                            \item[
+                                {{- if gt $i 0 }}
+                                    \fbox{
+                                        {{- $i -}}
+                                    }
+                                {{- else -}}
+                                    \textcolor{white}{\fbox{0}}
+                                {{- end -}}
+                            ] \raggedright
+                            {{ sub "personLinkGendered.tex" "person" $p "options" $.Config.Options "referencesContainer" $.ReferencesContainer "allPersons" $.AllPersons -}}
+                            {{ if not $.Config.Options.MultilineLists -}}
+                                \mydots{}
+                            {{ end -}}
+                            {{ sub "lifeDatesRelated.tex" "Person" . "Config" $.Config }}
+                        {{ end }}
+                    {{ end }}
+                    \end{enumerate {{- if $.Config.Options.ShortLists -}} * {{- end -}} }
+                {{ end }}
+            {{ end }}
+        {{ end }}
+    \end{databox}
+{{ end }}
+
+
+{{ with $p.GetSiblings -}}
+    {{ with .Common }}
+        {{ if and . (gt (len .GetPersons) 0) }}
+            \begin{databox}{Geschwister}
+                \begin{enumerate {{- if $.Config.Options.ShortLists -}} * {{- end -}} }
+                {{ range .GetPersons }}
+                    \item
+                    {{- if .ChildNumber }}
+                        [\fbox{ {{- .ChildNumber -}} }]
+                    {{ else -}}
+                        []
+                    {{ end -}}
+                    \raggedright%
+                    {{ sub "personLinkGendered.tex" "person" . "options" $.Config.Options "referencesContainer" $.ReferencesContainer "allPersons" $.AllPersons | trim -}}
+                    {{- if $.Config.Options.Debug.ChildNumbers -}}
+                        \hspace{\ageSpacing}{\tiny CN {{ .ChildNumber -}} }
+                    {{- end -}}
+                    {{ if not $.Config.Options.MultilineLists -}}
+                        \mydots{}
+                    {{ end -}}
+                    {{ if or .GetBirth.Date .GetDeath.Date -}}
+                        {{ if $.Config.Options.MultilineLists -}}
+                            \newline
+                        {{ end -}}
+                        {{ sub "lifeDatesRelated.tex" "Person" . "Config" $.Config }}
+                    {{ end -}}
+                {{ end -}}
+                \end{enumerate {{- if $.Config.Options.ShortLists -}} * {{- end -}} }
+            \end{databox}
+        {{ end -}}
+    {{ end -}}
+    % TODO Halbgeschwister!
+{{ end -}}
+
+
+{{ if gt (.GetChildren.Count) 0 }}
+    \begin{databox}{Kinder}
+        {{ with .GetChildrenParents -}}
+            {{ range .GetPersons -}}
+                {{ findTreePositionID . $p $.Lineages -}}
+                {{ $rel := $p.GetRelationshipWith . -}}
+                \tcbsubtitle{
+                    {{ if $rel -}}
+                        {{- if not $rel.HasChildrenCount }}
+                            mind.~
+                        {{- end -}}
+                        {{ $childrenCount := 0 }}
+                        {{- if $rel.HasChildrenCount }}
+                            {{ $childrenCount = derefUint $rel.GetChildrenCount | uint2int }} 
+                        {{- else -}}
+                            {{ $childrenCount = ($.Person.GetChildrenWith .).Count }}
+                        {{- end -}}
+                        {{ $childrenCount }} {{ $childrenCount | plural "Kind" "Kinder" }}
+                    {{ end -}}
+                    mit 
+                    {{ if .IsDummy -}}
+                        \unknownPerson
+                    {{- else -}}
+                        {{ sub "personLinkGendered.tex" "person" . "options" $.Config.Options "referencesContainer" $.ReferencesContainer "allPersons" $.AllPersons | trim -}}
+                    {{ end -}}
+                    {{ if or .GetBirth.Date .GetDeath.Date -}}
+                        {{ if not $.Config.Options.MultilineLists -}}
+                            \hfill
+                        {{ end -}}
+                        {{- sub "lifeDatesRelated.tex" "Person" . "Config" $.Config -}}
+                    {{- end }}
+                }
+                {{ with ($.Person.GetChildrenWith .) -}}
+                    {{ if gt (len .GetPersons) 0 -}}
+                        \begin{enumerate {{- if $.Config.Options.ShortLists -}} * {{- end -}} }
+                        {{ range .GetPersons -}}
+                            {{ findTreePositionID . $p $.Lineages }}
+                            \item
+                                {{- if .ChildNumber }}
+                                    [\fbox{ {{- .ChildNumber -}} }]
+                                {{ else -}}
+                                    []
+                                {{ end -}}
+                            \raggedright%
+                            {{ sub "personLinkGendered.tex" "person" . "options" $.Config.Options "referencesContainer" $.ReferencesContainer "allPersons" $.AllPersons }}\xspace
+                            {{ sub "ageAt.tex" "config" $.Config.Options "date" .GetBirth.Date "start" $b | trim -}}
+                            {{- if $.Config.Options.Debug.ChildNumbers -}}
+                                \hspace{\ageSpacing}{\tiny CN {{ .ChildNumber -}} }
+                            {{- end -}}
+                            {{ if not $.Config.Options.MultilineLists -}}
+                                \mydots{}
+                            {{- end -}}
+                            {{ sub "lifeDatesRelated.tex" "Person" . "Config" $.Config }}
+                        {{ end -}}
+                        \end{enumerate {{- if $.Config.Options.ShortLists -}} * {{- end -}} }
+                    {{ end -}}
+                {{ end }}
+            {{ end -}}
+        {{ end -}}
+    \end{databox}
+{{ end -}}
+
+
+{{ with .GetRelationships }}
+    {{ if gt (len .) 0 }}
+        \begin{databox}{Partnerschaften}
+            {{ range . }}
+                {{ $r := . }}
+                {{ with .GetPartnerOrDummy -}}
+                    {{ findTreePositionID . $p $.Lineages }}
+                    \tcbsubtitle{mit {{ if .IsDummy -}}\unknownPerson{{- else -}}
+                            {{ sub "personLinkGendered.tex" "person" . "options" $.Config.Options "referencesContainer" $.ReferencesContainer "allPersons" $.AllPersons -}}
+                        {{ end -}}
+                        {{ if not $.Config.Options.MultilineLists -}}
+                            \hfill
+                        {{ end -}}
+                        {{ sub "lifeDatesRelated.tex" "Person" . "Config" $.Config }}
+                    }
+                {{ end -}}
+                {{ if or (and (not $.Config.Options.Person.HideEngagement) (not .GetEngagement.Empty)) (not .GetMarriage.Empty) (not .GetMarriageReligious.Empty) (not .GetDivorce.Empty) }}
+                    \begin{datalist}
+                        {{ if not $.Config.Options.Person.HideEngagement }}
+                            {{ with .GetEngagement -}}
+                                {{ if not .Empty -}}
+                                    \item[Verlobung] %
+                                    \symbolBox{\gtrsymEngaged} {{- sub "datePlace.tex" "data" . "referencesContainer" $.ReferencesContainer -}}
+                                    {{ sub "ageAt.tex" "config" $.Config.Options "date" .Date "start" $b | trim -}}
+                                    \mydots{}
+                                    {{- sub "duration.tex" "options" $.Config.Options "data" ($r.GetEngagementDuration $p $.ZeroDate) "config" $.Config -}}
+                                {{ end -}}
+                            {{ end -}}
+                        {{ end -}}
+                        {{ with .GetMarriage -}}
+                            {{ if not .Empty -}}
+                                \item[Standesamtlich] %
+                                \symbolBox{\gtrsymMarried} {{- sub "datePlace.tex" "data" . "referencesContainer" $.ReferencesContainer -}}
+                                {{ sub "ageAt.tex" "config" $.Config.Options "date" .Date "start" $b | trim -}}
+                                \mydots{}
+                                {{- sub "duration.tex" "options" $.Config.Options "data" ($r.GetMarriageDuration $p $now) "config" $.Config -}}
+                            {{ end -}}
+                        {{ end -}}
+                        {{ with .GetMarriageReligious -}}
+                            {{ if not .Empty -}}
+                                \item[Kirchlich] %
+                                \symbolBox{\gtrsymMarried} {{- sub "datePlace.tex" "data" . "referencesContainer" $.ReferencesContainer -}}
+                                {{ sub "ageAt.tex" "config" $.Config.Options "date" .Date "start" $b | trim -}}
+                                \mydots{}
+                                {{- sub "duration.tex" "options" $.Config.Options "data" ($r.GetMarriageReligiousDuration $p $now) "config" $.Config -}}
+                            {{ end -}}
+                        {{ end -}}
+                        {{ with .GetDivorce -}}
+                            {{ if not .Empty -}}
+                                \item[Scheidung] %
+                                \symbolBox{\gtrsymDivorced} {{- sub "datePlace.tex" "data" . "referencesContainer" $.ReferencesContainer -}}
+                                {{ sub "ageAt.tex" "config" $.Config.Options "date" .Date "start" $b | trim -}}
+                                \mydots{}
+                            {{ end -}}
+                        {{ end -}}
+                    \end{datalist}
+                {{ end -}}
+            {{ end -}}
+        \end{databox}
+    {{ end -}}
+{{ end -}}
+
+
+{{ $residences := .GetResidences }}
+{{ if or $.Config.Options.Person.ShowEmpty $residences }}
+    \begin{databox}{ {{- len $residences | plural "Wohnort" "Wohnorte" -}} }
+        \begin{simplelist}
+            {{ range $i, $r := $residences -}}
+                \item 
+                {{ concat ", " ($r.CO | latexify) ($r.Address | latexify) (concat " " $r.ZipCode (printf "\\textbf{%s}" ($r.City | latexify))) }}
+                {{ if and (ne $r.Country "") (ne $r.Country "Deutschland") }} ( {{- $r.Country -}} ) {{- end -}}
+                {{ sub "referenceList.tex" "data" $r.Sources "referencesContainer" $.ReferencesContainer -}}
+
+                {{ if not $.Config.Options.MultilineLists -}}
+                    \mydots{}
+                {{ end -}}
+                {{ if or .From .To -}}
+                    {{ if $.Config.Options.MultilineLists -}}
+                        \newline
+                    {{ end -}}
+                    {\color{fromTo}
+                        {{ sub "fromTo.tex" "data" $r -}}
+                    }
+                {{ end -}}
+            {{ end -}}
+        \end{simplelist}
+    \end{databox}
+{{ end }}
+
+
+{{ $jobs := .GetJobs }}
+{{ if or $.Config.Options.Person.ShowEmpty $jobs }}
+    \begin{databox}{ {{- len $jobs | plural "Beruf" "Berufe" -}} }
+        \begin{simplelist}
+            {{ range $i, $j := $jobs -}}
+                \item 
+                \textbf{ {{- $j.Type | latexify -}} } 
+                {{- if $j.Company }} bei {{ $j.Company | latexify -}}{{ end -}}
+                {{ if $j.Place }} in {{ $j.Place | latexify -}}{{ end -}}
+                {{ sub "referenceList.tex" "data" $j.Sources "referencesContainer" $.ReferencesContainer -}}
+
+                {{ if not $.Config.Options.MultilineLists -}}
+                    \mydots{}
+                {{ end -}}
+                {{ if or .From .To -}}
+                    {{ if $.Config.Options.MultilineLists -}}
+                        \newline
+                    {{ end -}}
+                    {\color{fromTo}
+                        {{ sub "fromTo.tex" "data" $j -}}
+                    }
+                {{ end -}}
+            {{ end -}}
+        \end{simplelist}
+    \end{databox}
+{{ end }}
+
+{{ $attributes := .GetAttributes }}
+{{ $comments := .GetComments }}
+{{ if or $.Config.Options.Person.ShowEmpty $attributes $comments }}
+    \begin{databox}{Sonstiges}
+        \begin{datalist}
+            {{ if or $.Config.Options.Person.ShowEmpty $attributes -}}
+                \item[ {{- len $attributes | plural "Attribut" "Attribute" -}} ] %
+                {{ range $i, $a := $attributes -}}
+                    {{ if $i }}, {{ end -}}
+                    \hyperref[attribute- {{- $a | refName -}} ]{ {{- $a | latexify -}} }
+                {{ end -}}
+                {{ if and $.Config.Options.Person.ShowEmpty (not $attributes) -}}
+                \mydots{}
+                {{ end -}}
+            {{ end -}}
+
+            {{ if or $.Config.Options.Person.ShowEmpty $comments -}}
+                \item[ {{- len $comments | plural "Notiz" "Notizen" -}} ] %
+                {{ with $comments -}}
+                    {{ range $i, $c := . -}}
+                        {{ with $c }}
+                            {{- if $i }}
+                            
+                            {{ end -}}
+                            {{ .Text | latexify -}}
+                            {{ sub "referenceList.tex" "data" .Sources "referencesContainer" $.ReferencesContainer -}}
+                        {{ end -}}
+                    {{ end -}}
+                {{ end -}}
+                {{ if and $.Config.Options.Person.ShowEmpty (not $comments) -}}
+                \mydots{} % TODO multiple lines!
+                {{ end -}}
+            {{ end -}}
+        \end{datalist}
+    \end{databox}
+{{ end }}
+
+
+{{ $biographyElements := .GetBiographyElements }}
+{{ if and (not $.Config.Options.Person.HideBiography) (or $.Config.Options.Person.ShowEmpty $biographyElements) }}
+    \begin{databox}{Biographie}
+        {{ range $i, $b := $biographyElements -}}
+            {{ with $b }}
+                {{- if $i }}
+                
+                {{ end -}}
+                {{ .Text | latexify -}}
+                {{ sub "referenceList.tex" "data" .Sources "referencesContainer" $.ReferencesContainer -}}
+            {{ end -}}
+        {{ end -}}
+        {{ if and $.Config.Options.Person.ShowEmpty (not $comments) -}}
+        \mydots{} % TODO multiple lines!
+        {{ end -}}
+    \end{databox}
+{{ end }}
+
+%\printendnotes[sources]
+
+{{ with $.ReferencesContainer -}}
+    {\footnotesize
+    % main sources first
+    {{ if .GetMainReferences -}}
+        {{ range $i, $n := .GetMainReferences -}}
+            {{ if $i -}}, {{ else -}} nach {{ end -}}
+            {\bfseries
+            \phantomsection % for linking to this exact position, see https://en.wikibooks.org/wiki/LaTeX/Labels_and_Cross-referencing#Anchor_manual_positioning
+            \label{ {{- $.ReferencesContainer.GetLabel .Reference -}} }
+
+            {{- $fullReferenceLabel := getFullReferenceLabel $.Config.Sources .Reference }}
+            {{- if $fullReferenceLabel }}\hyperref[ {{- $fullReferenceLabel -}} ]{ {{- end }}
+            {{- .Reference.String | latexify }}
+            {{- if $fullReferenceLabel -}} } {{- end -}}
+
+            }~( {{- .Key -}} )
+        {{- end -}}
+        {{- if .GetNonMainReferences -}}, außer: {{- end }}
+    {{- end }}
+    {{- if .GetNonMainReferences -}}
+        \begin{itemize}
+            {{ range .GetNonMainReferences -}}
+                {{ if not .IsMainSource -}}
+                    \item[ {{- .Key -}}.]
+                    \phantomsection % for linking to this exact position, see https://en.wikibooks.org/wiki/LaTeX/Labels_and_Cross-referencing#Anchor_manual_positioning
+                    \label{ {{- $.ReferencesContainer.GetLabel .Reference -}} }
+                    
+                    {{- $fullReferenceLabel := getFullReferenceLabel $.Config.Sources .Reference }}
+                    {{- if $fullReferenceLabel }}\hyperref[ {{- $fullReferenceLabel -}} ]{ {{- end }}
+                    {{- .Reference.String | latexify }}
+                    {{- if $fullReferenceLabel -}} } {{- end -}}
+                    
+                    {{ end -}}
+            {{ end -}}
+        \end{itemize}
+    {{ end -}}
+    }
+{{ end -}}
+
+
+{{- end }}
+{{- end }}

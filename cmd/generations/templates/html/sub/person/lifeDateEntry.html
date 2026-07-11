@@ -1,0 +1,16 @@
+{{ if and (not $.data.Empty) (not $.hide) }}
+    <div class="font-bold text-md">{{- $.title -}}</div>
+    <div class="flex">
+        <span>
+            {{- if $.symbol }}
+                {{- symbol $.symbol }} {{- space -}}
+            {{ end }}
+            {{- if eq $.title "Namenstag" -}} 
+                {{ sub "saintsdayDate.html" "data" $.data "weekday" "" "referencesContainer" $.referencesContainer "config" $.config -}}
+            {{ else -}}
+                {{ sub "datePlace.html" "data" $.data "weekday" $.weekday "referencesContainer" $.referencesContainer "config" $.config -}}
+            {{ end -}}
+        </span>
+        <span class="dots"></span>
+    </div>
+{{- end }}

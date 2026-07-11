@@ -1,0 +1,5 @@
+{{ with .Name -}}
+    {{ if .Alias -}}
+        ~!{{- .Alias -}}
+    {{- end -}}
+{{ end -}}

@@ -1,0 +1,13 @@
+{{ with .Person -}}
+    <span class="inline-block min-w-date-with-symbol">
+        {{ if .GetBirth.Date -}}
+            {{ if not $.NoSymbols }} {{- symbol "birth" -}} {{- space -}} {{ end -}}
+            {{ .GetBirth.Date | formatDate -}}
+        {{ else -}}
+            {{ if .GetBaptism.Date -}}
+                {{ if not $.NoSymbols }} {{- symbol "baptism" -}} {{- space -}} {{ end -}}
+                {{ .GetBaptism.Date | formatDate -}}
+            {{ end -}}
+        {{ end -}}
+    </span>
+{{ end -}}

@@ -1,0 +1,36 @@
+{{
+  sub "head.html" "Title" "Spitzahnen"
+}}
+
+{{ $allPersons := allPersons .Generations .ExtraPersons }}
+{{ $allPersonsMerged := $allPersons.GetWithMergedTreePositionIDs }}
+
+  <h1 class="mb-4">Spitzahnen</h1>
+  <p>Von einem Spitzahn ist mindestens ein Elternteil vollständig unbekannt.</p>
+  <p>Bei den mit * markierten <strong>Vollspitzahnen</strong> gibt es keinerlei Information über seine Eltern.</p>
+
+  {{ with .Generations -}}
+    <div class="grid grid-cols-1 md:grid-cols-2-1st-grow print:grid-cols-2-1st-grow mt-2">
+      {{ range $i, $gen := . -}}
+        {{ if ge $gen.Index 0 -}}
+          {{ range $gen.Persons -}}
+            {{ if (isSpitzahn . $allPersonsMerged) }}
+              <div class="mt-4 md:mt-2 print:mt-2 md:flex">
+                <span>
+                {{- sub "personLinkGendered.html" "person" . "allPersons" $allPersons -}}
+                {{ if isVollSpitzahn . $allPersonsMerged }} {{- space -}} * {{ end -}}
+                </span>
+                <span class="dots"></span>
+              </div>
+              <div class="md:mt-2 print:mt-2">{{ $gen.Index }}. Elterngeneration</div>
+            {{ end -}}
+          {{ end -}}
+        {{ end -}}
+      {{ end -}}
+    {{ end -}}
+  </div>
+
+  <script src="s.js"></script>
+</div>
+</body>
+</html>

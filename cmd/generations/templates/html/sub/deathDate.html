@@ -1,0 +1,8 @@
+{{ with .Person -}}
+    <span class="inline-block min-w-date-with-symbol">
+        {{ if .GetDeath.Date -}}
+            {{ if $.NoSymbols }} &ndash; {{ else -}} {{- symbol "death" -}} {{- space -}} {{ end -}}
+            {{- .GetDeath.Date | formatDate -}}
+        {{ end -}}
+    </span>
+{{ end -}}

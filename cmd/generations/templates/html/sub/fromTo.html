@@ -1,0 +1,13 @@
+{{ with .data -}}
+    <span>
+        {{ if .From -}}
+            {{ .From | formatDate -}}
+        {{ end }}
+    </span>
+    <span class="ml-[.3ch]">
+        {{ if or .From .To -}} &ndash; {{- end }}
+        {{ if .To -}}
+            {{- .To | formatDate -}}
+        {{ end -}}
+    </span>
+{{ end -}}
