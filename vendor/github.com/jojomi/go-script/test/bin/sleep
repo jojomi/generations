@@ -1,5 +1,0 @@
-out: before
-err: error-before
-sleep: 50
-out: after
-err: error-after

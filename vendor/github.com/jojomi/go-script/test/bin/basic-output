@@ -1,4 +1,0 @@
-out: hello this is me
-err: "abc"
-out: whatever
-exit: 0

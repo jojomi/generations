@@ -2,6 +2,10 @@ cmd/config/*.yml
 cmd/pictures
 cmd/output
 cmd/dist
+cmd/generations/config/*.yml
+cmd/generations/pictures
+cmd/generations/output
+cmd/generations/dist
 
 # Binaries for programs and plugins
 *.exe
@@ -26,4 +30,12 @@ _*.sh
 *.fdb_latexmk
 *.toc
 test.tex
-test*.pdf
+*.pdf
+__latexindent_temp.tex
+svg-inkscape/
+* copy*.tex
+
+# generated artifacts and backups
+*.pprof
+_vendor.bak/
+/generations
