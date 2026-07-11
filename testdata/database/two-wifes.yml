@@ -1,3 +1,4 @@
+persons:
 - id: gauss
   partners:
     - partner_id: frau1

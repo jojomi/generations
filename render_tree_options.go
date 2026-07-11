@@ -16,6 +16,7 @@ FemaleFirst
 type GenderOrder int
 
 const GenerationsNone = -1
+const GenerationsUnlimited = 1000
 
 type RenderTreeOptions struct {
 	RenderPersonOptions *RenderPersonOptions `yaml:"render-person-options,omitempty"`
@@ -45,23 +46,29 @@ type RenderTreeOptions struct {
 	MinImageLevel                *int     `yaml:"min-image-level,omitempty"`
 	MaxImageLevel                *int     `yaml:"max-image-level,omitempty"`
 
-	HideFamilyIDs bool `yaml:"-"`
+	HideFamilyIDs                   bool  `yaml:"hide-family-ids,omitempty"`
+	AddPhantomChildForEmptyFamilies *bool `yaml:"add-phantom-child-for-empty-families,omitempty"`
+
+	totalChildTreeDepth int
 }
 
 func (o *RenderTreeOptions) SetDefaults() *RenderTreeOptions {
 	// default generation limits
-	maxGenerations := 1000
 	if o.MaxParentGenerations == 0 {
-		o.MaxParentGenerations = maxGenerations
+		o.MaxParentGenerations = GenerationsUnlimited
 	}
 	if o.MaxParentSiblingsGenerations == 0 {
-		o.MaxParentSiblingsGenerations = maxGenerations
+		o.MaxParentSiblingsGenerations = GenerationsUnlimited
 	}
 	if o.MaxChildGenerations == 0 {
-		o.MaxChildGenerations = maxGenerations
+		o.MaxChildGenerations = GenerationsUnlimited
 	}
 	if o.MaxChildPartnersGenerations == 0 {
-		o.MaxChildPartnersGenerations = maxGenerations
+		o.MaxChildPartnersGenerations = GenerationsUnlimited
+	}
+	if o.AddPhantomChildForEmptyFamilies == nil {
+		addPhantomChildForEmptyFamilies := true
+		o.AddPhantomChildForEmptyFamilies = &addPhantomChildForEmptyFamilies
 	}
 
 	// other defaults

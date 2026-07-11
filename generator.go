@@ -2,7 +2,8 @@ package generations
 
 import (
 	"bytes"
-	"io/ioutil"
+	"maps"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -20,9 +21,10 @@ func RenderGenealogytree(p Person, o RenderTreeOptions) ([]byte, error) {
 	if err != nil {
 		return []byte{}, errors.Annotate(err, "could not render parent subtree")
 	}
+	o.totalChildTreeDepth = getChildTreeDepth(p, o.MaxChildGenerations)
 	childTree, err := renderFullChildTree(p, o)
 	if err != nil {
-		return []byte{}, errors.Annotate(err, "could not render child subtree")
+		return []byte{}, errors.Annotate(err, "could not render child subtree for "+p.String())
 	}
 
 	var (
@@ -38,7 +40,8 @@ func RenderGenealogytree(p Person, o RenderTreeOptions) ([]byte, error) {
 		if err != nil {
 			return []byte{}, err
 		}
-		siblings := NewPersonList(nil)
+		s := NewPersonList()
+		siblings := &s
 		if !dad.IsDummy() {
 			siblings, err = dad.GetChildrenWith(mom)
 			if err != nil {
@@ -81,11 +84,36 @@ func RenderGenealogytree(p Person, o RenderTreeOptions) ([]byte, error) {
 		SiblingsOlder:   siblingsOlder,
 		SiblingsYounger: siblingsYounger,
 		Options:         o,
-	})
+	}, template.FuncMap{})
 	if err != nil {
 		return []byte{}, errors.Annotatef(err, "could not render genealogytree template %s for person %s", o.TemplateFilenameTree, p)
 	}
 	return withoutEmptyLines(result), nil
+}
+
+func getChildTreeDepth(person Person, maxLevel int) int {
+	levels := getChildTreeDepthRecursive(person, 0, 0, maxLevel)
+	return levels
+}
+
+func getChildTreeDepthRecursive(p Person, level, currMax, filterLevel int) int {
+	if level > filterLevel {
+		return currMax
+	}
+	children, err := p.GetChildren()
+	if err != nil {
+		panic(err)
+	}
+	if level > currMax {
+		currMax = level
+	}
+	for _, c := range children.GetPersons() {
+		childDepth := getChildTreeDepthRecursive(c, level+1, currMax, filterLevel)
+		if childDepth > currMax {
+			currMax = childDepth
+		}
+	}
+	return currMax
 }
 
 func renderPersonSlice(personList PersonList, renderPersonOptions RenderPersonOptions) (string, error) {
@@ -108,26 +136,43 @@ func renderPerson(p Person, o RenderPersonOptions) ([]byte, error) {
 	}{
 		Person:  p,
 		Options: o,
-	})
+	}, template.FuncMap{})
 	if err != nil {
 		return []byte{}, errors.Annotatef(err, "could not render template %s for person %s", o.TemplateFilename, p)
 	}
 	return withoutPercentageLines(withoutEmptyLines(result)), nil
 }
 
+var (
+	emptyLinesRegexp      = regexp.MustCompile(`\n(\s*\n)+`)
+	percentageLinesRegexp = regexp.MustCompile(`\n(\s*%\s*)+\n`)
+)
+
 func withoutEmptyLines(input []byte) []byte {
-	var re = regexp.MustCompile(`\n(\s*\n)+`)
-	return re.ReplaceAll(input, []byte("\n"))
+	return emptyLinesRegexp.ReplaceAll(input, []byte("\n"))
 }
 
 func withoutEmptyLinesString(input string) string {
-	var re = regexp.MustCompile(`\n(\s*\n)+`)
-	return re.ReplaceAllString(input, "\n")
+	return emptyLinesRegexp.ReplaceAllString(input, "\n")
 }
 
 func withoutPercentageLines(input []byte) []byte {
-	var re = regexp.MustCompile(`\n(\s*%\s*)+\n`)
-	return re.ReplaceAll(input, []byte("\n"))
+	return percentageLinesRegexp.ReplaceAll(input, []byte("\n"))
+}
+
+func dict(pairs ...interface{}) (map[string]interface{}, error) {
+	if len(pairs)%2 != 0 {
+		return nil, errors.Errorf("dict requires an even number of arguments")
+	}
+	d := make(map[string]interface{}, len(pairs)/2)
+	for i := 0; i < len(pairs); i += 2 {
+		key, ok := pairs[i].(string)
+		if !ok {
+			return nil, errors.Errorf("dict keys must be strings")
+		}
+		d[key] = pairs[i+1]
+	}
+	return d, nil
 }
 
 func toString(value interface{}) string {
@@ -155,26 +200,32 @@ outer:
 	return result
 }
 
-func latexify(input int) string {
-	if input < 0 {
-		return strings.Repeat("A", -input)
-	}
-	return strings.Repeat("I", input)
+func TemplateLatexifyFunc(input string) string {
+	r := strings.NewReplacer(
+		`"`, ``,
+		`_`, `\_`,
+		`&`, `\&`,
+		`$`, `\$`,
+	)
+	return r.Replace(input)
 }
 
-func RenderTemplateFile(filename string, data interface{}) ([]byte, error) {
-	templateContent, err := ioutil.ReadFile(filename)
+func RenderTemplateFile(filename string, data interface{}, customFuncMap template.FuncMap) ([]byte, error) {
+	templateContent, err := os.ReadFile(filename)
 	if err != nil {
 		return []byte{}, err
 	}
-	result, err := strtpl.EvalWithFuncMap(string(templateContent), template.FuncMap{
+	funcMap := template.FuncMap{
 		"noEmptyLines":           withoutEmptyLines,
 		"noEmptyLinesString":     withoutEmptyLinesString,
 		"toString":               toString,
 		"join":                   strings.Join,
 		"getFilteredStringSlice": getFilteredStringSlice,
-		"latexify":               latexify,
-	}, data)
+		"latexify":               TemplateLatexifyFunc,
+		"dict":                   dict,
+	}
+	maps.Copy(funcMap, customFuncMap)
+	result, err := strtpl.EvalWithFuncMap(string(templateContent), funcMap, data)
 	if err != nil {
 		return []byte{}, err
 	}

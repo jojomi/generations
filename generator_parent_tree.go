@@ -2,12 +2,17 @@ package generations
 
 import (
 	"bytes"
+	"text/template"
 
 	"github.com/juju/errors"
 )
 
 func renderFullParentTree(p Person, o RenderTreeOptions, headless bool) ([]byte, error) {
 	return renderParentTree(p, o, NodeTypeG, 0, headless)
+}
+
+func RenderParentSubtree(p Person, o RenderTreeOptions, headless bool) ([]byte, error) {
+	return renderFullParentTree(p, o, headless)
 }
 
 func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level int, headless bool) ([]byte, error) {
@@ -62,9 +67,9 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 
 		// render siblings
 		if level <= o.MaxParentSiblingsGenerations {
-			var siblings PersonList
+			var siblings *PersonList
 			if !mom.IsDummy() {
-				siblings, err = mom.GetChildrenWith(dad)
+				siblings, err = mom.GetChildrenWith(dad) // TODO why dad here, but dummy a few lines later?
 				if err != nil {
 					return []byte{}, err
 				}
@@ -75,23 +80,25 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 				}
 			}
 
-			// apply ignore rules
-			siblings = nonIgnored(siblings, o)
+			if siblings != nil {
+				// apply ignore rules
+				siblings = nonIgnored(siblings, o)
 
-			younger, older := SplitPersons(siblings, p)
-			opts := *o.RenderPersonOptions
-			opts.NodeType = NodeTypeC
-			opts = *opts.HideImageByLevel(o, level)
-			siblingsOlder, err := renderPersonSlice(older, opts)
-			if err != nil {
-				return []byte{}, err
+				younger, older := SplitPersons(siblings, p)
+				opts := *o.RenderPersonOptions
+				opts.NodeType = NodeTypeC
+				opts = *opts.HideImageByLevel(o, level)
+				siblingsOlder, err := renderPersonSlice(older, opts)
+				if err != nil {
+					return []byte{}, err
+				}
+				siblingsYounger, err := renderPersonSlice(younger, opts)
+				if err != nil {
+					return []byte{}, err
+				}
+				data.SiblingsOlder = siblingsOlder
+				data.SiblingsYounger = siblingsYounger
 			}
-			siblingsYounger, err := renderPersonSlice(younger, opts)
-			if err != nil {
-				return []byte{}, err
-			}
-			data.SiblingsOlder = siblingsOlder
-			data.SiblingsYounger = siblingsYounger
 		}
 	}
 
@@ -130,7 +137,7 @@ func renderParentTree(p Person, o RenderTreeOptions, baseNodeType NodeType, leve
 	} else {
 		templateFile = o.TemplateFilenameParentTree
 	}
-	result, err := RenderTemplateFile(templateFile, data)
+	result, err := RenderTemplateFile(templateFile, data, template.FuncMap{})
 	if err != nil {
 		return []byte{}, errors.Annotatef(err, "could not render template based on file %s", templateFile)
 	}

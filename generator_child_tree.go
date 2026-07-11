@@ -2,31 +2,12 @@ package generations
 
 import (
 	"bytes"
+	"slices"
+	"text/template"
 )
 
 func renderFullChildTree(p Person, o RenderTreeOptions) ([]byte, error) {
 	return renderChildTree(p, o, NodeTypeG, 0)
-}
-
-func renderChildrenWithPartner(person, partner Person, o RenderTreeOptions, level int) (string, error) {
-	var buffer bytes.Buffer
-	children, err := person.GetChildrenWith(partner)
-	if err != nil {
-		return "", err
-	}
-	for _, child := range children.GetPersons() {
-		if child == nil {
-			continue
-		}
-		// recursive call
-		childData, err := renderChildTree(child, o, NodeTypeC, level+1)
-		if err != nil {
-			return "", err
-		}
-		buffer.Write(childData)
-		buffer.WriteString("\n")
-	}
-	return buffer.String(), nil
 }
 
 func renderChildTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level int) ([]byte, error) {
@@ -84,6 +65,13 @@ func renderChildTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level
 		data.Unions = unionBuffer.String()
 	}
 
+	// obey AddPhantomChildForEmptyFamilies option if set
+	isLeafLevel := level >= o.totalChildTreeDepth
+	addPhantomChildForEmptyFamilies := o.AddPhantomChildForEmptyFamilies != nil && *o.AddPhantomChildForEmptyFamilies
+	if addPhantomChildForEmptyFamilies && !isLeafLevel && data.Children == "" && data.Unions == "" && data.Parent == "" {
+		data.Children = "c[phantom]{}" // for debugging: ,subtree box={show bounding box}
+	}
+
 	// render g node for anchor
 	mainNodeType := baseNodeType
 	if data.Children != "" || data.Unions != "" || data.Parent != "" {
@@ -111,7 +99,7 @@ func renderChildTree(p Person, o RenderTreeOptions, baseNodeType NodeType, level
 	}
 
 	templateFile := o.TemplateFilenameChildTree
-	result, err := RenderTemplateFile(templateFile, data)
+	result, err := RenderTemplateFile(templateFile, data, template.FuncMap{})
 	if err != nil {
 		return []byte{}, err
 	}
@@ -173,7 +161,7 @@ func renderUnion(person, partner Person, o RenderTreeOptions, level int) ([]byte
 	}
 
 	templateFile := o.TemplateFilenameUnionTree
-	result, err := RenderTemplateFile(templateFile, data)
+	result, err := RenderTemplateFile(templateFile, data, template.FuncMap{})
 	if err != nil {
 		return []byte{}, err
 	}
@@ -181,21 +169,16 @@ func renderUnion(person, partner Person, o RenderTreeOptions, level int) ([]byte
 }
 
 func isPersonIgnored(p Person, oTree RenderTreeOptions) bool {
-	for _, id := range oTree.IgnoreIDs {
-		if p.MatchesSearch(id) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(oTree.IgnoreIDs, p.MatchesSearch)
 }
 
-func nonIgnored(personList PersonList, oTree RenderTreeOptions) PersonList {
-	result := NewPersonList(nil)
+func nonIgnored(personList *PersonList, oTree RenderTreeOptions) *PersonList {
+	result := NewPersonList()
 	for _, person := range personList.GetPersons() {
 		if isPersonIgnored(person, oTree) {
 			continue
 		}
 		result.AddPerson(person)
 	}
-	return result
+	return &result
 }

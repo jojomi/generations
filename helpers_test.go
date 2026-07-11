@@ -39,7 +39,8 @@ func addTestTemplates(o *RenderTreeOptions) {
 	o.TemplateFilenameUnionTree = "cmd/templates/union_tree.tpl"
 }
 
-func getPersonSliceIDs(persons []Person) []string {
+func getPersonSliceIDs(personList *PersonList) []string {
+	persons := personList.GetPersons()
 	result := make([]string, len(persons))
 	for i, person := range persons {
 		if person == nil {

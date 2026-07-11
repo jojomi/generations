@@ -1,6 +1,8 @@
 package generations
 
-import "time"
+import (
+	"time"
+)
 
 //go:generate go-enum -f=render_person_options.go
 
@@ -21,24 +23,27 @@ type RenderPersonOptions struct {
 	LastnamePolicy           LastnamePolicy `yaml:"lastname-policy,omitempty"`
 
 	// Output filter
-	HideID          bool     `yaml:"hide-id,omitempty"`
-	HideAttributes  []string `yaml:"hide-attributes,omitempty"`
-	HideGender      bool     `yaml:"hide-gender,omitempty"`
-	HideName        bool     `yaml:"hide-name,omitempty"`
-	HideBirth       bool     `yaml:"hide-birth,omitempty"`
-	ShowAge         bool     `yaml:"show-age,omitempty"`
-	HideBaptism     bool     `yaml:"hide-baptism,omitempty"`
-	HideDeath       bool     `yaml:"hide-death,omitempty"`
-	HideDeathAge    bool     `yaml:"hide-death-age,omitempty"`
-	HideBurial      bool     `yaml:"hide-burial,omitempty"`
-	HideImage       bool     `yaml:"hide-image,omitempty"`
-	HideJobs        bool     `yaml:"hide-jobs,omitempty"`
-	HideFloruit     bool     `yaml:"hide-floruit,omitempty"`
-	HideComment     bool     `yaml:"hide-comment,omitempty"`
-	HideEngagement  bool     `yaml:"hide-engagement,omitempty"`
-	HideMarriage    bool     `yaml:"hide-marriage,omitempty"`
-	HideMarriageAge bool     `yaml:"hide-marriage-age,omitempty"`
-	HideDivorce     bool     `yaml:"hide-divorce,omitempty"`
+	HideID                   bool     `yaml:"hide-id,omitempty"`
+	HideAttributes           []string `yaml:"hide-attributes,omitempty"`
+	HideGender               bool     `yaml:"hide-gender,omitempty"`
+	HideName                 bool     `yaml:"hide-name,omitempty"`
+	HideBirth                bool     `yaml:"hide-birth,omitempty"`
+	ShowAge                  bool     `yaml:"show-age,omitempty"`
+	HideBaptism              bool     `yaml:"hide-baptism,omitempty"`
+	HideSaintsDay            bool     `yaml:"hide-saints-day,omitempty"`
+	HideDeath                bool     `yaml:"hide-death,omitempty"`
+	HideDeathAge             bool     `yaml:"hide-death-age,omitempty"`
+	HideBurial               bool     `yaml:"hide-burial,omitempty"`
+	HideImage                bool     `yaml:"hide-image,omitempty"`
+	HideJobs                 bool     `yaml:"hide-jobs,omitempty"`
+	HideFloruit              bool     `yaml:"hide-floruit,omitempty"`
+	HideComment              bool     `yaml:"hide-comment,omitempty"`
+	HideEngagement           bool     `yaml:"hide-engagement,omitempty"`
+	HideMarriage             bool     `yaml:"hide-marriage,omitempty"`
+	HideMarriageAge          bool     `yaml:"hide-marriage-age,omitempty"`
+	HideMarriageReligious    bool     `yaml:"hide-marriage-religious,omitempty"`
+	HideMarriageReligiousAge bool     `yaml:"hide-marriage-religious-age,omitempty"`
+	HideDivorce              bool     `yaml:"hide-divorce,omitempty"`
 
 	// special filters
 	HidePlaces      bool `yaml:"hide-places,omitempty"`
@@ -58,6 +63,7 @@ func (o *RenderPersonOptions) HideAllData() {
 	o.HideName = true
 	o.HideBirth = true
 	o.HideBaptism = true
+	o.HideSaintsDay = true
 	o.HideImage = true
 	o.HideDeath = true
 	o.HideBurial = true

@@ -1,0 +1,6 @@
+persons:
+- id: gauss
+  saintsday:
+    date: 2020-11-03
+    description: Holy Pope
+- id: empty-gauss

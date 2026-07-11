@@ -1,3 +1,4 @@
+persons:
 - id: gauss
 - id: frau-gauss
   partners:

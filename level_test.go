@@ -94,7 +94,7 @@ func TestLevelMerge(t *testing.T) {
 func TestLevelConfigCombine(t *testing.T) {
 	lc := LevelConfig{
 		Absolute: []AbsoluteLevel{
-			AbsoluteLevel{
+			{
 				Index: 0,
 				Color: LevelColor{
 					Main: "green",
@@ -102,7 +102,7 @@ func TestLevelConfigCombine(t *testing.T) {
 			},
 		},
 		Relative: []RelativeLevel{
-			RelativeLevel{
+			{
 				Index: -5,
 				Color: LevelColor{
 					Main: "red",

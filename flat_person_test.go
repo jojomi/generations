@@ -155,3 +155,28 @@ func TestGetPartners(t *testing.T) {
 		assert.Equal(t, test.ExpectedIDs, partnerIDs, test.Name+": partner IDs")
 	}
 }
+
+func TestGetSaintsDay(t *testing.T) {
+	test := struct {
+		Name             string
+		DatabaseFilename string
+		ID               string
+		IDEmpty          string
+	}{
+		DatabaseFilename: "saintsday",
+		ID:               "gauss",
+		IDEmpty:          "empty-gauss",
+	}
+
+	database := NewMemoryDatabase()
+	err := database.ParseYamlFile(filepath.Join("testdata", "database", test.DatabaseFilename+".yml"))
+	assert.Nil(t, err, test.Name+": yaml parsing")
+	person, err := database.GetByID(test.ID)
+	assert.Nil(t, err, test.Name+": database select by ID")
+	assert.False(t, person.GetSaintsDay().Empty(), test.Name+": saints day empty")
+	assert.NotEmpty(t, person.GetSaintsDay().Description, test.Name+": saints day description")
+	assert.Equal(t, "2020-11-03", person.GetSaintsDay().SourcedDate.Date, test.Name+": saints day date")
+	personEmpty, err := database.GetByID(test.IDEmpty)
+	assert.Nil(t, err, test.Name+": database select by ID")
+	assert.True(t, personEmpty.GetSaintsDay().Empty(), test.Name+": saints day empty")
+}

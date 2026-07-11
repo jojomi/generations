@@ -1,8 +1,7 @@
 package generations
 
 import (
-	"io/ioutil"
-	"math"
+	"os"
 	"regexp"
 	"strconv"
 
@@ -26,6 +25,8 @@ type YamlDatabase struct {
 type MemoryDatabase struct {
 	Persons []*FlatPerson
 	Sources []Source // TODO Familybook sollte Source heißen und Source eher Reference
+
+	index map[string]*FlatPerson
 }
 
 func NewMemoryDatabase() *MemoryDatabase {
@@ -36,7 +37,7 @@ func NewMemoryDatabase() *MemoryDatabase {
 func (y *MemoryDatabase) ParseYamlFile(filename string) error {
 	persons := y.Persons
 
-	data, err := ioutil.ReadFile(filename)
+	data, err := os.ReadFile(filename)
 	if err != nil {
 		return errors.Annotatef(err, "error reading yaml database %s", filename)
 	}
@@ -52,7 +53,7 @@ func (y *MemoryDatabase) ParseYamlFile(filename string) error {
 		p.Database = y
 
 		// add default sources if no main source is given for the person
-		if p.Sources == nil || len(p.Sources) == 0 {
+		if len(p.Sources) == 0 {
 			p.Sources = yamlDatabase.DefaultSources
 		}
 
@@ -77,6 +78,7 @@ func (y *MemoryDatabase) ParseYamlFile(filename string) error {
 		persons = append(persons, p)
 	}
 	y.Persons = persons
+	y.index = nil
 
 	// add sources to database
 	y.Sources = append(y.Sources, yamlDatabase.Sources...)
@@ -90,7 +92,7 @@ func (y *MemoryDatabase) WriteYamlFile(filename string) error {
 		return errors.Annotate(err, "error marshalling database to yaml")
 	}
 
-	err = ioutil.WriteFile(filename, data, 0640)
+	err = os.WriteFile(filename, data, 0640)
 	if err != nil {
 		return errors.Annotatef(err, "error writing database to %s", filename)
 	}
@@ -107,39 +109,40 @@ func (y *MemoryDatabase) MakeIDs(f func(p Person, d Database) error) error {
 		}
 		y.Persons[i] = p
 	}
+	y.index = nil
 	return nil
 }
 
 func (y MemoryDatabase) Anonymize() {
 	for i, p := range y.Persons {
-		yearOfBirth, err := strconv.Atoi(first(p.Birth.Date, 4))
+		yearOfBirth, err := strconv.Atoi(firstLetters(p.Birth.Date, 4))
 		if err == nil && yearOfBirth < 1880 {
 			continue
 		}
 		if len(p.Name.First) > 0 {
 			if p.Name.Used != "" {
 				p.Name = Name{
-					First: []string{first(p.Name.Used, 1) + "."},
+					First: []string{firstLetters(p.Name.Used, 1) + "."},
 				}
 			} else {
 				p.Name = Name{
-					First: []string{first(p.Name.First[0], 1) + "."},
+					First: []string{firstLetters(p.Name.First[0], 1) + "."},
 				}
 			}
 		} else {
 			p.Name = Name{}
 		}
 		p.Birth.Place = ""
-		p.Birth.Date = first(p.Birth.Date, 4)
+		p.Birth.Date = firstLetters(p.Birth.Date, 4)
 		p.Death.Place = ""
-		p.Death.Date = first(p.Death.Date, 4)
+		p.Death.Date = firstLetters(p.Death.Date, 4)
 		p.Baptism = DatePlace{}
 		p.Burial = DatePlace{}
 		p.Jobs = make([]Job, 0)
 		for j, r := range p.Partners {
 			r.Engagement = DatePlace{}
-			r.Marriage.Date = first(r.Marriage.Date, 4)
-			r.Divorce.Date = first(r.Divorce.Date, 4)
+			r.Marriage.Date = firstLetters(r.Marriage.Date, 4)
+			r.Divorce.Date = firstLetters(r.Divorce.Date, 4)
 			p.Partners[j] = r
 		}
 		p.Residences = make([]Residence, 0)
@@ -151,7 +154,26 @@ func (y MemoryDatabase) Anonymize() {
 	}
 }
 
-func (y MemoryDatabase) Get(search string) (Person, error) {
+func (y *MemoryDatabase) ensureIndex() {
+	if y.index != nil {
+		return
+	}
+	y.index = make(map[string]*FlatPerson, len(y.Persons)*2)
+	for _, p := range y.Persons {
+		if id := p.GetID(); id != "" {
+			y.index[id] = p
+		}
+		if uuid := p.GetUUID(); uuid != "" {
+			y.index[uuid] = p
+		}
+	}
+}
+
+func (y *MemoryDatabase) Get(search string) (Person, error) {
+	y.ensureIndex()
+	if p, ok := y.index[search]; ok {
+		return p, nil
+	}
 	for _, p := range y.Persons {
 		if p.MatchesSearch(search) {
 			return p, nil
@@ -160,18 +182,20 @@ func (y MemoryDatabase) Get(search string) (Person, error) {
 	return nil, errors.Errorf("person not found for search '%s'", search)
 }
 
-func (y MemoryDatabase) GetByID(ID string) (Person, error) {
-	for _, p := range y.Persons {
-		if p.MatchesIDUUID(ID) {
-			return p, nil
-		}
+func (y *MemoryDatabase) GetByID(ID string) (Person, error) {
+	y.ensureIndex()
+	if p, ok := y.index[ID]; ok {
+		return p, nil
 	}
 	return nil, errors.Errorf("person not found for ID %s", ID)
 }
 
 func firstLetters(input string, count int) string {
 	runes := []rune(input)
-	return string(runes[:int(math.Min(4.0, float64(len(runes))))])
+	if count > len(runes) {
+		count = len(runes)
+	}
+	return string(runes[:count])
 }
 
 func GetFourFourYearID(p Person) (string, error) {
@@ -189,15 +213,13 @@ func GetFourFourYearID(p Person) (string, error) {
 	}
 	birth := p.GetBirth()
 	if !birth.Empty() {
-		re, err := regexp.Compile(`[12]\d{3}`) // 4-digit year
-		if err != nil {
-			return "", err
-		}
-		year := re.FindString(birth.Date)
+		year := fourDigitYearRegexp.FindString(birth.Date)
 		id += year
 	}
 	return id, nil
 }
+
+var fourDigitYearRegexp = regexp.MustCompile(`[12]\d{3}`)
 
 func GetFourFourBirthNameID(p Person) (string, error) {
 	var id string
@@ -250,11 +272,4 @@ func FourFourYearIDFunc(p Person, d Database) error {
 	}
 	p.SetID(id)
 	return nil
-}
-
-func first(input string, count int) string {
-	if len(input) <= count {
-		return input
-	}
-	return string([]rune(input[0:count]))
 }

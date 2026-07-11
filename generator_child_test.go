@@ -119,7 +119,9 @@ func TestRenderFullChildTree(t *testing.T) {
 		person, err := database.GetByID(test.ID)
 		assert.Nil(t, err)
 		renderOptions.MaxChildGenerations = test.MaxChildGenerations
+		renderOptions.AddPhantomChildForEmptyFamilies = boolPtr(false)
 		renderOptions.SetDefaults()
+		renderOptions.totalChildTreeDepth = 1000
 		result, err := renderFullChildTree(person, renderOptions)
 		if err != nil {
 			fmt.Println(err)

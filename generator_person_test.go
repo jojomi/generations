@@ -30,30 +30,46 @@ func TestRenderPerson(t *testing.T) {
 	}
 
 	fullPerson := FlatPerson{
-		Attributes:    []string{"dead", "mathematician"},
-		Gender:        "male",
-		Name:          Name{First: []string{"Johann", "Carl", "Friedrich"}, Last: "Gauss", Birth: "Hauser"},
-		Birth:         DatePlace{Date: "1827", Place: "Hannover"},
-		Baptism:       DatePlace{Date: "10.10.1827", Place: "Hannover"},
-		Death:         DatePlace{Date: "um 1900"},
-		Burial:        DatePlace{Place: "Hannover Hauptfriedhof"},
-		Floruit:       "Hannover, Berlin",
-		Jobs:          "Mathematician, Priest",
+		Attributes: []string{"dead", "mathematician"},
+		Gender:     "male",
+		Name:       Name{First: []string{"Johann", "Carl", "Friedrich"}, Last: "Gauss", Birth: "Hauser"},
+		Birth:      DatePlace{Date: "1827", Location: Location{City: "Hannover"}},
+		Baptism:    DatePlace{Date: "10.10.1827", Location: Location{City: "Hannover"}},
+		Death:      DatePlace{Date: "um 1900"},
+		Burial:     DatePlace{Location: Location{City: "Hannover", Place: "Hauptfriedhof"}},
+		Jobs: []Job{
+			{
+				Type: "Mathematician",
+			},
+			{
+				Type: "Priest",
+			},
+		},
 		ImageFilename: "images/gauss.jpg",
-		Comment:       "Famous.",
+		Comments: []Comment{
+			{
+				Text: "Famous.",
+			},
+		},
 		Partners: []FlatRelationship{
-			FlatRelationship{
+			{
 				Engagement: DatePlace{
-					Date:  "10/1854",
-					Place: "Prag",
+					Date: "10/1854",
+					Location: Location{
+						City: "Prag",
+					},
 				},
 				Marriage: DatePlace{
-					Date:  "1855",
-					Place: "München",
+					Date: "1855",
+					Location: Location{
+						City: "München",
+					},
 				},
 				Divorce: DatePlace{
-					Date:  "um 1866",
-					Place: "ebd.",
+					Date: "um 1866",
+					Location: Location{
+						Place: "ebd.",
+					},
 				},
 			},
 		},
@@ -130,14 +146,41 @@ func TestRenderPerson(t *testing.T) {
 			Name:          "Filter HidePlaces",
 			RenderOptions: hiddenPlacesRenderPersonOptions,
 			Person: &FlatPerson{
-				Birth:   DatePlace{Date: "1821", Place: "München"},
-				Baptism: DatePlace{Place: "Hamburg"},
-				Death:   DatePlace{Date: "um 1842", Place: "Gera"},
+				Birth: DatePlace{
+					Date: "1821",
+					Location: Location{
+						Place: "München",
+					},
+				},
+				Baptism: DatePlace{
+					Location: Location{
+						Place: "Hamburg",
+					},
+				},
+				Death: DatePlace{
+					Date: "um 1842",
+					Location: Location{
+						Place: "Gera",
+					},
+				},
 				Partners: []FlatRelationship{
-					FlatRelationship{
-						Engagement: DatePlace{Date: "1839", Place: "Johannesburg"},
-						Marriage:   DatePlace{Place: "Ingolstadt"},
-						Divorce:    DatePlace{Place: "Rostock"},
+					{
+						Engagement: DatePlace{
+							Date: "1839",
+							Location: Location{
+								Place: "Johannesburg",
+							},
+						},
+						Marriage: DatePlace{
+							Location: Location{
+								Place: "Ingolstadt",
+							},
+						},
+						Divorce: DatePlace{
+							Location: Location{
+								Place: "Rostock",
+							},
+						},
 					},
 				},
 			},
