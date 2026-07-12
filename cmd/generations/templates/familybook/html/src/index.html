@@ -1,5 +1,5 @@
 {{
-  sub "head.html" "Title" $.Config.Title
+  sub "head.html" "Title" $.Config.Title "HideStats" $.Config.Options.Stats.Hide
 }}
 
 {{ $allPersons := allPersons .Generations .ExtraPersons }}

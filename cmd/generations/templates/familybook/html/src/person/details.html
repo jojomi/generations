@@ -2,6 +2,7 @@
     sub "head.html"
     "Title" ( .Person.Name )
     "BaseLevel" 1
+    "HideStats" $.Config.Options.Stats.Hide
 }}
 
 {{- $now := $.Config.GetNow }}

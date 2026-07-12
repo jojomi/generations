@@ -1,5 +1,5 @@
 {{
-  sub "head.html" "Title" "Statistik"
+  sub "head.html" "Title" "Statistik" "HideStats" $.Config.Options.Stats.Hide
 }}
 
 {{ $allPersons := allPersons .Generations .ExtraPersons }}
@@ -214,7 +214,7 @@
   <h2 class="mt-8 mb-2">Geburtsmonate</h2>
   {{ with $.Stats.BirthMonths $allPersons }}
     {{ if gt (len .GetItems) 0 }}
-      <div class="stats-chart stats-chart-months mt-2 mb-4" data-chart='[{{ range $i, $item := .GetItems }}{{ if $i }},{{ end }}[{{ $item.Value }},{{ $item.Persons.Count }}]{{ end }}]' data-x-label="Monat"></div>
+      <div class="stats-chart stats-chart-months mt-2 mb-4" data-chart='[{{ range $i, $item := .GetItems }}{{ if $i }},{{ end }}["{{ $item.Value }}",{{ $item.Persons.Count }}]{{ end }}]' data-x-label="Monat"></div>
     {{ end }}
   {{ end }}
 {{ end }}
