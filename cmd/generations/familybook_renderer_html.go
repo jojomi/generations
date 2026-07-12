@@ -72,14 +72,6 @@ func (f *FamilybookRendererHTML) Render(outputFilename, templateFilename string,
 		}
 	}
 
-	// render stats page if not hidden in config
-	if !renderConfig.Config.Options.Stats.Hide {
-		err = f.renderTemplateFile("stats.html", "stats.html", makeHTMLFuncMap(toHTMLFuncMap(makeCustomFuncMap(nil)), templateHelpers(), toHTMLFuncMap(spacingHelpers()), toHTMLFuncMap(symbols()), personHelpers()), renderConfig)
-		if err != nil {
-			return errors.Annotatef(err, "rendering template stats.html failed")
-		}
-	}
-
 	tplFilename := "person/details.html"
 	workerCount := runtime.NumCPU()
 	wp := workerpool.New(workerCount)
