@@ -14,9 +14,9 @@
     {{ with .GetMainTreePositionID -}}
         \label{person-{{- . -}} }
     {{ end -}}
-    \begin{entry}
+    \begin{encyentry}
     {{ if or (not .GetBirth.Empty) (not .GetDeath.Empty)}}
-    \item \begin{subentry}
+    \item \begin{encysubentry}
     {{ $d := .GetBirth -}}
     {{ if not $d.Empty -}}
         \item geb.
@@ -41,7 +41,7 @@
         {{ end -}}
         % \gtrsymDied\,
     {{ end -}}
-    \end{subentry}
+    \end{encysubentry}
     {{ end -}}
 
     % Eltern
@@ -87,18 +87,14 @@
     % Partnerschaften
 
     % Sonstiges
-    {{ $floruit := .GetFloruit }}
     {{ $jobs := .GetJobs }}
-    {{ $comment := .GetComment }}
-    {{ with $floruit -}}
-        \item ansäß. in {{ . | latexify }}
+    {{ $comments := .GetComments }}
+    {{ range $jobs -}}
+        \item {{ .Type | latexify }}{{ if .Company }} bei {{ .Company | latexify }}{{ end }}{{ if .Place }} in {{ .Place | latexify }}{{ end }}
     {{ end -}}
-    {{ with $jobs -}}
-        \item {{ . | latexify }}
-    {{ end -}}
-    {{ with $comment -}}
-        \item {{ . | latexify }}
+    {{ range $comments -}}
+        \item {{ .Text | latexify }}
     {{ end -}}
     \item[]{} % TODO fix, see 
-    \end{entry}
+    \end{encyentry}
 {{ end -}}

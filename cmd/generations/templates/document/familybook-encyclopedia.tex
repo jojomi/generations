@@ -45,6 +45,7 @@
 
 \colorlet{mainSection}{gray!30}
 \colorlet{subSection}{gray!15}
+\colorlet{source-link}{gray!75!black}
 
 \newlength{\titleColumnWidth}
 \setlength{\titleColumnWidth}{2.5cm}
@@ -74,6 +75,17 @@
 }
 %\setlist[description]{style=nextline}
 %\makeatletter
+
+% environments for encyclopedia entries
+\newenvironment{encypersons}{%
+    \begin{description}[style=nextline,leftmargin=0pt,labelwidth=0pt,labelsep=0pt]%
+}{\end{description}}
+\newenvironment{encyentry}{%
+    \begin{description}[style=nextline,leftmargin=0pt,labelwidth=0pt,labelsep=0pt]%
+}{\end{description}}
+\newenvironment{encysubentry}{%
+    \begin{description}[style=nextline,leftmargin=1em,labelwidth=0pt,labelsep=.5em]%
+}{\end{description}}
 
 \usepackage{calc}
 
@@ -472,13 +484,13 @@
       {{ end -}}
     }
 
-    \begin{entries}
+    \begin{encypersons}
     {{ with .Persons }}
       {{ range . }}
         {{ renderFamilybookEntry $.Config . $.Lineages $allPersons }}
       {{- end }}
     {{- end }}
-    \end{entries}
+    \end{encypersons}
   {{- end }}
 {{- end }}
 
@@ -488,9 +500,11 @@
     \chapter*{Weitere Personen}
     \addcontentsline{toc}{chapter}{Weitere Personen}
     \markboth{Weitere Personen}{Weitere Personen}
+    \begin{encypersons}
     {{ range .GetPersons }}
       {{ renderFamilybookEntry $.Config . $.Lineages $allPersons }}
     {{- end }}
+    \end{encypersons}
   {{- end }}
 {{- end }}
 
