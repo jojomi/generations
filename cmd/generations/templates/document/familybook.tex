@@ -53,9 +53,16 @@
 \colorlet{dotfill}{gray!75}
 \colorlet{source-link}{gray!75!black}
 
+% generation page colors
+\colorlet{genTarget}{red!60!black}
+\colorlet{genIntermediate}{gray!30}
+\colorlet{genBase}{gray!50}
+
 % styles for the position trees on chapter pages: current generation level
 % and gender of the start node
-\tcbset{positionmark/.style={colframe=accent!75!black,colback=accent!60}}
+\tcbset{positionmark/.style={colframe=genTarget!75!black,colback=genTarget}}
+\tcbset{positionbase/.style={colframe=genBase!75!black,colback=genBase}}
+\tcbset{positionintermediate/.style={colframe=genIntermediate!75!black,colback=genIntermediate}}
 \tcbset{positionmale/.style={colback=gtr_Male_Frame!75}}
 \tcbset{positionfemale/.style={colback=gtr_Female_Frame!75}}
 %\definecolor{MaterialOrange}{named}{orange}
@@ -446,23 +453,24 @@
 
 \defaultfontfeatures{Ligatures=TeX}
 
-% Mixta Ess Sharp
-\setmainfont[ % / setsansfont
-  % Path = C:/Windows/Fonts/,
-  % Extension = .otf,
-  UprightFont = Mixta Ess Sharp,
-  BoldFont = Mixta Ess Sharp Bold,
-  ItalicFont = Mixta Ess Sharp It,
-  % BoldItalicFont = LinLibertine_RZI,
-]{Mixta Ess Sharp}
+% Mixta Ess Sharp (not installed on this system, using libertine default instead)
+% \setmainfont[ % / setsansfont
+%   % Path = C:/Windows/Fonts/,
+%   % Extension = .otf,
+%   UprightFont = Mixta Ess Sharp,
+%   BoldFont = Mixta Ess Sharp Bold,
+%   ItalicFont = Mixta Ess Sharp It,
+%   % BoldItalicFont = LinLibertine_RZI,
+% ]{Mixta Ess Sharp}
 
-\setmainfont[ % see https://tex.stackexchange.com/questions/126029/bold-type-and-font-specification-with-fontspec
-  Mapping = tex-text,
-  UprightFont = Vanio Regular,
-  BoldFont = Vanio Bold,
-  ItalicFont = Vanio RegularItalic,
-  % BoldItalicFont = LinLibertine_RZI,
-]{Vanio}[Numbers = {OldStyle}] % OldStyle, Proportional
+% Vanio (not installed on this system, using libertine default instead)
+% \setmainfont[ % see https://tex.stackexchange.com/questions/126029/bold-type-and-font-specification-with-fontspec
+%   Mapping = tex-text,
+%   UprightFont = Vanio Regular,
+%   BoldFont = Vanio Bold,
+%   ItalicFont = Vanio RegularItalic,
+%   % BoldItalicFont = LinLibertine_RZI,
+% ]{Vanio}[Numbers = {OldStyle}] % OldStyle, Proportional
 
 
 {{ if not $.Config.Options.Subtrees.Hide }}
@@ -538,27 +546,62 @@
 \makeatletter
 \begin{titlepage}
 	\centering
-  ~
 
+  % Decorative background: generic empty three-generation ancestor tree,
+  % tilted and in light gray so the title on top stays readable.
+  % Zero-size box (smash/makebox), so it does not affect the page flow;
+  % sized relative to \paperwidth/\paperheight for any format/orientation.
+  \smash{\makebox[0pt][c]{\raisebox{-0.45\paperheight}{\rotatebox{12}{%
+    \resizebox{0.95\paperwidth}{!}{%
+      \begin{genealogypicture}[
+        empty name text={},
+        node size=2.4cm,
+        level size=1cm,
+        level distance=7mm,
+        box={colframe=black!25, colback=white, arc=1mm, size=small},
+        edges={foreground={line width=1.2pt, black!25}, background={line width=2.4pt, white}},
+      ]
+      parent{
+        g{}
+        parent{ g{} p{} p{} }
+        parent{ g{} p{} p{} }
+      }
+      \end{genealogypicture}%
+    }%
+  }}}}%
+
+  \vspace*{0.05\paperheight}
+
+  % Title with automatic font sizing (tcolorbox fit library):
+  % fills 90% of the text width and at most 18% of the page height,
+  % so it adapts to any paper size and orientation. Long titles wrap
+  % (only at spaces and explicit hyphens) and shrink, short titles grow.
+  % For a custom title font, set fontupper, e.g.
+  %   fontupper=\setmainfont{Ms Claudy Regular},
+  \tcboxfit[
+    blankest,
+    width=0.9\linewidth,
+    height=0.18\paperheight,
+    valign=center,
+    halign=center,
+    fit basedim=0.1\paperheight,
+    fit algorithm=hybrid*,
+    before upper={\hyphenpenalty=10000\relax},
+  ]{
+  {{- if .Config.Title -}}
+    {{ .Config.Title }}
+  {{- else -}}
+    Stammbuch
+  {{- end -}}
+  }
+
+  \vspace{0.04\paperheight}
   \vfill
 
- {
-  \setmainfont[ % see https://tex.stackexchange.com/questions/126029/bold-type-and-font-specification-with-fontspec
-  Mapping = tex-text,
-  UprightFont = Ms Claudy Regular,
-]{Vanio}[Numbers = {OldStyle}] % OldStyle, Proportional
-
-  \fontsize{90}{70}\selectfont {{ .Config.Title  }}
-}
-  ~
-
-  \vspace{3em}
-
-  ~
   \begin{tcbraster}[
     raster columns=5,
     raster rows=4,
-    raster height=.485\pageheight,
+    raster height=.485\paperheight,
     raster valign=center,
     enhanced,
     size=small,
@@ -587,6 +630,8 @@
     {{ end -}}
   {{ end -}}
   \end{tcbraster}
+
+  \vspace*{0.03\paperheight}
 
 \end{titlepage}
 \makeatother
@@ -642,12 +687,14 @@
 
     {{/* position tree: where inside the full tree is this generation? */}}
     {{ if and .IsParent (gt .Index 0) }}
+      {{ $targetLevel := .Index }}
       {{ with positionParentTree $probandGeneration.Persons .Index $.Config.Options.MaternalOrder }}
         \vspace*{\fill}
         \begin{center}
-          \begin{adjustbox}{width=.85\linewidth, totalheight=.7\textheight, keepaspectratio}
+          \begin{adjustbox}{width=\linewidth, totalheight=.8\textheight, keepaspectratio}
             \begin{genealogypicture}[
               template=tiny circles,
+              {{- if ge $targetLevel 4 -}} grow=right, {{- end -}}
             ]
               {{ . }}
             \end{genealogypicture}
@@ -1295,7 +1342,7 @@
           \begin{customranking}
               {{ range .RankingItems }}
               % \textbf{ {{- .Persons.Count -}} }x
-              \item[] {{- .RankingValue -}}
+              \item[] \textbf{ {{- .RankingValue -}} }\quad
 
                 {{ range $index, $e := .Persons.GetPersons -}}
                   {{- if $index }}, {{ end -}}
