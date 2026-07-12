@@ -25,7 +25,6 @@ var (
 	flagGenealogytreeCompile        bool
 	flagGenealogytreeAnonymize      bool
 	flagGenealogytreeNumCompileRuns int
-	flagGenealogytreeMinify         bool
 	flagGenealogytreeCheckIDs       bool
 )
 
@@ -42,7 +41,6 @@ func getGenealogytreeCommand() *cobra.Command {
 	flags.BoolVarP(&flagGenealogytreeAnonymize, "anonymize", "a", false, "anonymize data")
 	flags.BoolVarP(&flagGenealogytreeCompile, "compile", "", true, "generate pdf file using lualatex")
 	flags.IntVarP(&flagGenealogytreeNumCompileRuns, "compile-runs", "n", 2, "number of times to call lualatex")
-	flags.BoolVarP(&flagGenealogytreeMinify, "minify", "m", true, "minify filesize of generated pdf file")
 
 	genealogytreeCmd.AddCommand(getTestCommand())
 
@@ -221,24 +219,9 @@ func genealogytreeHandler(c *cobra.Command, args []string) {
 		}
 		print.Successln("Sucesfully compiled.")
 
-		var openFilename = config.OutputFilename
-		if flagGenealogytreeMinify {
-			print.Boldln("Minifying output PDF...")
-			smallFilename := strings.Replace(config.OutputFilename, ".pdf", ".small.pdf", -1)
-			err = minifyDocument(
-				config.OutputFilename,
-				smallFilename,
-			)
-			if err != nil {
-				log.Fatal().Err(err).Msg("")
-			}
-			print.Successln("Sucesfully minified.")
-			openFilename = smallFilename
-		}
-
 		if flagRootOpen {
-			print.Successf("Opening output file: %s\n", openFilename)
-			openDocument(openFilename)
+			print.Successf("Opening output file: %s\n", config.OutputFilename)
+			openDocument(config.OutputFilename)
 		}
 	}
 }
@@ -300,35 +283,6 @@ func compileDocument(inputFile string, numRuns int, verbose bool, stepFunc func(
 			// return fmt.Errorf("makeindex compilation not successful")
 		}
 		stepFunc(fmt.Sprintf("makeindex round %d done", i+1))
-	}
-
-	return nil
-}
-
-func minifyDocument(inputFile, outputFile string) error {
-	sc := script.NewContext()
-	if !sc.CommandExists("gs") {
-		return fmt.Errorf("gs not found in PATH")
-	}
-
-	command := strtpl.MustEval(
-		`gs -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -dPDFSETTINGS=/printer -dNOPAUSE -dQUIET -dBATCH -sOutputFile="{{ .OutputFile }}" "{{ .InputFile }}"`,
-		struct {
-			InputFile  string
-			OutputFile string
-		}{
-			InputFile:  inputFile,
-			OutputFile: outputFile,
-		},
-	)
-	localCommand := script.LocalCommandFrom(command)
-
-	pr, err := sc.ExecuteDebug(localCommand)
-	if err != nil {
-		return err
-	}
-	if !pr.Successful() {
-		return fmt.Errorf("lualatex compilation not successful")
 	}
 
 	return nil

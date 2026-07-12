@@ -31,7 +31,6 @@ Useful flags:
 | `-a, --anonymize` | off | anonymize the rendered data |
 | `--compile` | on | run `lualatex` (otherwise only the `.tex` file is written) |
 | `-n, --compile-runs` | 2 | number of `lualatex` passes |
-| `-m, --minify` | on | minify the generated PDF |
 | `-o, --open` (global) | on | open the resulting PDF |
 | `-v, --verbose` (global) | on | verbose output incl. `lualatex` log |
 | `-d, --database-base-dir` (global) | `~/.generations/databases/` | base dir for database file lookup |
@@ -155,6 +154,13 @@ Test fixtures live in [`testdata/database/`](testdata/database/).
    More info: http://unifraktur.sourceforge.net/maguntia.html
 
 3. **How do I help LaTeX with hyphenating?**
-   In `custom-head` use:
+    In `custom-head` use:
 
-       \hyphenation{Spe-cial-town-name}
+        \hyphenation{Spe-cial-town-name}
+
+4. **How do I reduce the PDF file size?**
+    The built-in PDF minification was removed because it caused issues with Ghostscript on some systems. To optimize your PDF afterwards, install [pdfoptimize](https://github.com/jojomi/pdfoptimize) (Go tool using QPDF) and run:
+
+        pdfoptimize input.pdf output.pdf
+
+    Or add it to your local build scripts after `generations familybook`.

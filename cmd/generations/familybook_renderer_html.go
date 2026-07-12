@@ -136,10 +136,6 @@ func (f *FamilybookRendererHTML) GetIntermediateFilename() string {
 	return ""
 }
 
-func (f *FamilybookRendererHTML) GetMinifiedFilename() string {
-	return ""
-}
-
 func (f *FamilybookRendererHTML) GetOutputFilename() string {
 	filename := f.config.OutputFilename
 
@@ -157,15 +153,6 @@ func (f *FamilybookRendererHTML) DoesCompile() bool {
 
 func (f *FamilybookRendererHTML) Compile(flags *pflag.FlagSet, stepFunc func(step string)) error {
 	// does not compile
-	return nil
-}
-
-func (f *FamilybookRendererHTML) DoesMinify() bool {
-	return false
-}
-
-func (f *FamilybookRendererHTML) Minify() error {
-	// does not minify
 	return nil
 }
 

@@ -37,7 +37,6 @@ var (
 	flagFamilybookCompile        bool
 	flagFamilybookAnonymize      bool
 	flagFamilybookNumCompileRuns int
-	flagFamilybookMinify         bool
 )
 
 type SubtreeConfig struct {
@@ -58,7 +57,6 @@ func getFamilybookCommand() *cobra.Command {
 	flags.BoolVarP(&flagFamilybookAnonymize, "anonymize", "a", false, "anonymize data")
 	flags.BoolVarP(&flagFamilybookCompile, "compile", "", true, "generate pdf file using lualatex")
 	flags.IntVarP(&flagFamilybookNumCompileRuns, "compile-runs", "n", 2, "number of times to call lualatex")
-	flags.BoolVarP(&flagFamilybookMinify, "minify", "m", true, "minify filesize of generated pdf file")
 
 	return &familybookCmd
 }
@@ -366,22 +364,11 @@ func familybookHandler(c *cobra.Command, args []string) {
 			pCompile.StepP("TOTAL COMPILE TIME")
 		}
 
-		var openFilename = config.OutputFilename
-		if flagFamilybookMinify && renderer.DoesMinify() {
-			print.Boldln("Minifying output file...")
-			err = renderer.Minify()
-			if err != nil {
-				log.Fatal().Err(err).Msg("")
-			}
-			print.Successln("Sucesfully minified.")
-			openFilename = renderer.GetMinifiedFilename()
-			p.StepP("minified PDF")
-		}
 		p.StepP("finished")
 
 		if flagRootOpen {
-			print.Successf("Opening output file: %s\n", openFilename)
-			openDocument(openFilename)
+			print.Successf("Opening output file: %s\n", config.OutputFilename)
+			openDocument(config.OutputFilename)
 		}
 	}
 }
