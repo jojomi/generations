@@ -166,3 +166,56 @@ func TestMostCommonFirstNames(t *testing.T) {
 	assert.Equal(t, "Carl", top.Value)
 	assert.Equal(t, 2, top.RankingValue)
 }
+
+func TestMultipleAncestors(t *testing.T) {
+	s := NewStats(testDate("2020-06-15"))
+
+	// Case 1: Person appears twice as ancestor (depth 2 and 3) -> included
+	a := &FlatPerson{ID: "a"}
+	a.AddTreePositionID("-proband-a")
+	a.AddTreePositionID("-proband-x-a")
+
+	// Case 2: Person appears only once -> excluded
+	b := &FlatPerson{ID: "b"}
+	b.AddTreePositionID("-proband-b")
+
+	// Case 3: Person appears 3 times, 2 as ancestor + 1 as proband -> included, count=3
+	c := &FlatPerson{ID: "c"}
+	c.AddTreePositionID("-proband-c")
+	c.AddTreePositionID("-proband-y-c")
+	c.AddTreePositionID("-proband-y-z-c")
+
+	// Case 4: Person appears twice but only as proband/extra (depth 1) -> excluded
+	d := &FlatPerson{ID: "d"}
+	d.AddTreePositionID("-d")
+	d.AddTreePositionID("-x")
+
+	list := NewPersonList()
+	list.AddPerson(a)
+	list.AddPerson(b)
+	list.AddPerson(c)
+	list.AddPerson(d)
+
+	result := s.MultipleAncestors(&list)
+	assert.Equal(t, 2, result.Len())
+
+	// Sorted by count descending: c (3) first, then a (2)
+	assert.Equal(t, []string{"c"}, getPersonSliceIDs(result.GetItems()[0].Persons))
+	assert.Equal(t, 3, result.GetItems()[0].RankingValue)
+	assert.Equal(t, []string{"a"}, getPersonSliceIDs(result.GetItems()[1].Persons))
+	assert.Equal(t, 2, result.GetItems()[1].RankingValue)
+}
+
+func TestMultipleAncestorsEmpty(t *testing.T) {
+	s := NewStats(testDate("2020-06-15"))
+
+	// Only single-occurrence persons
+	a := &FlatPerson{ID: "a"}
+	a.AddTreePositionID("-proband-a")
+
+	list := NewPersonList()
+	list.AddPerson(a)
+
+	result := s.MultipleAncestors(&list)
+	assert.Equal(t, 0, result.Len())
+}
