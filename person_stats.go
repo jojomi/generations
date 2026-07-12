@@ -93,6 +93,9 @@ func GetLifeAge(p Person, referenceDate time.Time) (*timecalc.DateDiff, error) {
 	if latestBirth.Year() < 100 {
 		return nil, errors.Errorf("birth unclear")
 	}
+	if latestBirth.After(referenceDate) {
+		return nil, errors.Errorf("birth not confirmed at reference date")
+	}
 
 	death := p.GetDeath()
 	if !death.Empty() && death.Date == "" {
