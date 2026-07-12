@@ -1,0 +1,24 @@
+title: "Positionstest"
+attribution: test
+
+databases:
+  - ~/.generations/databases/herkur.yml
+
+document-options: paper=a4,10pt
+
+proband: HofeKlar1949
+
+options:
+  include-partners: true
+  max-parent-generations: 0
+  max-child-generations: 0
+  single-person-pages: true
+  short-lists: false
+  allow-live-data: true
+  multiline-lists: false
+  maternal-order: true
+  accent-color: Red!75!Black
+  texts:
+    proband: Wir
+  subtrees:
+    hide: true

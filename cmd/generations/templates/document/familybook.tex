@@ -40,6 +40,7 @@
 %\usetikzlibrary{backgrounds}
 \usepackage{pgfplots}
 \pgfplotsset{compat=1.16}
+\usepackage{adjustbox}
 
 % \colorlet{mainSection}{gray!30}
 % \colorlet{subSection}{gray!15}
@@ -51,6 +52,12 @@
 \colorlet{nonContainedPerson}{black}
 \colorlet{dotfill}{gray!75}
 \colorlet{source-link}{gray!75!black}
+
+% styles for the position trees on chapter pages: current generation level
+% and gender of the start node
+\tcbset{positionmark/.style={colframe=accent!75!black,colback=accent!60}}
+\tcbset{positionmale/.style={colback=gtr_Male_Frame!75}}
+\tcbset{positionfemale/.style={colback=gtr_Female_Frame!75}}
 %\definecolor{MaterialOrange}{named}{orange}
 
 \makeatletter
@@ -601,6 +608,7 @@
 
 
 {{ with .Generations }}
+  {{ $probandGeneration := index . 0 }}
   {{ range . }}
     \chapter*{
       {{- if ne .Index 0 }}
@@ -631,6 +639,23 @@
         {{- end -}}
       {{ end -}}
     }
+
+    {{/* position tree: where inside the full tree is this generation? */}}
+    {{ if and .IsParent (gt .Index 0) }}
+      {{ with positionParentTree $probandGeneration.Persons .Index $.Config.Options.MaternalOrder }}
+        \vspace*{\fill}
+        \begin{center}
+          \begin{adjustbox}{width=.85\linewidth, totalheight=.7\textheight, keepaspectratio}
+            \begin{genealogypicture}[
+              template=tiny circles,
+            ]
+              {{ . }}
+            \end{genealogypicture}
+          \end{adjustbox}
+        \end{center}
+        \vspace*{\fill}
+      {{ end }}
+    {{ end }}
 
     {{ with .Persons }}
       {{ range . }}

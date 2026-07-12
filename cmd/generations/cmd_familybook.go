@@ -411,6 +411,7 @@ func makeCustomFuncMap(customFuncs map[string]interface{}) template.FuncMap {
 	funcMap["expandPath"] = expandPath
 	funcMap["debugf"] = debugf
 	funcMap["fanchartParentTree"] = fanchartParentTree
+	funcMap["positionParentTree"] = positionParentTree
 
 	for key, f := range customFuncs {
 		funcMap[key] = f
