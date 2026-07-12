@@ -62,14 +62,15 @@ func getFamilybookCommand() *cobra.Command {
 }
 
 type RenderConfig struct {
-	Config       *FamilybookConfig
-	Generations  []Generation
-	ExtraPersons *generations.PersonList
-	EmptyEntries *generations.PersonList
-	Options      map[string]interface{}
-	Stats        *generations.Stats
-	Lineages     *generations.LineageContainer
-	SubtreeRoots []SubtreeConfig
+	Config          *FamilybookConfig
+	Generations     []Generation
+	ExtraPersons    *generations.PersonList
+	EmptyEntries    *generations.PersonList
+	Options         map[string]interface{}
+	Stats           *generations.Stats
+	Lineages        *generations.LineageContainer
+	SubtreeRoots    []SubtreeConfig
+	SearchIndexJSON htmlTemplate.JS
 }
 
 func familybookHandler(c *cobra.Command, args []string) {

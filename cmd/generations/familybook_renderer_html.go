@@ -54,6 +54,14 @@ func (f *FamilybookRendererHTML) Render(outputFilename, templateFilename string,
 		}
 	}
 
+	// build the search index once and reuse the person list below
+	allPersonsList := allPersons(renderConfig.Generations, renderConfig.ExtraPersons)
+	searchIndexJSON, err := buildSearchIndexJSON(allPersonsList)
+	if err != nil {
+		return errors.Annotate(err, "building search index failed")
+	}
+	renderConfig.SearchIndexJSON = searchIndexJSON
+
 	// loop through different subtemplates (index, persons, and so on)
 	tplFilenames := []string{"index.html", "spitzahnen.html", "zeitleiste.html", "recherche.html"}
 
@@ -64,12 +72,19 @@ func (f *FamilybookRendererHTML) Render(outputFilename, templateFilename string,
 		}
 	}
 
+	// render stats page if not hidden in config
+	if !renderConfig.Config.Options.Stats.Hide {
+		err = f.renderTemplateFile("stats.html", "stats.html", makeHTMLFuncMap(toHTMLFuncMap(makeCustomFuncMap(nil)), templateHelpers(), toHTMLFuncMap(spacingHelpers()), toHTMLFuncMap(symbols()), personHelpers()), renderConfig)
+		if err != nil {
+			return errors.Annotatef(err, "rendering template stats.html failed")
+		}
+	}
+
 	tplFilename := "person/details.html"
 	workerCount := runtime.NumCPU()
 	wp := workerpool.New(workerCount)
 	errc := make(chan error, 1)
-	allPersons := allPersons(renderConfig.Generations, renderConfig.ExtraPersons)
-	for _, person := range allPersons.GetPersons() {
+	for _, person := range allPersonsList.GetPersons() {
 		wp.Submit(func(person generations.Person, errorChannel chan error) func() {
 			return func() {
 				if len(errorChannel) > 0 {
@@ -77,7 +92,7 @@ func (f *FamilybookRendererHTML) Render(outputFilename, templateFilename string,
 					return
 				}
 				outputFilename := "person/" + person.GetMainTreePositionID() + ".html"
-				err = f.renderPerson(tplFilename, outputFilename, renderConfig, makeHTMLFuncMap(templateHelpers(), toHTMLFuncMap(spacingHelpers()), toHTMLFuncMap(symbols()), personHelpers()), allPersons, person)
+				err = f.renderPerson(tplFilename, outputFilename, renderConfig, makeHTMLFuncMap(templateHelpers(), toHTMLFuncMap(spacingHelpers()), toHTMLFuncMap(symbols()), personHelpers()), allPersonsList, person)
 				if err != nil {
 					go func() {
 						errc <- errors.Annotatef(err, "rendering template %s to %s for %s failed", tplFilename, outputFilename, person)

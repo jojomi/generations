@@ -12,6 +12,12 @@
   <span class="font-bold">Stand: </span>{{ .Config.GetNow.Format .Config.DateFormat }}
 </div>
 
+<div class="relative mb-4 print:hidden">
+  <input type="search" id="search-input" autocomplete="off" class="w-full border border-gray-400 rounded px-3 py-2" placeholder="Suche nach Name, Ort, Beruf, Adresse, Tag, Datum …">
+  <div id="search-results" class="hidden absolute z-10 w-full bg-white border border-gray-400 rounded mt-1 max-h-96 overflow-y-auto"></div>
+</div>
+<script>window.SEARCH_INDEX = {{ .SearchIndexJSON }};</script>
+
 {{ with .Generations }}
   <div class="grid grid-cols-2 md:grid-cols-3-1st-grow proportional-nums">
     {{ range . }}
