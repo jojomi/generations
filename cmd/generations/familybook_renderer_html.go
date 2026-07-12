@@ -114,6 +114,17 @@ func (f *FamilybookRendererHTML) Render(outputFilename, templateFilename string,
 		return err
 	}
 
+	// static assets
+	sJSSource := sc.AbsPath(filepath.Join(f.getTemplateBasePath(), "s.js"))
+	sJSData, err := os.ReadFile(sJSSource)
+	if err != nil {
+		return errors.Annotatef(err, "could not read %s", sJSSource)
+	}
+	err = os.WriteFile(filepath.Join(f.targetDir, "s.js"), sJSData, 0640)
+	if err != nil {
+		return errors.Annotatef(err, "could not write s.js to output directory")
+	}
+
 	// tailwind
 	sc.MustCommandExist("npx")
 	productionBuild := true
