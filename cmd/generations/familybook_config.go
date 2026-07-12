@@ -153,6 +153,7 @@ type FamilybookStatsOptions struct {
 	HideUniqueFirstNames     bool `yaml:"hide-unique-first-names,omitempty"`
 	HideCommonBirthdays      bool `yaml:"hide-common-birthdays,omitempty"`
 	HideDuplicateNames       bool `yaml:"hide-duplicate-names,omitempty"`
+	HideMultipleAncestors    bool `yaml:"hide-multiple-ancestors,omitempty"`
 }
 
 type FamilybookTexts struct {
