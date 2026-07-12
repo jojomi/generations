@@ -1378,6 +1378,26 @@
           {{- end }}
         {{- end }}
       {{- end }}
+
+      {{ if not $.Config.Options.Stats.HideMultipleAncestors }}
+        \section*{Mehrfachvorfahren}
+        \addcontentsline{toc}{section}{Mehrfachvorfahren}
+
+        {{ with $.Stats.MultipleAncestors $allPersonsMerged -}}
+          {{ if gt (len .RankingItems) 0 }}
+            \begin{enumerateranking}
+              {{ range .RankingItems }}
+                \item
+                {{ range .Persons.GetPersons -}}
+                  {{ sub "personLinkAllRef.tex" "person" . "allPersons" $allPersons }}
+                {{- end }}
+                \mydots{}
+                \rankingValueRight{ {{- .Value }} Vorkommen}
+              {{- end }}
+            \end{enumerateranking}
+          {{- end }}
+        {{- end }}
+      {{- end }}
   {{- end }}
 {{- end }}
 
