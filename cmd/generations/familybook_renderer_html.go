@@ -194,15 +194,7 @@ func templateHelpers() template.FuncMap {
 
 func personHelpers() template.FuncMap {
 	return template.FuncMap{
-		"getPersonDetailsURL": func(person generations.Person) string {
-			urlID := ""
-			if person.GetMainTreePositionID() != "" {
-				urlID = person.GetMainTreePositionID()
-			} else {
-				urlID = person.GetBestID()
-			}
-			return "person/" + urlID + ".html"
-		},
+		"getPersonDetailsURL": personDetailsURL,
 	}
 }
 
