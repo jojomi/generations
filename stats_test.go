@@ -219,3 +219,123 @@ func TestMultipleAncestorsEmpty(t *testing.T) {
 	result := s.MultipleAncestors(&list)
 	assert.Equal(t, 0, result.Len())
 }
+
+func TestMultipleAncestorsEmptyList(t *testing.T) {
+	s := NewStats(testDate("2020-06-15"))
+
+	emptyList := NewPersonList()
+	result := s.MultipleAncestors(&emptyList)
+	assert.Equal(t, 0, result.Len())
+}
+
+func TestMultipleAncestorsNoTreePositionIDs(t *testing.T) {
+	s := NewStats(testDate("2020-06-15"))
+
+	// Person without any TreePositionIDs
+	a := &FlatPerson{ID: "a"}
+
+	// Person with one TreePositionID
+	b := &FlatPerson{ID: "b"}
+	b.AddTreePositionID("-b")
+
+	list := NewPersonList()
+	list.AddPerson(a)
+	list.AddPerson(b)
+
+	result := s.MultipleAncestors(&list)
+	assert.Equal(t, 0, result.Len())
+}
+
+func TestMultipleAncestorsManyOccurrences(t *testing.T) {
+	s := NewStats(testDate("2020-06-15"))
+
+	// Person with 5 occurrences, all as ancestors
+	a := &FlatPerson{ID: "a"}
+	a.AddTreePositionID("-root-a")
+	a.AddTreePositionID("-root-b-a")
+	a.AddTreePositionID("-root-c-a")
+	a.AddTreePositionID("-root-d-a")
+	a.AddTreePositionID("-root-e-a")
+
+	list := NewPersonList()
+	list.AddPerson(a)
+
+	result := s.MultipleAncestors(&list)
+	assert.Equal(t, 1, result.Len())
+	assert.Equal(t, []string{"a"}, getPersonSliceIDs(result.GetItems()[0].Persons))
+	assert.Equal(t, 5, result.GetItems()[0].RankingValue)
+}
+
+func TestMultipleAncestorsMixedDepthOnlyOneAncestor(t *testing.T) {
+	s := NewStats(testDate("2020-06-15"))
+
+	// Person with 4 positions: 3 as proband/extra (depth 1) + 1 as ancestor (depth 2)
+	// Should be included because at least one position is an ancestor
+	a := &FlatPerson{ID: "a"}
+	a.AddTreePositionID("-a")
+	a.AddTreePositionID("-b")
+	a.AddTreePositionID("-c")
+	a.AddTreePositionID("-root-x-a")
+
+	list := NewPersonList()
+	list.AddPerson(a)
+
+	result := s.MultipleAncestors(&list)
+	assert.Equal(t, 1, result.Len())
+	assert.Equal(t, []string{"a"}, getPersonSliceIDs(result.GetItems()[0].Persons))
+	assert.Equal(t, 4, result.GetItems()[0].RankingValue)
+}
+
+func TestMultipleAncestorsTieBreaker(t *testing.T) {
+	s := NewStats(testDate("2020-06-15"))
+
+	// Two persons with same count (3 each), stable sort should preserve input order
+	a := &FlatPerson{ID: "a"}
+	a.AddTreePositionID("-root-a")
+	a.AddTreePositionID("-root-b-a")
+	a.AddTreePositionID("-root-c-a")
+
+	b := &FlatPerson{ID: "b"}
+	b.AddTreePositionID("-root-b")
+	b.AddTreePositionID("-root-c-b")
+	b.AddTreePositionID("-root-d-b")
+
+	list := NewPersonList()
+	list.AddPerson(a)
+	list.AddPerson(b)
+
+	result := s.MultipleAncestors(&list)
+	assert.Equal(t, 2, result.Len())
+	assert.Equal(t, []string{"a"}, getPersonSliceIDs(result.GetItems()[0].Persons))
+	assert.Equal(t, 3, result.GetItems()[0].RankingValue)
+	assert.Equal(t, []string{"b"}, getPersonSliceIDs(result.GetItems()[1].Persons))
+	assert.Equal(t, 3, result.GetItems()[1].RankingValue)
+}
+
+func TestMultipleAncestorsMergedList(t *testing.T) {
+	s := NewStats(testDate("2020-06-15"))
+
+	// Simulate what happens with GetWithMergedTreePositionIDs:
+	// Two FlatPerson instances with same ID but different TreePositionIDs
+	a1 := &FlatPerson{ID: "a"}
+	a1.AddTreePositionID("-root-a")
+	a1.AddTreePositionID("-root-b-a")
+
+	a2 := &FlatPerson{ID: "a"}
+	a2.AddTreePositionID("-root-c-a")
+
+	list := NewPersonList()
+	list.AddPerson(a1)
+	list.AddPerson(a2)
+
+	// Before merging: a1 has 2 IDs (included), a2 has only 1 ID (excluded)
+	resultUnmerged := s.MultipleAncestors(&list)
+	assert.Equal(t, 1, resultUnmerged.Len())
+
+	// After merging, all 3 IDs should be on one person
+	mergedList := list.GetWithMergedTreePositionIDs()
+	resultMerged := s.MultipleAncestors(mergedList)
+	assert.Equal(t, 1, resultMerged.Len())
+	assert.Equal(t, []string{"a"}, getPersonSliceIDs(resultMerged.GetItems()[0].Persons))
+	assert.Equal(t, 3, resultMerged.GetItems()[0].RankingValue)
+}
