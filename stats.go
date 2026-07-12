@@ -819,6 +819,39 @@ func (s *Stats) NonUniqueBirthdays(personList *PersonList) *RankingList {
 	return getRankingForHistogram(hist2, comparatorFunc, makeRankingItem)
 }
 
+func (s *Stats) MultipleAncestors(personList *PersonList) *RankingList {
+	makeRankingItems := func(p Person) []*RankingItem {
+		ids := p.GetTreePositionIDs()
+		if len(ids) < 2 {
+			return nil
+		}
+		// check if at least one position is an ancestor (depth >= 2)
+		isAncestor := false
+		for _, id := range ids {
+			if strings.Count(id, "-") >= 2 {
+				isAncestor = true
+				break
+			}
+		}
+		if !isAncestor {
+			return nil
+		}
+
+		ri := RankingItem{}
+		pList := PersonList{}
+		pList.AddPerson(p)
+		ri.Persons = &pList
+		ri.Value = len(ids)
+		ri.RankingValue = len(ids)
+
+		return []*RankingItem{&ri}
+	}
+	comparatorFunc := func(a, b RankingItem) bool {
+		return a.RankingValue.(int) > b.RankingValue.(int)
+	}
+	return getRanking(personList, makeRankingItems, comparatorFunc)
+}
+
 func getHistogramUnique(histogram map[string]*PersonList) map[string]*PersonList {
 	result := make(map[string]*PersonList, len(histogram)/2)
 	for key, value := range histogram {
