@@ -42,12 +42,12 @@ func TestPositionParentTree(t *testing.T) {
 	result, err := positionParentTree([]generations.Person{proband}, 2, true)
 	assert.Nil(t, err)
 	expected := `parent{
-g[box={positionmale}]{}
+g[box={positionbase,positionmale}]{}
 parent{
-g{}
+g[box={positionintermediate}]{}
 p[box={positionmark}]{}
 }
-p{}
+p[box={positionintermediate}]{}
 }
 `
 	assert.Equal(t, expected, result)
@@ -62,7 +62,7 @@ func TestPositionParentTreeFirstLevel(t *testing.T) {
 	result, err := positionParentTree([]generations.Person{proband}, 1, false)
 	assert.Nil(t, err)
 	expected := `parent{
-g[box={positionmale}]{}
+g[box={positionbase,positionmale}]{}
 p[box={positionmark}]{}
 p[box={positionmark}]{}
 }
@@ -77,10 +77,10 @@ func TestPositionParentTreeMixedGenders(t *testing.T) {
 	mama, err := database.GetByID("mama")
 	assert.Nil(t, err)
 
-	// mixed genders at the root: neutral start node
+	// mixed genders at the root: neutral start node with positionbase
 	result, err := positionParentTree([]generations.Person{proband, mama}, 1, true)
 	assert.Nil(t, err)
-	assert.Contains(t, result, "parent{\ng{}\n")
+	assert.Contains(t, result, "parent{\ng[box={positionbase}]{}\n")
 }
 
 func TestPositionParentTreeNoParents(t *testing.T) {

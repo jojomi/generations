@@ -86,6 +86,10 @@ func positionNode(nodeType string, gender generations.Gender, level, targetLevel
 	var boxStyles []string
 	if level == targetLevel {
 		boxStyles = append(boxStyles, "positionmark")
+	} else if level == 0 {
+		boxStyles = append(boxStyles, "positionbase")
+	} else {
+		boxStyles = append(boxStyles, "positionintermediate")
 	}
 	switch gender {
 	case generations.GenderMale:

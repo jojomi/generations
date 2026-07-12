@@ -169,6 +169,19 @@ func familybookHandler(c *cobra.Command, args []string) {
 			generationList = append(generationList, c)
 		}
 
+		for i := range generationList {
+			g := &generationList[i]
+			if g.Index == 0 {
+				g.IsTarget = true
+			}
+			if g.IsParent && g.Index == len(parentGenerations)-1 {
+				g.IsBase = true
+			}
+			if !g.IsParent && g.Index == len(childGenerations) {
+				g.IsBase = true
+			}
+		}
+
 		if config.Options.IncludePartners {
 			for i, g := range generationList {
 				generationList[i] = getWithPartners(g, lineageContainer)
@@ -1408,8 +1421,10 @@ func GetGenerationName(level int) string {
 }
 
 type Generation struct {
-	IsParent bool
-	Index    int
-	Name     string
-	Persons  []generations.Person
+	IsParent  bool
+	IsBase    bool
+	IsTarget  bool
+	Index     int
+	Name      string
+	Persons   []generations.Person
 }
