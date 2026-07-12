@@ -1,0 +1,371 @@
+{{
+  sub "head.html" "Title" "Statistik"
+}}
+
+{{ $allPersons := allPersons .Generations .ExtraPersons }}
+{{ $allPersonsMerged := $allPersons.GetWithMergedTreePositionIDs }}
+
+<h1 class="mb-4">Statistik</h1>
+
+{{ $total := $allPersons.Count }}
+{{ $aliveCount := $.Stats.AliveCount $allPersons }}
+
+{{ if not $.Config.Options.Stats.HideNumbers }}
+  <h2 class="mt-8 mb-2">Anzahl Personen im Stammbuch</h2>
+  {{ $male := $.Stats.MaleCount $allPersons }}
+  {{ $female := $.Stats.FemaleCount $allPersons }}
+  {{ $deadCount := $.Stats.DeadCount $allPersons }}
+  <p class="text-lg font-bold">{{ $total }}</p>
+  <ul class="list-disc ml-6 mt-2">
+    <li>davon <strong>{{ $female }}</strong> weiblich ({{ percentageInt $female $total 0 }}%) und <strong>{{ $male }}</strong> männlich ({{ percentageInt $male $total 0 }}%)</li>
+    {{ if $.Config.Options.AllowLiveData }}
+      <li>davon <strong>{{ $aliveCount }}</strong> am Leben ({{ percentageInt $aliveCount $total 0 }}%) und <strong>{{ $deadCount }}</strong> gestorben ({{ percentageInt $deadCount $total 0 }}%)</li>
+    {{ end }}
+  </ul>
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideGenerations }}
+  {{ if gt (len $.Generations) 1 }}
+    <h2 class="mt-8 mb-2">Generationen</h2>
+    <ul class="list-disc ml-6 mt-2">
+      {{ range $.Generations }}
+        {{ if ne .Index 0 }}
+          <li>
+            <strong>
+              {{- if .IsParent -}}
+                {{- .Index -}}. Elterngeneration –
+              {{- else -}}
+                {{- .Index -}}. Kindergeneration –
+              {{- end -}}
+            </strong>
+            {{ space -}}{{- .Name }} &mdash; {{ len .Persons }} bekannt
+          </li>
+        {{ end }}
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideAlive }}
+  {{ if and $.Config.Options.AllowLiveData (le $aliveCount $.Config.Options.Stats.Count) }}
+    <h2 class="mt-8 mb-2">Am Leben</h2>
+    {{ with $.Stats.AlivePersons $allPersons }}
+      {{ if gt (len .GetPersons) 0 }}
+        <ul class="list-disc ml-6 mt-2">
+          {{ range .GetPersons }}
+            <li>{{ sub "personLink.html" "person" . "allPersons" $allPersons }}</li>
+          {{ end }}
+        </ul>
+      {{ end }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideEarliestBirth }}
+  <h2 class="mt-8 mb-2">Frühestes Geburtsdatum</h2>
+  {{ with $.Stats.OldestBirths $allPersons }}
+    <ul class="mt-2">
+      {{ range .GetTop $.Config.Options.Stats.Count }}
+        <li class="flex py-1">
+          <span>{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</span>
+          <span class="dots"></span>
+          <span class="font-bold flex-shrink-0 tabular-nums">{{ .Value }}</span>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideLatestBirth }}
+  <h2 class="mt-8 mb-2">Letztes Geburtsdatum</h2>
+  {{ with $.Stats.NewestBirths $allPersons }}
+    <ul class="mt-2">
+      {{ range .GetTop $.Config.Options.Stats.Count }}
+        <li class="flex py-1">
+          <span>{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</span>
+          <span class="dots"></span>
+          <span class="font-bold flex-shrink-0 tabular-nums">{{ .Value }}</span>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideOldest }}
+  <h2 class="mt-8 mb-2">Höchstes Alter</h2>
+  {{ with $.Stats.Oldest $allPersons }}
+    <ul class="mt-2">
+      {{ range .GetTop $.Config.Options.Stats.Count }}
+        <li class="flex py-1">
+          <span>{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</span>
+          <span class="dots"></span>
+          <span class="font-bold flex-shrink-0 tabular-nums">{{ .Value }} Jahre</span>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideDeathAge }}
+  <h2 class="mt-8 mb-2">Sterbealter</h2>
+  {{ with $.Stats.DeathAges $allPersons }}
+    {{ if gt (len .GetItems) 0 }}
+      <div class="stats-chart mt-2 mb-4" data-chart='[{{ range $i, $item := .GetItems }}{{ if $i }},{{ end }}[{{ $item.Value }},{{ $item.Persons.Count }}]{{ end }}]' data-x-label="Sterbealter"></div>
+      <ul class="mt-2">
+        {{ range .GetItems }}
+          <li class="flex py-1">
+            <span class="font-bold flex-shrink-0 tabular-nums">{{ .Value }} Jahre</span>
+            <span class="dots"></span>
+            <span class="text-sm">{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</span>
+          </li>
+        {{ end }}
+      </ul>
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideMarriageAge }}
+  <h2 class="mt-8 mb-2">Heiratsalter</h2>
+  <p><strong>Durchschnitt:</strong> {{ printf "%.1f" ($.Stats.AvgMarriageAge $allPersons) }} Jahre</p>
+  {{ with $.Stats.MarriageAges $allPersonsMerged }}
+    {{ if gt (len .GetItems) 0 }}
+      <div class="stats-chart mt-2 mb-4" data-chart='[{{ range $i, $item := .GetItems }}{{ if $i }},{{ end }}[{{ $item.Value }},{{ $item.Persons.Count }}]{{ end }}]' data-x-label="Heiratsalter"></div>
+      <ul class="mt-2">
+        {{ range .GetItems }}
+          <li class="flex py-1">
+            <span class="font-bold flex-shrink-0 tabular-nums">{{ .Value }} Jahre</span>
+            <span class="dots"></span>
+            <span class="text-sm">{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</span>
+          </li>
+        {{ end }}
+      </ul>
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideTotalAgeLiving }}
+  <h2 class="mt-8 mb-2">Gesamtalter aller Lebenden</h2>
+  {{ with $.Stats.TotalAgeLiving $allPersons }}
+    <p class="tabular-nums">{{ . }} Jahre</p>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideLongestMarriages }}
+  <h2 class="mt-8 mb-2">Längste Ehen</h2>
+  {{ with $.Stats.LongestMarriages $allPersons }}
+    <ul class="mt-2">
+      {{ range .GetTop $.Config.Options.Stats.Count }}
+        <li class="flex py-1">
+          <span>{{ range $i, $e := .Persons.GetPersons }}{{ if $i }} ⚭ {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</span>
+          <span class="dots"></span>
+          <span class="font-bold flex-shrink-0 tabular-nums">{{ .Value }}</span>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideLongestName }}
+  <h2 class="mt-8 mb-2">Längster Name</h2>
+  {{ with $.Stats.LongestName $allPersons }}
+    <ul class="mt-2">
+      {{ range .GetTop $.Config.Options.Stats.Count }}
+        <li class="flex py-1">
+          <span>{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</span>
+          <span class="dots"></span>
+          <span class="font-bold flex-shrink-0 tabular-nums">{{ .RankingValue }} Buchstaben</span>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideShortestName }}
+  <h2 class="mt-8 mb-2">Kürzester Name</h2>
+  {{ with $.Stats.ShortestName $allPersons }}
+    <ul class="mt-2">
+      {{ range .GetTop $.Config.Options.Stats.Count }}
+        <li class="flex py-1">
+          <span>{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</span>
+          <span class="dots"></span>
+          <span class="font-bold flex-shrink-0 tabular-nums">{{ .RankingValue }} Buchstaben</span>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideMostChildren }}
+  <h2 class="mt-8 mb-2">Meiste Kinder</h2>
+  {{ with $.Stats.ChildrenCount $allPersons }}
+    <ul class="mt-2">
+      {{ range .GetTop $.Config.Options.Stats.Count }}
+        <li class="flex py-1">
+          <span>{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</span>
+          <span class="dots"></span>
+          <span class="font-bold flex-shrink-0 tabular-nums">{{ .Value }} Kinder</span>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideBirthMonths }}
+  <h2 class="mt-8 mb-2">Geburtsmonate</h2>
+  {{ with $.Stats.BirthMonths $allPersons }}
+    {{ if gt (len .GetItems) 0 }}
+      <div class="stats-chart stats-chart-months mt-2 mb-4" data-chart='[{{ range $i, $item := .GetItems }}{{ if $i }},{{ end }}[{{ $item.Value }},{{ $item.Persons.Count }}]{{ end }}]' data-x-label="Monat"></div>
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideMostCommonLastNames }}
+  <h2 class="mt-8 mb-2">Häufigste Nachnamen</h2>
+  {{ with $.Stats.MostCommonLastNames $allPersons }}
+    <ul class="mt-2">
+      {{ range .GetTop $.Config.Options.Stats.Count }}
+        <li class="py-1">
+          <span class="font-bold tabular-nums">{{ .RankingValue }}x {{ .Value }}</span>
+          <div class="text-sm">{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</div>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideMostCommonFirstNames }}
+  <h2 class="mt-8 mb-2">Häufigste Vornamen</h2>
+  {{ with $.Stats.MostCommonFirstNames $allPersons }}
+    <ul class="mt-2">
+      {{ range .GetTop $.Config.Options.Stats.Count }}
+        <li class="py-1">
+          <span class="font-bold tabular-nums">{{ .RankingValue }}x {{ .Value }}</span>
+          <div class="text-sm">{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</div>
+        </li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideUniqueFirstNames }}
+  <h2 class="mt-8 mb-2">Einmalige Vornamen</h2>
+  {{ with $.Stats.UniqueFirstNames $allPersons }}
+    <ul class="list-disc ml-6 mt-2">
+      {{ range .RankingItems }}
+        <li>{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</li>
+      {{ end }}
+    </ul>
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideCommonBirthdays }}
+  <h2 class="mt-8 mb-2">Gemeinsame Geburtstage</h2>
+  {{ with $.Stats.NonUniqueBirthdays $allPersons }}
+    {{ if gt (len .RankingItems) 0 }}
+      <ul class="mt-2">
+        {{ range .RankingItems }}
+          <li class="py-1">
+            <span class="font-bold tabular-nums">{{ .RankingValue }}</span>
+            <div class="text-sm">{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</div>
+          </li>
+        {{ end }}
+      </ul>
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideDuplicateNames }}
+  <h2 class="mt-8 mb-2">Mehrfache Namen</h2>
+  {{ with $.Stats.NonUniqueNames $allPersons }}
+    {{ if gt (len .RankingItems) 0 }}
+      <ul class="mt-2">
+        {{ range .RankingItems }}
+          <li class="py-1">
+            <span class="font-bold">{{ .Value }}:</span>
+            <div class="text-sm">{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</div>
+          </li>
+        {{ end }}
+      </ul>
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{ if not $.Config.Options.Stats.HideMultipleAncestors }}
+  <h2 class="mt-8 mb-2">Mehrfachvorfahren</h2>
+  {{ with $.Stats.MultipleAncestors $allPersonsMerged }}
+    {{ if gt (len .RankingItems) 0 }}
+      <ul class="mt-2">
+        {{ range .RankingItems }}
+          <li class="flex py-1">
+            <span>{{ range $i, $e := .Persons.GetPersons }}{{ if $i }}, {{ end }}{{ sub "personLink.html" "person" $e "allPersons" $allPersons }}{{ end }}</span>
+            <span class="dots"></span>
+            <span class="font-bold flex-shrink-0 tabular-nums">{{ .Value }} Vorkommen</span>
+          </li>
+        {{ end }}
+      </ul>
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+<script>
+(function () {
+  "use strict";
+
+  var MONTH_NAMES = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+
+  function renderChart(el) {
+    var data;
+    try {
+      data = JSON.parse(el.getAttribute("data-chart"));
+    } catch (e) {
+      return;
+    }
+    if (!data || data.length === 0) {
+      return;
+    }
+
+    var isMonths = el.classList.contains("stats-chart-months");
+    var maxCount = 0;
+    for (var i = 0; i < data.length; i++) {
+      if (data[i][1] > maxCount) {
+        maxCount = data[i][1];
+      }
+    }
+    if (maxCount === 0) {
+      return;
+    }
+
+    var wrapper = document.createElement("div");
+    wrapper.className = "flex items-end gap-1 border-b border-gray-400 h-40";
+
+    data.forEach(function (pair) {
+      var value = pair[0];
+      var count = pair[1];
+      var col = document.createElement("div");
+      col.className = "flex flex-col items-center flex-1";
+
+      var bar = document.createElement("div");
+      bar.className = "w-full bg-green-800";
+      bar.style.height = Math.max(2, Math.round((count / maxCount) * 100)) + "%";
+      bar.title = count + "x";
+
+      var label = document.createElement("div");
+      label.className = "text-xs mt-1 tabular-nums";
+      label.textContent = isMonths ? MONTH_NAMES[value - 1] || value : value;
+
+      col.appendChild(bar);
+      col.appendChild(label);
+      wrapper.appendChild(col);
+    });
+
+    el.appendChild(wrapper);
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    var charts = document.querySelectorAll(".stats-chart");
+    for (var i = 0; i < charts.length; i++) {
+      renderChart(charts[i]);
+    }
+  });
+})();
+</script>

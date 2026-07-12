@@ -72,6 +72,14 @@ func (f *FamilybookRendererHTML) Render(outputFilename, templateFilename string,
 		}
 	}
 
+	if !renderConfig.Config.Options.Stats.Hide {
+		statsFuncMap := makeCustomFuncMap(map[string]interface{}{"percentageInt": percentageInt})
+		err = f.renderTemplateFile("stats.html", "stats.html", makeHTMLFuncMap(toHTMLFuncMap(statsFuncMap), templateHelpers(), toHTMLFuncMap(spacingHelpers()), toHTMLFuncMap(symbols()), personHelpers()), renderConfig)
+		if err != nil {
+			return errors.Annotatef(err, "rendering template stats.html failed")
+		}
+	}
+
 	tplFilename := "person/details.html"
 	workerCount := runtime.NumCPU()
 	wp := workerpool.New(workerCount)
